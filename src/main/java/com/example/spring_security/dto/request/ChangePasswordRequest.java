@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class ChangPasswordRequest {
+public class ChangePasswordRequest {
 
     private String oldPassword;
 
