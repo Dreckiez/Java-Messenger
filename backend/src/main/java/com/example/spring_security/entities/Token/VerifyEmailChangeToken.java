@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "verify_change_mail_token")
+@Table(name = "verify_email_change_token")
 public class VerifyChangeMailToken {
     private LocalDateTime expiryDate;
     private String newEmail;
