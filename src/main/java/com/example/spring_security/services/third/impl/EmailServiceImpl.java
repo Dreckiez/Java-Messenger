@@ -1,6 +1,6 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.third.impl;
 
-import com.example.spring_security.services.EmailService;
+import com.example.spring_security.services.third.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

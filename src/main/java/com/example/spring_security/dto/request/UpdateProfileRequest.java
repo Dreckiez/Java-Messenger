@@ -5,11 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UpdateProfileRequest {
     @Pattern(
             regexp = "^[a-zA-ZÀ-ỹà-ỹ\\s]{1,20}$",
@@ -25,17 +29,8 @@ public class UpdateProfileRequest {
 
     private Gender gender;
 
-    @Size(max = 50, message = "City name must be at most 50 characters")
-    private String city;
-
-    @Size(max = 50, message = "District name must be at most 50 characters")
-    private String district;
-
-    @Size(max = 100, message = "Street name must be at most 50 characters")
-    private String street;
-
-    @Size(max = 50, message = "Country name must be at most 50 characters")
-    private String country;
+    @Size(max = 250, message = "Address must be at most 250 characters")
+    private String address;
 
     @Past(message = "Birthday must be a past date")
     private LocalDate birthday;

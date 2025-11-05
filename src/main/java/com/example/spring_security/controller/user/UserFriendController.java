@@ -1,19 +1,13 @@
-package com.example.spring_security.controller;
+package com.example.spring_security.controller.user;
 
 import com.example.spring_security.dto.request.UpdateStatusFriendRequest;
 import com.example.spring_security.dto.response.FriendRequestResponse;
 import com.example.spring_security.dto.response.UserFriendResponse;
-import com.example.spring_security.entities.FriendRequest;
 import com.example.spring_security.entities.User;
-import com.example.spring_security.services.UserFriendService;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.example.spring_security.services.user.UserFriendService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

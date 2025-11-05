@@ -1,8 +1,12 @@
 package com.example.spring_security.dto.response;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class JwtAuthenticationResponse {
     private String token;
 

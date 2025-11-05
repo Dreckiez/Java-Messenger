@@ -1,4 +1,4 @@
-package com.example.spring_security.controller;
+package com.example.spring_security.controller.third;
 
 import com.example.spring_security.dto.request.RefreshTokenRequest;
 import com.example.spring_security.dto.request.SignInRequest;
@@ -7,7 +7,7 @@ import com.example.spring_security.dto.request.VerificationRequest;
 import com.example.spring_security.dto.response.JwtAuthenticationResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.repository.UserRepository;
-import com.example.spring_security.services.AuthenticationService;
+import com.example.spring_security.services.third.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

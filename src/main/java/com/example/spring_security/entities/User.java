@@ -6,6 +6,7 @@ import com.example.spring_security.entities.Enum.Gender;
 import com.example.spring_security.entities.Enum.Role;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Where;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +25,7 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long user_id;
+    private Long userId;
 
     @Column(nullable = false, unique = true, length = 50)
     private String username;
@@ -41,17 +42,8 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 255, name = "email")
     private String email;
 
-    @Column(length = 50)
-    private String city;
-
-    @Column(length = 50)
-    private String district;
-
-    @Column(length = 50)
-    private String street;
-
-    @Column(length = 100)
-    private String country;
+    @Column(length = 300)
+    private String address;
 
     private LocalDate birthday;
 
@@ -62,7 +54,7 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_online")
-    private Boolean isOnline = false;
+    private Boolean isOnline;
 
     @Column(name = "is_accepted")
     private Boolean isAccepted;
@@ -73,9 +65,9 @@ public class User implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String avatarUrl;
 
-    private Gender gender = Gender.HIDDEN;
+    private Gender gender;
 
-    private Role role = Role.USER;
+    private Role role;
 
 
     @Override

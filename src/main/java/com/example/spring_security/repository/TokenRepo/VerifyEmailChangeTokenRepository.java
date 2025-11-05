@@ -1,6 +1,5 @@
-package com.example.spring_security.repository;
+package com.example.spring_security.repository.TokenRepo;
 
-import com.example.spring_security.entities.Token.BaseToken;
 import com.example.spring_security.entities.Token.VerifyEmailChangeToken;
 import org.springframework.stereotype.Repository;
 

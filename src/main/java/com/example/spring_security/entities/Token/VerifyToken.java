@@ -7,4 +7,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table (name = "verify_token")
-public class VerifyToken extends BaseToken { private LocalDateTime expiryDate; }
+public class VerifyToken extends BaseToken {
+    @Column(name = "expired_at")
+    private LocalDateTime expiredAt;
+}

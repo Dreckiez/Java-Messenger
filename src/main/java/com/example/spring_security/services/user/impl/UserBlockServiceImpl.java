@@ -1,17 +1,16 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.user.impl;
 
 import com.example.spring_security.dto.request.RemoveBlockRequest;
 import com.example.spring_security.dto.response.UserBlockResponse;
 import com.example.spring_security.entities.Block;
 import com.example.spring_security.entities.BlockId;
 import com.example.spring_security.entities.Friend;
-import com.example.spring_security.entities.User;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.BlockRepository;
 import com.example.spring_security.repository.FriendRepository;
 import com.example.spring_security.repository.UserRepository;
-import com.example.spring_security.services.UserBlockService;
-import com.example.spring_security.services.UserFriendService;
+import com.example.spring_security.services.user.UserBlockService;
+import com.example.spring_security.services.user.UserFriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

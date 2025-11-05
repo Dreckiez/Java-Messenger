@@ -5,7 +5,158 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/AuthenticationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/AuthenticationController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserBlockController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserFriendController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserProfileController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserSearchController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/BaseUserResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserBlockService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserFriendService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserProfileService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserSearchService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserBlockServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserFriendServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserProfileServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserSearchServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SCRIPT.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../SCRIPT.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/config/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/config/SecurityConfiguration.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/controller/AdminController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/controller/AuthenticationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/controller/UserController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/dto/JwtAuthenticationResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/dto/RefreshTokenRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/dto/SignInRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/dto/SignUpRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/dto/VerificationRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/entities/BaseToken.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/entities/Gender.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/entities/PasswordResetToken.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/entities/Role.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/entities/User.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/entities/VerifyToken.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/exception/GlobalExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/repository/BaseTokenRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/repository/PasswordResetTokenRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/repository/UserRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/repository/VerifyTokenRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/AuthenticationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/EmailService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/JWTService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/UserService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/impl/AuthenticationServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/impl/EmailServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/impl/JWTServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/java/com/example/spring_security/services/impl/UserServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spring-security.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtChannelInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtChannelInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/SecurityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/SecurityConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/AuthenticationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/third/AuthenticationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/UserBlockController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/UserFriendController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/UserProfileController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ChangeEmailRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ChangeEmailRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ChangePasswordRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ChangePasswordRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/RefreshTokenRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/RefreshTokenRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/RemoveBlockRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/RemoveBlockRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/SignInRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/SignInRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/SignUpRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/SignUpRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/UpdateProfileRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/UpdateProfileRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/UpdateStatusFriendRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/UpdateStatusFriendRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/VerificationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/VerificationRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/BaseUserRepsonse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/FriendRequestResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/FriendRequestResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/JwtAuthenticationResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/JwtAuthenticationResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserBlockResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserBlockResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserFriendResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserFriendResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserProfileResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserProfileResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Block.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/BlockId.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/BlockId.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Enum/FriendRequestStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Enum/FriendRequestStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Friend.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Friend.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendId.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendId.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendRequestId.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendRequestId.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/BaseToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/BaseToken.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/RequestPasswordReset.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/RequestPasswordReset.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/VerifyEmailChangeToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/VerifyEmailChangeToken.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/VerifyToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/VerifyToken.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/exception/CustomException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/exception/CustomException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/BlockRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/BlockRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/FriendRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/FriendRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/FriendRequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/FriendRequestRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/BaseTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/BaseTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/PasswordResetTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/PasswordResetTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/VerifyEmailChangeTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/VerifyEmailChangeTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/VerifyTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/VerifyTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/AuthenticationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/AuthenticationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/EmailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/EmailService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/JWTService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/JWTService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/UserBlockService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/UserFriendService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/UserProfileService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/AuthenticationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/impl/AuthenticationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/EmailServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/impl/EmailServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/JWTServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/impl/JWTServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/UserBlockServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/UserFriendServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/UserProfileServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/UserFriendEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/UserFriendEventListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketEventListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/SpringSecurityApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtAuthenticationFilter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtAuthenticationFilter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/SecurityConfiguration.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/SecurityConfiguration.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/AdminController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/AdminController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/AuthenticationController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/AuthenticationController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/UserController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/JwtAuthenticationResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/RefreshTokenRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/SignInRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/SignUpRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/VerificationRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/BaseToken.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Gender.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/PasswordResetToken.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Role.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/VerifyToken.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/exception/GlobalExceptionHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/exception/GlobalExceptionHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/BaseTokenRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/PasswordResetTokenRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/VerifyTokenRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/AuthenticationService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/AuthenticationService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/AuthenticationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/AuthenticationServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/JWTServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/JWTServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserServiceImpl$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserServiceImpl$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/annotations/SpringSecurityApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/2025-10-30T23-21-29_085.dumpstream" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.example.spring_security.SpringSecurityApplicationTests.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.example.spring_security.SpringSecurityApplicationTests.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.example.spring_security.SpringSecurityApplicationTests.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.example.spring_security.SpringSecurityApplicationTests.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/java/com/example/spring_security/SpringSecurityApplicationTests.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,16 +167,17 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="jar://C:/Program Files/Java/jdk-25/lib/src.zip!/java.base/java/lang/IllegalArgumentException.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/3.5.5/spring-data-commons-3.5.5.jar!/org/springframework/data/repository/CrudRepository.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-jpa/3.5.5/spring-data-jpa-3.5.5.jar!/org/springframework/data/jpa/repository/JpaRepository.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MavenImportPreferences">
@@ -35,30 +187,42 @@
       </MavenGeneralSettings>
     </option>
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="34ZBGg3S9oo9bz9uIwIfP2uOemb" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.SpringSecurityApplication.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/backend",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.SpringSecurityApplication.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;promo.database&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="com.example.spring_security" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="backend" />

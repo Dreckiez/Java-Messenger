@@ -6,8 +6,8 @@ com\example\spring_security\services\UserService.class
 com\example\spring_security\repository\UserRepository.class
 com\example\spring_security\entities\BaseToken.class
 com\example\spring_security\entities\Role.class
+com\example\spring_security\Main.class
 com\example\spring_security\entities\VerifyToken.class
-com\example\spring_security\SpringSecurityApplication.class
 com\example\spring_security\entities\User.class
 com\example\spring_security\services\impl\JWTServiceImpl.class
 com\example\spring_security\controller\AdminController.class

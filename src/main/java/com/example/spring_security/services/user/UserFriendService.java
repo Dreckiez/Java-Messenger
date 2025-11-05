@@ -1,11 +1,9 @@
-package com.example.spring_security.services;
+package com.example.spring_security.services.user;
 
 
 import com.example.spring_security.dto.request.UpdateStatusFriendRequest;
 import com.example.spring_security.dto.response.FriendRequestResponse;
 import com.example.spring_security.dto.response.UserFriendResponse;
-import com.example.spring_security.entities.FriendRequest;
-import com.example.spring_security.entities.User;
 
 import java.util.List;
 import java.util.Map;
