@@ -11,6 +11,7 @@ import com.example.spring_security.services.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -40,7 +41,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
     @GetMapping("/verify")
-    public ResponseEntity<User> verifyEmail(@RequestParam("token") String token) {
+    public ResponseEntity<User> verifyEmail(@RequestParam("token") String token, @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(authenticationService.verifyToken(token));
     }
     @PostMapping("/create-verification-token")
@@ -52,6 +53,8 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, String>> resetPassword(@RequestBody VerificationRequest verificationRequest) {
         return ResponseEntity.ok(authenticationService.resetPassword(verificationRequest));
     }
+
+
 
     @GetMapping("/test-api")
     public ResponseEntity<Optional<User>> testApi() {

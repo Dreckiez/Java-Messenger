@@ -1,0 +1,20 @@
+package com.example.spring_security.services;
+
+
+import com.example.spring_security.dto.request.UpdateStatusFriendRequest;
+import com.example.spring_security.dto.response.FriendRequestResponse;
+import com.example.spring_security.dto.response.UserFriendResponse;
+import com.example.spring_security.entities.FriendRequest;
+import com.example.spring_security.entities.User;
+
+import java.util.List;
+import java.util.Map;
+
+public interface UserFriendService {
+    List<UserFriendResponse> getFriendList(Long userId, String keyword);
+    Map<String, String> friendRequest(Long senderId, Long receiverId);
+    List<FriendRequestResponse> getListFriendRequestReceive(Long id, String keyword);
+    List<FriendRequestResponse> getListFriendRequestSent(Long id, String keyword);
+    Map<String, String> updateStatus(UpdateStatusFriendRequest updateStatusFriendRequest, Long updatorId);
+    Map<String, String> removeFriend(Long removerId, Long removedUserId);
+}

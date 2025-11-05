@@ -5,18 +5,18 @@ import com.example.spring_security.dto.request.SignInRequest;
 import com.example.spring_security.dto.request.SignUpRequest;
 import com.example.spring_security.dto.request.VerificationRequest;
 import com.example.spring_security.dto.response.JwtAuthenticationResponse;
+import com.example.spring_security.entities.Enum.Gender;
 import com.example.spring_security.entities.Token.RequestPasswordReset;
 import com.example.spring_security.entities.Enum.Role;
 import com.example.spring_security.entities.Token.VerifyToken;
-import com.example.spring_security.repository.PasswordResetTokenRepository;
+import com.example.spring_security.repository.TokenRepo.PasswordResetTokenRepository;
 import com.example.spring_security.repository.UserRepository;
-import com.example.spring_security.repository.VerifyTokenRepository;
+import com.example.spring_security.repository.TokenRepo.VerifyTokenRepository;
 import com.example.spring_security.services.AuthenticationService;
 import com.example.spring_security.services.EmailService;
 import com.example.spring_security.services.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -75,9 +75,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setLastName(signUpRequest.getLastName());
         user.setRole(Role.USER);
         user.setHashPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-        user.setIsActive(false);
+        user.setIsActive(true);
         user.setIsAccepted(true);
         user.setJoinedAt(LocalDateTime.now());
+        user.setGender(Gender.HIDDEN);
+        user.setAvatarUrl("");
+        user.setAddress("");
+        user.setIsOnline(false);
         return userRepository.save(user);
     }
 
@@ -124,44 +128,42 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElse(new VerifyToken());
 
         LocalDateTime now = LocalDateTime.now();
-        if(token.getId() != null && token.getDateTimeCreated() != null &&
-                token.getDateTimeCreated().plusMinutes(resendVerificationDelay).isAfter(now)) {
+        if(token.getId() != null && token.getCreatedAt() != null &&
+                token.getCreatedAt().plusMinutes(resendVerificationDelay).isAfter(now)) {
             throw new RuntimeException("Please wait before requesting another verification token.");
         }
 
-        String newToken = UUID.randomUUID().toString();
+        String newToken = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         token.setToken(newToken);
         token.setUser(user);
-        token.setExpiryDate(now.plusMinutes(VerificationTokenExpiredMins));
-        token.setDateTimeCreated(now);
+        token.setExpiredAt(now.plusMinutes(VerificationTokenExpiredMins));
+        token.setCreatedAt(now);
 
         verifyTokenRepository.save(token);
-
-        String link = baseUrl + "/api/chat/auth/verify?token=" + newToken;
 
         emailService.sendEmail(
                 user.getEmail(),
                 "Verify your account",
                 "Hi " + user.getUsername() + ",\n\n" +
-                        "Please click the link below to verify your email:\n" +
-                        link + "\n\n" +
-                        "This link will expire in 10 minutes."
+                        "Please use the verification token below to verify your email:\n" +
+                        newToken + "\n\n" +
+                        "This token will expire in 10 minutes."
         );
         Map<String, String> response = new HashMap<>();
-        response.put("token", newToken);
+        response.put("message", "Please check your email to get the verification token.");
         return response;
     }
 
 
     public User verifyToken (String token) {
-        VerifyToken verifytoken = verifyTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
+        VerifyToken verifytoken = verifyTokenRepository.findByToken(token).orElseThrow(() -> new RuntimeException("Invalid token."));
 
-        if (verifytoken.getExpiryDate().isBefore(LocalDateTime.now())) {
+        if (verifytoken.getExpiredAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token is already expired");
         }
 
         User user = verifytoken.getUser();
+
         user.setIsActive(true);
 
         verifyTokenRepository.delete(verifytoken);
@@ -177,14 +179,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         RequestPasswordReset requestpasswordreset = passwordResetTokenRepository.findByUser(user).orElse(new RequestPasswordReset());
 
         LocalDateTime now = LocalDateTime.now();
-        if(requestpasswordreset.getId() != null && requestpasswordreset.getDateTimeCreated() != null &&
-                requestpasswordreset.getDateTimeCreated().plusDays(10).isAfter(now)) {
+        if(requestpasswordreset.getId() != null && requestpasswordreset.getCreatedAt() != null &&
+                requestpasswordreset.getCreatedAt().plusDays(10).isAfter(now)) {
             throw new RuntimeException("Please wait before requesting another password reset.");
         }
         String generatedPassword = UUID.randomUUID().toString().replace("-", "");
         user.setHashPassword(passwordEncoder.encode(generatedPassword));
 
-        requestpasswordreset.setDateTimeCreated(now);
+        requestpasswordreset.setCreatedAt(now);
         requestpasswordreset.setToken(generatedPassword);
         requestpasswordreset.setUser(user);
         userRepository.save(user);

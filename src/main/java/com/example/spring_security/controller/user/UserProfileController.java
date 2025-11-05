@@ -1,0 +1,68 @@
+package com.example.spring_security.controller;
+
+
+import com.example.spring_security.dto.request.ChangeEmailRequest;
+import com.example.spring_security.dto.request.ChangePasswordRequest;
+import com.example.spring_security.dto.request.UpdateProfileRequest;
+import com.example.spring_security.dto.response.UserProfileResponse;
+import com.example.spring_security.entities.User;
+import com.example.spring_security.repository.UserRepository;
+import com.example.spring_security.services.UserProfileService;
+import com.sun.security.auth.UserPrincipal;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/chat/user/profile")
+@RequiredArgsConstructor
+public class UserProfileController {
+
+    private final UserProfileService userProfileService;
+
+    @GetMapping("")
+    public ResponseEntity<UserProfileResponse> getProfile(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userProfileService.getProfile(user));
+    }
+
+    @PatchMapping("/update-profile")
+    public ResponseEntity<User> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest,
+                                              @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userProfileService.updateProfile(updateProfileRequest, user));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(String token,
+                                                              @Valid @RequestBody ChangePasswordRequest changePasswordRequest,
+                                                              @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userProfileService.changePassword(changePasswordRequest, user));
+    }
+
+    @GetMapping("/create-token")
+    public ResponseEntity<Map<String, String>> createToken(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userProfileService.createToken(user));
+    }
+
+    @PostMapping("/change-email")
+    public ResponseEntity<Map<String, String>> changeEmail(@RequestParam("token") String token,
+                                                           @RequestBody ChangeEmailRequest changeEmailRequest,
+                                                           @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userProfileService.changeEmail(token, changeEmailRequest, user));
+    }
+    @GetMapping("/apply-change-email")
+    public ResponseEntity<Map<String, String>> applyChangeEmail(@RequestParam("token") String token) {
+        return ResponseEntity.ok(userProfileService.applyChangeEmail(token));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(userProfileService.getUserProfile(id));
+    }
+}
+
+
