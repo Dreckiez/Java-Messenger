@@ -1,6 +1,6 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.third.impl;
 
-import com.example.spring_security.services.JWTService;
+import com.example.spring_security.services.third.JWTService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

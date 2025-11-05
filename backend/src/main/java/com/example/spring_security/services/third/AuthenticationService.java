@@ -1,4 +1,4 @@
-package com.example.spring_security.services;
+package com.example.spring_security.services.third;
 
 import com.example.spring_security.dto.request.RefreshTokenRequest;
 import com.example.spring_security.dto.request.SignInRequest;

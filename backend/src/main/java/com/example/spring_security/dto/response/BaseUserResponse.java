@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class BaseUserRepsonse {
+public class BaseUserResponse {
     private Long userId;
     private String fullName;
     private String avatarUrl;

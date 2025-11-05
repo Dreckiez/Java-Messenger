@@ -1,4 +1,4 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.user.impl;
 
 import com.example.spring_security.dto.request.ChangePasswordRequest;
 import com.example.spring_security.dto.request.ChangeEmailRequest;
@@ -10,8 +10,8 @@ import com.example.spring_security.entities.User;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.repository.TokenRepo.VerifyEmailChangeTokenRepository;
 import com.example.spring_security.repository.TokenRepo.VerifyTokenRepository;
-import com.example.spring_security.services.EmailService;
-import com.example.spring_security.services.UserProfileService;
+import com.example.spring_security.services.third.EmailService;
+import com.example.spring_security.services.user.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;

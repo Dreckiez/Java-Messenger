@@ -44,9 +44,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        String message = "Data Intergrity Violation Exception";
-        return ResponseEntity.badRequest().body(message);
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Operation violates database constraints.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     @ExceptionHandler(Exception.class)
@@ -88,5 +89,15 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("message", "Authentication Failed. Something went");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<Map<String, String>> handleCustomException(CustomException ce) {
+
+        Map<String, String> msg = new HashMap<>();
+
+        msg.put("message", ce.getMessage());
+
+        return ResponseEntity.status(ce.getHttpStatus()).body(msg);
     }
 }

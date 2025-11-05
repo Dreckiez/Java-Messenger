@@ -11,6 +11,7 @@ public abstract class BaseToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "verification_id")
     private Long id;
 
     private String token;
@@ -19,7 +20,8 @@ public abstract class BaseToken {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private LocalDateTime dateTimeCreated;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public BaseToken() {}
 }

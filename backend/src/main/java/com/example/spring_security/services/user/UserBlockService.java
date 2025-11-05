@@ -1,10 +1,8 @@
-package com.example.spring_security.services;
+package com.example.spring_security.services.user;
 
 
 import com.example.spring_security.dto.request.RemoveBlockRequest;
 import com.example.spring_security.dto.response.UserBlockResponse;
-import com.example.spring_security.entities.Block;
-import com.example.spring_security.entities.User;
 
 import java.util.List;
 import java.util.Map;

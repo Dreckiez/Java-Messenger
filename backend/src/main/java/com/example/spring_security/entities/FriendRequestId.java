@@ -1,5 +1,11 @@
-package com.example.spring_security.entities.Enum;
+package com.example.spring_security.entities;
 
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
@@ -14,21 +20,10 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder
 public class FriendRequestId implements Serializable {
+    @Column(name = "sender_id")
     private Long senderId;
+    @Column(name = "receiver_id")
     private Long receiverId;
+    @Column(name = "sent_at")
     private LocalDateTime sentAt;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof FriendRequestId that)) return false;
-        return Objects.equals(senderId, that.senderId)
-                && Objects.equals(receiverId, that.receiverId)
-                && Objects.equals(sentAt, that.sentAt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(senderId, receiverId, sentAt);
-    }
 }

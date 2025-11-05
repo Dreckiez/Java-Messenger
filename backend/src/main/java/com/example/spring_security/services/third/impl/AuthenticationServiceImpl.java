@@ -1,4 +1,4 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.third.impl;
 
 import com.example.spring_security.dto.request.RefreshTokenRequest;
 import com.example.spring_security.dto.request.SignInRequest;
@@ -12,9 +12,9 @@ import com.example.spring_security.entities.Token.VerifyToken;
 import com.example.spring_security.repository.TokenRepo.PasswordResetTokenRepository;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.repository.TokenRepo.VerifyTokenRepository;
-import com.example.spring_security.services.AuthenticationService;
-import com.example.spring_security.services.EmailService;
-import com.example.spring_security.services.JWTService;
+import com.example.spring_security.services.third.AuthenticationService;
+import com.example.spring_security.services.third.EmailService;
+import com.example.spring_security.services.third.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;

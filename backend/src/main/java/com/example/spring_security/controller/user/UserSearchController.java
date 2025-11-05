@@ -1,10 +1,9 @@
-package com.example.spring_security.controller;
+package com.example.spring_security.controller.user;
 
 import com.example.spring_security.dto.response.BaseUserResponse;
 import com.example.spring_security.entities.User;
-import com.example.spring_security.services.UserSearchService;
+import com.example.spring_security.services.user.UserSearchService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

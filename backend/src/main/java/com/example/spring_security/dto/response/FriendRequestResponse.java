@@ -1,4 +1,15 @@
 package com.example.spring_security.dto.response;
 
-public class FriendRequestResponse {
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public class FriendRequestResponse extends BaseUserResponse {
+    private LocalDateTime sentAt;
 }

@@ -1,4 +1,9 @@
 package com.example.spring_security.services.admin;
 
-public class ManagementUserService {
+import com.example.spring_security.entities.User;
+
+import java.util.List;
+
+public interface ManagementUserService {
+    List<User> getUserDetailList();
 }

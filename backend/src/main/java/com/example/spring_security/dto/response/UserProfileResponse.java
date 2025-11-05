@@ -1,4 +1,21 @@
 package com.example.spring_security.dto.response;
 
-public class UserProfileResponse {
+
+import com.example.spring_security.entities.Enum.Gender;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public class UserProfileResponse extends BaseUserResponse {
+    private String address;
+    private LocalDate birthDay;
+    private Gender gender;
+    private LocalDateTime joinedAt;
 }

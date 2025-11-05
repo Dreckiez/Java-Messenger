@@ -1,11 +1,10 @@
-package com.example.spring_security.controller;
+package com.example.spring_security.controller.user;
 
 
 import com.example.spring_security.dto.request.RemoveBlockRequest;
 import com.example.spring_security.dto.response.UserBlockResponse;
-import com.example.spring_security.entities.Block;
 import com.example.spring_security.entities.User;
-import com.example.spring_security.services.UserBlockService;
+import com.example.spring_security.services.user.UserBlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

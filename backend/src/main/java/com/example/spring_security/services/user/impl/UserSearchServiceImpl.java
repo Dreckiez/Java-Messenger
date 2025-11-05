@@ -1,11 +1,11 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.user.impl;
 
 
 import com.example.spring_security.dto.response.BaseUserResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.UserRepository;
-import com.example.spring_security.services.UserSearchService;
+import com.example.spring_security.services.user.UserSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

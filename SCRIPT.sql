@@ -1,48 +1,43 @@
 -- ======================
--- ENUM types
--- ======================
-CREATE TYPE role_enum AS ENUM ('USER', 'ADMIN', 'MODERATOR');
-
-CREATE TYPE friend_status_enum AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
-
-CREATE TYPE gender_enum AS ENUM ('FEMALE', 'MALE', 'HIDDEN');
-
-CREATE TYPE message_type_enum AS ENUM ('TEXT', 'IMAGE');
-
-CREATE TYPE conversation_type_enum AS ENUM ('PRIVATE', 'GROUP');
-
--- ======================
 -- Core tables
 -- ======================
 
--- user_info: main user table
+-- user_info
 CREATE TABLE user_info (
     user_id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     hash_password VARCHAR(100) NOT NULL,
-    role role_enum NOT NULL DEFAULT 'USER',
+    role SMALLINT NOT NULL,
+    gender SMALLINT NOT NULL,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
-    city VARCHAR(50),
-    district VARCHAR(50),
-    street VARCHAR(50),
-    country VARCHAR(50),
+    address VARCHAR(300),
     birthday DATE,
     avatar_url VARCHAR(255),
-    is_active BOOLEAN DEFAULT FALSE,
-    is_online BOOLEAN DEFAULT FALSE,
-    is_accepted BOOLEAN DEFAULT TRUE,
-    joined_at TIMESTAMP DEFAULT now(),
-    updated_at TIMESTAMP DEFAULT now()
+    is_active BOOLEAN ,
+    is_online BOOLEAN,
+    is_accepted BOOLEAN,
+    joined_at TIMESTAMP,
+    updated_at TIMESTAMP
 );
 
--- verify_token: one token per user (unique user_id)
+-- verify_token
 CREATE TABLE verify_token (
     verification_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE REFERENCES user_info(user_id) ON DELETE CASCADE,
     token VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT now(),
+    created_at TIMESTAMP NOT NULL,
+    expired_at TIMESTAMP NOT NULL
+);
+
+-- verify_email_change_token
+CREATE TABLE verify_email_change_token (
+    verification_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE REFERENCES user_info(user_id) ON DELETE CASCADE,
+    token VARCHAR(50) NOT NULL,
+    new_email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
     expired_at TIMESTAMP NOT NULL
 );
 
@@ -51,86 +46,82 @@ CREATE TABLE request_password_reset (
     request_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     token VARCHAR(50) NOT NULL,
-    requested_at TIMESTAMP DEFAULT now()
+    requested_at TIMESTAMP NOT NULL
 );
 
--- device: devices user logged in from
+-- device
 CREATE TABLE device (
     device_id UUID PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    joined_at TIMESTAMP DEFAULT now()
+    joined_at TIMESTAMP
 );
 
--- record_online_user: record when user goes online/offline (audit)
+-- record_online_user
 CREATE TABLE record_online_user (
     session_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    online_at TIMESTAMP DEFAULT now(),
+    online_at TIMESTAMP NOT NULL,
     offline_at TIMESTAMP
 );
 
--- record_logging: general log table
+-- record_logging
 CREATE TABLE record_logging (
     record_logging_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES user_info(user_id) ON DELETE SET NULL,
-    logged_at TIMESTAMP DEFAULT now(),
-    is_successful BOOLEAN DEFAULT TRUE
+    logged_at TIMESTAMP NOT NULL,
+    is_successful BOOLEAN
 );
 
--- report: report one user by another (moderation)
+-- report
 CREATE TABLE report (
     report_id BIGSERIAL PRIMARY KEY,
     reporter_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     reported_user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     title VARCHAR(30),
     content TEXT,
-    created_at TIMESTAMP DEFAULT now()
+    created_at TIMESTAMP NOT NULL
 );
-
-
 
 -- friend_request
 CREATE TABLE friend_request (
     sender_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     receiver_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    status friend_status_enum NOT NULL DEFAULT 'PENDING',
-    sent_at TIMESTAMP DEFAULT now(),
-    updated_at TIMESTAMP DEFAULT now(),
+    status SMALLINT NOT NULL,
+    sent_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP,
+    is_active BOOLEAN,
     PRIMARY KEY (sender_id, receiver_id, sent_at),
-    CONSTRAINT uq_friend_request_sender_receiver UNIQUE (sender_id, receiver_id),
+    CONSTRAINT uq_friend_request_sender_receiver UNIQUE (sender_id, receiver_id, sent_at),
     CONSTRAINT chk_friend_request_not_self CHECK (sender_id <> receiver_id)
 );
 
--- friend: accepted friendships (undirected). We'll store with user_a < user_b to avoid duplicates.
+-- friend
 CREATE TABLE friend (
-    user_1 BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    user_2 BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    made_friend_at TIMESTAMP DEFAULT now(),
-    PRIMARY KEY (user_1, user_2),
-    CONSTRAINT chk_friend_order CHECK (user_1 < user_2)
+    user_id1 BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
+    user_id2 BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
+    made_friend_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (user_id1, user_id2),
+    CONSTRAINT chk_friend_order CHECK (user_id1 < user_id2)
 );
 
--- user_block: when a user blocks another
-CREATE TABLE user_block (
+-- user_block
+CREATE TABLE block (
     blocker_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     blocked_user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    blocked_at TIMESTAMP DEFAULT now(),
-    PRIMARY KEY (blocker_id, blocked_user_id),
+    blocked_at TIMESTAMP NOT NULL,
+    is_active BOOLEAN,
+    removed_at TIMESTAMP,
+    PRIMARY KEY (blocker_id, blocked_user_id, blocked_at),
     CONSTRAINT chk_block_not_self CHECK (blocker_id <> blocked_user_id)
 );
 
--- ======================
--- Private conversations & messages
--- ======================
-
--- private_conversation: between two users. Enforce user1 < user2 to ensure uniqueness independent of order.
+-- private_conversation
 CREATE TABLE private_conversation (
     private_conversation_id BIGSERIAL PRIMARY KEY,
     user1_id BIGINT NOT NULL,
     user2_id BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT now(),
+    created_at TIMESTAMP NOT NULL,
     preview_message_id BIGINT,
-    
     CONSTRAINT fk_private_user1 FOREIGN KEY (user1_id)
         REFERENCES user_info(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_private_user2 FOREIGN KEY (user2_id)
@@ -145,10 +136,10 @@ CREATE TABLE private_conversation_message (
     private_conversation_id BIGINT NOT NULL REFERENCES private_conversation(private_conversation_id) ON DELETE CASCADE,
     sender_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     content TEXT NOT NULL,
-    sent_at TIMESTAMP DEFAULT now(),
+    sent_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
-    type message_type_enum NOT NULL DEFAULT 'TEXT',
-    is_read BOOLEAN DEFAULT FALSE,
+    type SMALLINT NOT NULL,
+    is_read BOOLEAN,
     read_at TIMESTAMP
 );
 
@@ -158,36 +149,38 @@ FOREIGN KEY (preview_message_id)
 REFERENCES private_conversation_message(private_conversation_message_id)
 DEFERRABLE INITIALLY DEFERRED;
 
+-- delete_private_conversation_message
 CREATE TABLE delete_private_conversation_message (
-    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE, 
+    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     private_conversation_message_id BIGINT NOT NULL REFERENCES private_conversation_message(private_conversation_message_id) ON DELETE CASCADE,
-    deleted_at TIMESTAMP DEFAULT now(),
-    is_all BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP NOT NULL,
+    is_all BOOLEAN,
     PRIMARY KEY (user_id, private_conversation_message_id)
 );
 
+-- group_conversation
 CREATE TABLE group_conversation (
     group_conversation_id BIGSERIAL PRIMARY KEY,
     group_name VARCHAR(100) NOT NULL,
     owner_id BIGINT REFERENCES user_info(user_id) ON DELETE SET NULL,
     preview_message_id BIGINT,
-	  created_at TIMESTAMP DEFAULT now(),
-    is_encrypted BOOLEAN DEFAULT FALSE
+    created_at TIMESTAMP NOT NULL,
+    is_encrypted BOOLEAN
 );
 
 -- group_conversation_member
 CREATE TABLE group_conversation_member (
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    joined_at TIMESTAMP DEFAULT now(),
+    joined_at TIMESTAMP NOT NULL,
     PRIMARY KEY (group_conversation_id, member_id)
 );
 
--- group_conversation_admin: subset of members with admin privileges
+-- group_conversation_admin
 CREATE TABLE group_conversation_admin (
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     admin_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    appointed_at TIMESTAMP DEFAULT now(),
+    appointed_at TIMESTAMP NOT NULL,
     PRIMARY KEY (group_conversation_id, admin_id)
 );
 
@@ -197,9 +190,9 @@ CREATE TABLE group_conversation_message (
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     sender_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE SET NULL,
     content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT now(),
+    created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
-    type message_type_enum NOT NULL DEFAULT 'TEXT'
+    type SMALLINT NOT NULL
 );
 
 ALTER TABLE group_conversation
@@ -208,26 +201,24 @@ FOREIGN KEY (preview_message_id)
 REFERENCES group_conversation_message(group_conversation_message_id)
 DEFERRABLE INITIALLY DEFERRED;
 
--- delete_group_conversation_message (audit)
+-- delete_group_conversation_message
 CREATE TABLE delete_group_conversation_message (
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     group_conversation_message_id BIGINT NOT NULL REFERENCES group_conversation_message(group_conversation_message_id) ON DELETE CASCADE,
-    deleted_at TIMESTAMP DEFAULT now(),
-    is_all BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP NOT NULL,
+    is_all BOOLEAN,
     PRIMARY KEY (member_id, group_conversation_message_id)
 );
 
--- group_conversation_read: track read receipts for group messages
+-- group_conversation_read
 CREATE TABLE group_conversation_read (
     group_conversation_message_id BIGINT NOT NULL REFERENCES group_conversation_message(group_conversation_message_id) ON DELETE CASCADE,
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    read_at TIMESTAMP DEFAULT now(),
+    read_at TIMESTAMP NOT NULL,
     PRIMARY KEY (group_conversation_message_id, member_id)
 );
 
--- ======================
--- Encryption groups (for encrypted group chats)
--- ======================
+-- encryption_group
 CREATE TABLE encryption_group (
     user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
@@ -238,14 +229,7 @@ CREATE TABLE encryption_group (
 );
 
 -- ======================
--- Misc utilities / audit
--- ======================
-
--- record_password_reset (if needed separate from request_password_reset)
--- Already have request_password_reset above.
-
--- ======================
--- Indexes (helpful ones)
+-- Indexes
 -- ======================
 CREATE INDEX idx_userinfo_email ON user_info(email);
 CREATE INDEX idx_private_conv_user1 ON private_conversation(user1_id);
@@ -257,9 +241,8 @@ CREATE INDEX idx_friend_request_receiver ON friend_request(receiver_id);
 CREATE INDEX idx_friend_request_sender ON friend_request(sender_id);
 
 -- ======================
--- Triggers (optional): update updated_at timestamp automatically
+-- Triggers
 -- ======================
--- Helper function
 CREATE OR REPLACE FUNCTION trigger_set_timestamptz_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -268,7 +251,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Attach trigger to tables that have updated_at
 CREATE TRIGGER trg_userinfo_updated_at
 BEFORE UPDATE ON user_info
 FOR EACH ROW

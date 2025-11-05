@@ -1,7 +1,7 @@
 package com.example.spring_security.config;
 
 import com.example.spring_security.entities.Enum.Role;
-import com.example.spring_security.services.UserService;
+import com.example.spring_security.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,9 +29,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers("/api/chat/auth/**", "/error").permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers("/api/chat/auth/**", "/error", "/ws/**").permitAll()
                         .requestMatchers("/api/chat/admin").hasAnyAuthority(Role.ADMIN.name())
-                        .requestMatchers("/api/chat/user").hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
+                        .requestMatchers("/api/chat/user", "/ws/**").hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
                         .anyRequest().authenticated())
 
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -18,8 +19,12 @@ public class UserManagementController {
     public ResponseEntity<String> sayHello() {
         return ResponseEntity.ok("Hi admin!");
     }
-    @GetMapping("/get-user-detail-list")
-    public ResponseEntity<List<User>> getUserDetailList() {
+    @GetMapping("/get-user")
+    public ResponseEntity<List<User>> getUserDetailList
+            (@RequestParam(value = "", ),
+             @RequestParam(value = "isActive"), required = false,
+             @RequestParam(value = "isAccepted"), required = false,
+             @RequestParam(value = "sort", required = false) {
         return ResponseEntity.ok()
     }
 }

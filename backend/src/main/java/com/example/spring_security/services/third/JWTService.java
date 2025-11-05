@@ -1,9 +1,7 @@
-package com.example.spring_security.services;
+package com.example.spring_security.services.third;
 
-import com.example.spring_security.entities.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public interface JWTService {

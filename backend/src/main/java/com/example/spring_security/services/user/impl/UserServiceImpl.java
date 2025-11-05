@@ -1,7 +1,7 @@
-package com.example.spring_security.services.impl;
+package com.example.spring_security.services.user.impl;
 
 import com.example.spring_security.repository.UserRepository;
-import com.example.spring_security.services.UserService;
+import com.example.spring_security.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
