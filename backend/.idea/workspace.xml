@@ -5,87 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserReportController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ManageUserRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ReportRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ListReportResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ListUserFriendResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ReportResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ResetPasswordResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/RecordSignIn.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Report.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/ReportId.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/RecordSignInRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/ReportRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserReportService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserReportServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../SCRIPT.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../SCRIPT.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtAuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/third/AuthenticationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/third/AuthenticationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserFriendController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserFriendController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserProfileController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/SignUpRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/SignUpRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/VerificationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/VerificationRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserFriendResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/UserFriendResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/FriendRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/RequestPasswordReset.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Token/RequestPasswordReset.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/FriendRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/FriendRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/PasswordResetTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/TokenRepo/RequestPasswordResetRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/impl/AuthenticationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/third/impl/AuthenticationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserFriendService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserFriendService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserFriendServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserFriendServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtAuthenticationFilter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtAuthenticationFilter.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtChannelInterceptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtChannelInterceptor.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/SecurityConfiguration.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/SecurityConfiguration.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/AdminController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/AuthenticationController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/UserBlockController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/UserFriendController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/UserProfileController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/UserSearchController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/SignUpRequest$SignUpRequestBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/SignUpRequest$SignUpRequestBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/SignUpRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/SignUpRequest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/VerificationRequest$VerificationRequestBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/VerificationRequest$VerificationRequestBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/VerificationRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/request/VerificationRequest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/UserFriendResponse$UserFriendResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/UserFriendResponse$UserFriendResponseBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/UserFriendResponse$UserFriendResponseBuilderImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/UserFriendResponse$UserFriendResponseBuilderImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/UserFriendResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/UserFriendResponse.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/FriendRequest$FriendRequestBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/FriendRequest$FriendRequestBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/FriendRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/FriendRequest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Token/RequestPasswordReset.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Token/RequestPasswordReset.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/User.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/exception/GlobalExceptionHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/exception/GlobalExceptionHandler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/FriendRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/FriendRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/TokenRepo/PasswordResetTokenRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/AuthenticationService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/EmailService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/JWTService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/UserBlockService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/UserFriendService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/UserProfileService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/UserSearchService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/UserService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/AuthenticationServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/EmailServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/JWTServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserBlockServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserFriendServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserProfileServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserSearchServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserServiceImpl$1.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/impl/UserServiceImpl.class" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/app/Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/assets/wolf-howling.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/build.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/lib/json-20250517.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/app/Main.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/assets/wolf-howling.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/screens/BaseScreen.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/screens/LoginScreen$1.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/screens/LoginScreen$2.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/screens/LoginScreen.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/screens/RegisterScreen$1.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/screens/RegisterScreen.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/utils/ApiClient.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/out/utils/ApiUrl.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/screens/BaseScreen.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/screens/LoginScreen.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/screens/RegisterScreen.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/utils/ApiClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/utils/ApiUrl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,23 +69,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Application.SpringSecurityApplication.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "Application.SpringSecurityApplication.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "Merging main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example.spring_security" />
