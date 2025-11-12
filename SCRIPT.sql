@@ -14,12 +14,13 @@ CREATE TABLE user_info (
     last_name VARCHAR(50),
     address VARCHAR(300),
     birthday DATE,
-    avatar_url VARCHAR(255),
+    avatar_url TEXT,
     is_active BOOLEAN ,
     is_online BOOLEAN,
     is_accepted BOOLEAN,
     joined_at TIMESTAMP,
-    updated_at TIMESTAMP
+    updated_at TIMESTAMP,
+    friend_count SMALLINT
 );
 
 -- verify_token
@@ -65,21 +66,21 @@ CREATE TABLE record_online_user (
 );
 
 -- record_logging
-CREATE TABLE record_logging (
-    record_logging_id BIGSERIAL PRIMARY KEY,
+CREATE TABLE record_signin (
+    record_signin_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES user_info(user_id) ON DELETE SET NULL,
-    logged_at TIMESTAMP NOT NULL,
+    signed_in_at TIMESTAMP NOT NULL,
     is_successful BOOLEAN
 );
 
 -- report
 CREATE TABLE report (
-    report_id BIGSERIAL PRIMARY KEY,
     reporter_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     reported_user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    title VARCHAR(30),
+    title VARCHAR(50),
     content TEXT,
-    created_at TIMESTAMP NOT NULL
+    reported_at TIMESTAMP NOT NULL,
+    PRIMARY KEY(reporter_id, reported_user_id, reported_at)
 );
 
 -- friend_request

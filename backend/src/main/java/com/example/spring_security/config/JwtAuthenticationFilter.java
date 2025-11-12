@@ -58,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             catch (UsernameNotFoundException e){
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"User not found or deleted\"}");
+                response.getWriter().write("{\"message\": \"User not found or deleted\"}");
                 return;
             }
         }

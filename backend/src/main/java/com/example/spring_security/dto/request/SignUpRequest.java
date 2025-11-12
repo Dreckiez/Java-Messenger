@@ -3,6 +3,7 @@ package com.example.spring_security.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import jakarta.validation.constraints.Pattern;
 
@@ -36,6 +37,7 @@ public class SignUpRequest {
 
     @NotBlank(message = "Email must not be blank")
     @Email(message = "Email must be a valid email address")
+    @Size(max = 255, message = "Your email exceeded 255 characters.")
     private String email;
 
     @NotBlank(message = "Password must not be blank")

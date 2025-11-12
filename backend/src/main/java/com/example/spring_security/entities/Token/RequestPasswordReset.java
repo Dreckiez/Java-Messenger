@@ -10,4 +10,5 @@ import lombok.Data;
 @Data
 @Table(name = "request_password_reset")
 @AttributeOverride(name = "id", column = @Column(name = "request_id"))
+@AttributeOverride(name = "createdAt", column = @Column(name = "requested_at"))
 public class RequestPasswordReset extends BaseToken {}
