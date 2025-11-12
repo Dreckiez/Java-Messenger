@@ -4,4 +4,4 @@ import com.example.spring_security.entities.Token.RequestPasswordReset;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PasswordResetTokenRepository extends BaseTokenRepository<RequestPasswordReset> {}
+public interface RequestPasswordResetRepository extends BaseTokenRepository<RequestPasswordReset> {}

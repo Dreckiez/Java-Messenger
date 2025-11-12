@@ -1,5 +1,7 @@
 package com.example.spring_security.dto.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -8,5 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class VerificationRequest {
-    String login;
+    @NotBlank(message = "Email must not be blank.")
+    @Email(message = "This field must be email")
+    private String email;
 }

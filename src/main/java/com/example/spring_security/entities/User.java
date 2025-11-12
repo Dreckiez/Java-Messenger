@@ -69,6 +69,8 @@ public class User implements UserDetails {
 
     private Role role;
 
+    @Column(name = "friend_count", nullable = true)
+    private int friendCount;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

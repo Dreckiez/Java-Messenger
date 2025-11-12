@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserRequest {
+public class ManageUserRequest {
     @NotBlank(message = "This field must not be blank.")
     String username;
     String firstName;
@@ -26,10 +26,11 @@ public class CreateUserRequest {
     Gender gender;
     Role role;
     String address;
+    String avatarUrl;
     LocalDate birthDay;
-    boolean isActive;
-    boolean isAccepted;
-    boolean isOnline;
+    Boolean isActive;
+    Boolean isAccepted;
+    Boolean isOnline;
     LocalDateTime joinedAt;
     LocalDateTime updatedAt;
 }

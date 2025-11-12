@@ -47,7 +47,7 @@ public class UserProfileController {
 
     @PostMapping("/change-email")
     public ResponseEntity<Map<String, String>> changeEmail(@RequestParam("token") String token,
-                                                           @RequestBody ChangeEmailRequest changeEmailRequest,
+                                                           @Valid @RequestBody ChangeEmailRequest changeEmailRequest,
                                                            @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.changeEmail(token, changeEmailRequest, user));
     }

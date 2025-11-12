@@ -2,6 +2,7 @@ package com.example.spring_security.services.user.impl;
 
 import com.example.spring_security.dto.request.UpdateStatusFriendRequest;
 import com.example.spring_security.dto.response.FriendRequestResponse;
+import com.example.spring_security.dto.response.ListUserFriendResponse;
 import com.example.spring_security.dto.response.UserFriendResponse;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.entities.Enum.FriendRequestStatus;
@@ -33,20 +34,14 @@ public class UserFriendServiceImpl implements UserFriendService {
 
     private final BlockRepository blockRepository;
 
-    public List<UserFriendResponse> getFriendList(Long id, String keyword) {
+    public ListUserFriendResponse getFriendList(Long userId, String keyword) {
         if (keyword == null) keyword = "";
-        List<User> friends = friendRepository.findFriendsByUserIdAndKeywordOrderByOnline(id, keyword);
-
-        List<UserFriendResponse> response = friends.stream()
-                .map(u -> UserFriendResponse.builder()
-                        .userId(u.getUserId())
-                        .fullName(u.getLastName() + " " + u.getFirstName())
-                        .avatarUrl(u.getAvatarUrl())
-                        .isOnline(u.getIsOnline())
-                        .address(u.getAddress())
-                        .build())
-                .collect(Collectors.toList());
-        return response;
+        List<UserFriendResponse> userFriendResponses =
+                friendRepository.findAllFriendsByUserIdAndKeywordOrderBy(userId, keyword, "isOnline");
+        ListUserFriendResponse listUserFriendResponse = new ListUserFriendResponse(
+                userFriendResponses,
+                friendRepository.countFriends(userId, keyword));
+        return listUserFriendResponse;
     }
 
     public Map<String, String> friendRequest(Long senderId, Long receiverId) {
@@ -71,8 +66,7 @@ public class UserFriendServiceImpl implements UserFriendService {
         Friend friend = friendRepository.findExistingFriendBetween(sender.getUserId(), receiverId).orElse(null);
 
         if (friend != null) {
-            msg.put("message", "You are already friends.");
-            return msg;
+            throw new CustomException(HttpStatus.CONFLICT, "You are already friends.");
         }
 
         FriendRequest friendRequest = friendRequestRepository
@@ -125,7 +119,6 @@ public class UserFriendServiceImpl implements UserFriendService {
                         .userId(f.getSender().getUserId())
                         .fullName(f.getSender().getLastName() + " " + f.getSender().getFirstName())
                         .avatarUrl(f.getSender().getAvatarUrl())
-                        .sentAt(f.getSentAt())
                         .build())
                         .collect(Collectors.toList());
         return listFriendRequestResponse;
@@ -139,7 +132,6 @@ public class UserFriendServiceImpl implements UserFriendService {
                         .userId(f.getReceiver().getUserId())
                         .fullName(f.getReceiver().getLastName() + " " + f.getReceiver().getFirstName())
                         .avatarUrl(f.getReceiver().getAvatarUrl())
-                        .sentAt(f.getSentAt())
                         .build())
                         .collect(Collectors.toList());
         return listFriendRequestResponse;
@@ -172,15 +164,14 @@ public class UserFriendServiceImpl implements UserFriendService {
                 (friendRequest.getReceiver().getUserId() == updator.getUserId()
                 && updateStatusFriendRequest.getStatus() == FriendRequestStatus.CANCELLED)
                 ) {
-                msg.put("message", "Illegal behavior.");
-                return msg;
+                throw new CustomException(HttpStatus.CONFLICT, "Illegal behavior up to sender or receiver.");
             }
 
             String moreInfo = "";
 
             if (updateStatusFriendRequest.getStatus() == FriendRequestStatus.ACCEPTED) {
                 friendRequest.setActive(false);
-                moreInfo = "You are already friends.";
+                moreInfo = " You are already friends.";
                 Long userId1 = Math.min(friendRequest.getSender().getUserId(), friendRequest.getReceiver().getUserId());
                 Long userId2 = Math.max(friendRequest.getSender().getUserId(), friendRequest.getReceiver().getUserId());
                 FriendId friendId = FriendId.builder().userId1(userId1).userId2(userId2).build();
@@ -189,18 +180,30 @@ public class UserFriendServiceImpl implements UserFriendService {
                         .user2Entity(userRepository.findById(userId2).orElseThrow(() -> new RuntimeException("User not found.")))
                         .madeFriendAt(LocalDateTime.now())
                         .build();
+
+                User user1 = friendRequest.getSender();
+
+                User user2 = friendRequest.getReceiver();
+
+                user1.setFriendCount(user1.getFriendCount() + 1);
+
+                user2.setFriendCount(user2.getFriendCount() + 1);
+
+                userRepository.save(user1);
+                userRepository.save(user2);
+
                 friendRepository.save(friend);
             }
             else if (updateStatusFriendRequest.getStatus() == FriendRequestStatus.REJECTED) {
-                moreInfo = "You have rejected.";
+                moreInfo = " You have rejected.";
             }
             else if (updateStatusFriendRequest.getStatus() == FriendRequestStatus.CANCELLED) {
-                moreInfo = "You have cancelled.";
+                moreInfo = " You have cancelled.";
                 friendRequest.setActive(false);
             }
             friendRequest.setStatus(updateStatusFriendRequest.getStatus());
             friendRequestRepository.save(friendRequest);
-            msg.put("message", "Update friend request status successfully. " + moreInfo);
+            msg.put("message", "Update friend request status successfully." + moreInfo);
             return msg;
         }
     }
@@ -220,6 +223,18 @@ public class UserFriendServiceImpl implements UserFriendService {
         }
 
         friendRepository.deleteById(friend.getId());
+
+        User user1 = friend.getUser1Entity();
+
+        User user2 = friend.getUser2Entity();
+
+        user1.setFriendCount(user1.getFriendCount() - 1);
+
+        user2.setFriendCount(user2.getFriendCount() - 1);
+
+        userRepository.save(user1);
+
+        userRepository.save(user2);
 
         msg.put("message", "You have successfully unfriended this user.");
 

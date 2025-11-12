@@ -54,8 +54,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.resetPassword(verificationRequest));
     }
 
-
-
     @GetMapping("/test-api")
     public ResponseEntity<Optional<User>> testApi() {
         return ResponseEntity.ok(userRepository.findByUsername("admin123"));

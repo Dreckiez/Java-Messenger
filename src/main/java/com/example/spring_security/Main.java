@@ -39,6 +39,7 @@ public class Main implements CommandLineRunner {
             user.setAddress("");
             user.setJoinedAt(LocalDateTime.now());
             user.setGender(Gender.HIDDEN);
+            user.setFriendCount(0);
             userRepository.save(user);
         }
     }

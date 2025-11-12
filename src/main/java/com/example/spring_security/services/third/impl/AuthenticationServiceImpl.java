@@ -6,10 +6,13 @@ import com.example.spring_security.dto.request.SignUpRequest;
 import com.example.spring_security.dto.request.VerificationRequest;
 import com.example.spring_security.dto.response.JwtAuthenticationResponse;
 import com.example.spring_security.entities.Enum.Gender;
+import com.example.spring_security.entities.RecordSignIn;
 import com.example.spring_security.entities.Token.RequestPasswordReset;
 import com.example.spring_security.entities.Enum.Role;
 import com.example.spring_security.entities.Token.VerifyToken;
-import com.example.spring_security.repository.TokenRepo.PasswordResetTokenRepository;
+import com.example.spring_security.exception.CustomException;
+import com.example.spring_security.repository.RecordSignInRepository;
+import com.example.spring_security.repository.TokenRepo.RequestPasswordResetRepository;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.repository.TokenRepo.VerifyTokenRepository;
 import com.example.spring_security.services.third.AuthenticationService;
@@ -17,7 +20,9 @@ import com.example.spring_security.services.third.EmailService;
 import com.example.spring_security.services.third.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,21 +53,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final EmailService emailService;
 
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final RequestPasswordResetRepository requestPasswordResetRepository;
+
+    private final RecordSignInRepository recordSignInRepository;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
     public User signup(SignUpRequest signUpRequest) {
 
-
-        if (userRepository.existsByUsername(signUpRequest.getUsername()) ||
-                userRepository.existsByEmail(signUpRequest.getUsername())) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new RuntimeException("Username is already in use.");
         }
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new RuntimeException("Email '" + signUpRequest.getEmail() + "' is already in use.");
+            throw new RuntimeException("Email is already in use.");
         }
 
         if (!signUpRequest.getConfirmPassword().equals(signUpRequest.getPassword()))
@@ -82,24 +87,42 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setAvatarUrl("");
         user.setAddress("");
         user.setIsOnline(false);
+        user.setFriendCount(0);
         return userRepository.save(user);
     }
 
     public JwtAuthenticationResponse signin(SignInRequest signInRequest) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
-        var user = userRepository.findByUsername(signInRequest.getUsername())
-                .or(() -> userRepository.findByEmail(signInRequest.getUsername()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username/email or password"));
 
-        var token = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
+        RecordSignIn recordSignIn = new RecordSignIn();
+        recordSignIn.setSignedInAt(LocalDateTime.now());
 
-        JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
 
-        jwtAuthenticationResponse.setToken(token);
-        jwtAuthenticationResponse.setRefreshToken(refreshToken);
+            var user = userRepository.findByUsername(signInRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(signInRequest.getUsername()))
+                    .orElseThrow(() -> new IllegalArgumentException("User no longer exists."));
 
-        return jwtAuthenticationResponse;
+            var token = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
+
+            JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
+
+            jwtAuthenticationResponse.setToken(token);
+            jwtAuthenticationResponse.setRefreshToken(refreshToken);
+            recordSignIn.setIsSuccessful(true);
+            recordSignIn.setUser(user);
+            recordSignInRepository.save(recordSignIn);
+            return jwtAuthenticationResponse;
+        } catch (RuntimeException e) {
+            recordSignIn.setIsSuccessful(false);
+            var user = userRepository.findByUsername(signInRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(signInRequest.getUsername()))
+                    .orElse(null);
+            recordSignIn.setUser(user);
+            recordSignInRepository.save(recordSignIn);
+            throw e;
+        }
     }
 
     public JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
@@ -120,9 +143,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     public Map<String, String> createVerificationToken(VerificationRequest verificationRequest) {
 
-        User user = userRepository.findByUsername(verificationRequest.getLogin())
-                .or(() -> userRepository.findByEmail(verificationRequest.getLogin()))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        User user = userRepository.findByEmail(verificationRequest.getEmail())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User no longer exists by email."));
 
         VerifyToken token = verifyTokenRepository.findByUser(user)
                 .orElse(new VerifyToken());
@@ -172,25 +194,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     public Map<String, String> resetPassword(VerificationRequest verificationRequest) {
 
-        User user = userRepository.findByUsername(verificationRequest.getLogin())
-                .or(() -> userRepository.findByEmail(verificationRequest.getLogin()))
-                .orElseThrow(() -> new RuntimeException("User not found."));
+        User user = userRepository.findByEmail(verificationRequest.getEmail())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User no longer exists by email."));
 
-        RequestPasswordReset requestpasswordreset = passwordResetTokenRepository.findByUser(user).orElse(new RequestPasswordReset());
+        RequestPasswordReset requestpasswordreset = requestPasswordResetRepository.findByUser(user).orElse(new RequestPasswordReset());
 
         LocalDateTime now = LocalDateTime.now();
         if(requestpasswordreset.getId() != null && requestpasswordreset.getCreatedAt() != null &&
-                requestpasswordreset.getCreatedAt().plusDays(10).isAfter(now)) {
-            throw new RuntimeException("Please wait before requesting another password reset.");
+                requestpasswordreset.getCreatedAt().plusSeconds(30).isAfter(now)) {
+            throw new RuntimeException("Please wait for 30 seconds before requesting another password reset.");
         }
-        String generatedPassword = UUID.randomUUID().toString().replace("-", "");
+        String generatedPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         user.setHashPassword(passwordEncoder.encode(generatedPassword));
 
         requestpasswordreset.setCreatedAt(now);
         requestpasswordreset.setToken(generatedPassword);
         requestpasswordreset.setUser(user);
         userRepository.save(user);
-        passwordResetTokenRepository.save(requestpasswordreset);
+        requestPasswordResetRepository.save(requestpasswordreset);
 
         emailService.sendEmail(
                 user.getEmail(),

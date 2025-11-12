@@ -2,7 +2,7 @@ package com.example.spring_security.controller.user;
 
 import com.example.spring_security.dto.request.UpdateStatusFriendRequest;
 import com.example.spring_security.dto.response.FriendRequestResponse;
-import com.example.spring_security.dto.response.UserFriendResponse;
+import com.example.spring_security.dto.response.ListUserFriendResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.services.user.UserFriendService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,8 @@ public class UserFriendController {
 
 
     @GetMapping("/list")
-    public ResponseEntity<List<UserFriendResponse>> getFriendList(@AuthenticationPrincipal User user, @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+    public ResponseEntity<ListUserFriendResponse> getFriendList(@AuthenticationPrincipal User user,
+                                                                @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
         return ResponseEntity.ok(userFriendService.getFriendList(user.getUserId(), keyword));
     }
 

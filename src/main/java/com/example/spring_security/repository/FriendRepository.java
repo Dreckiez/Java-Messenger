@@ -5,6 +5,7 @@ import com.example.spring_security.entities.Friend;
 import com.example.spring_security.entities.FriendId;
 import com.example.spring_security.entities.User;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,32 +21,35 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
     List<Friend> findByIdUserId1OrIdUserId2(Long userId1, Long userId2);
 
 
-    @Query(value = """
-    SELECT * FROM (
-        SELECT u.*
-        FROM friend f
-        JOIN "user_info" u ON u.user_id = f.user_id2
-        WHERE f.user_id1 = :userId
-          AND ( :keyword = '' OR
-                LOWER(CONCAT(u.last_name, ' ', u.first_name)) LIKE LOWER(CONCAT('%', :keyword, '%')
-              ))
+//    @Query(value = """
+//    SELECT u.*
+//    FROM friend f
+//    JOIN user_info u ON
+//    (
+//        (f.user_id1 = :userId AND f.user_id2 = u.user_id)
+//        OR
+//        (f.user_id2 = :userId AND f.user_id1 = u.user_id)
+//    )
+//    WHERE (:keyword = '' OR CONCAT('%', :keyword, '%') ILIKE CONCAT(u.last_name, ' ', u.first_name))
+//    ORDER BY u.is_online DESC
+//    """, nativeQuery = true)
+//    List<User> findFriendsByUserIdAndKeywordOrderByOnline(
+//            @Param("userId") Long userId,
+//            @Param("keyword") String keyword);
 
-        UNION ALL
 
-        SELECT u.*
-        FROM friend f
-        JOIN "user_info" u ON u.user_id = f.user_id1
-        WHERE f.user_id2 = :userId
-          AND ( :keyword = '' OR
-                LOWER(CONCAT(u.last_name, ' ', u.first_name)) LIKE LOWER(CONCAT('%', :keyword, '%')
-                ))
-    ) AS all_friends
-    ORDER BY all_friends.is_online DESC
-    """, nativeQuery = true)
-    List<User> findFriendsByUserIdAndKeywordOrderByOnline(
-            @Param("userId") Long userId,
-            @Param("keyword") String keyword);
-
+    @Query(value =  """
+         SELECT COUNT(*)
+         FROM friend f
+         JOIN user_info u ON 
+                            (
+                                (f.user_id1 = :userId AND f.user_id2 = u.user_id)
+                                OR
+                                (f.user_id2 = :userId AND f.user_id1 = u.user_id)
+                            )
+         WHERE (:keyword = '' OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%') )
+         """, nativeQuery = true)
+    Long countFriends(Long userId, String keyword);
 
 
 
@@ -57,5 +61,31 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
     """, nativeQuery = true)
     Optional<Friend> findExistingFriendBetween(@Param("userId1") Long userId1,
                                                @Param("userId2") Long userId2);
+
+
+
+    @Query(value = """
+    SELECT 
+        u.user_id AS userId,
+        CONCAT(u.last_name, ' ', u.first_name) AS fullName,
+        u.avatar_url AS avatarUrl,
+        u.is_online AS isOnline,
+        u.address AS address,
+        f.made_friend_at AS madeFriendAt
+    FROM friend f
+    JOIN user_info u ON (
+        (f.user_id1 = :userId AND f.user_id2 = u.user_id)
+        OR 
+        (f.user_id2 = :userId AND f.user_id1 = u.user_id)
+    )
+    WHERE (:keyword = '' OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%'))
+    ORDER BY
+        CASE WHEN :sort = 'isOnline' THEN u.is_online END DESC,
+        CASE WHEN :sort = 'madeFriendAt' THEN f.made_friend_at END ASC,
+        CASE WHEN :sort = '-madeFriendAt' THEN f.made_friend_at END DESC,
+        CASE WHEN :sort = 'fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END ASC,
+        CASE WHEN :sort = '-fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END DESC
+""", nativeQuery = true)
+    List<UserFriendResponse> findAllFriendsByUserIdAndKeywordOrderBy(@Param("userId") Long userId, @Param("keyword") String keyword, @Param("sort") String sort);
 
 }

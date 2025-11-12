@@ -23,20 +23,16 @@ public class FriendRequest {
     @EmbeddedId
     private FriendRequestId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "sender_id", insertable = false, updatable = false)
     private User sender;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "receiver_id", insertable = false, updatable = false)
     private User receiver;
 
     @Column(nullable = false)
     private FriendRequestStatus status;
-
-
-    @Column(name = "sent_at", insertable = false, updatable = false)
-    private LocalDateTime sentAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

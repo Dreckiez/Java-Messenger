@@ -48,4 +48,43 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """, nativeQuery = true)
     List<User> searchUserByUsernameOrFullName(@Param("currentUserId") Long currentUserId,
                                               @Param("keyword") String keyword);
+
+
+
+    @Query(value = """
+    SELECT * 
+    FROM user_info u
+    WHERE
+        ( :keyword IS NULL 
+          OR :keyword = ''
+          OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%')
+          OR u.username ILIKE CONCAT('%', :keyword, '%')
+        )
+        AND ( :isActive IS NULL OR u.is_active = :isActive )
+        AND ( :isAccepted IS NULL OR u.is_accepted = :isAccepted )
+        AND ( :greaterThan IS NULL OR u.friend_count > :greaterThan)
+        AND ( :smallerThan IS NULL OR u.friend_count < :smallerThan)
+    ORDER BY
+        CASE 
+            WHEN :sort = 'fullName' THEN LOWER(CONCAT(u.last_name, ' ', u.first_name))
+        END ASC,
+        CASE 
+            WHEN :sort = '-fullName' THEN LOWER(CONCAT(u.last_name, ' ', u.first_name))
+        END DESC,
+        CASE 
+            WHEN :sort = 'joinedAt' THEN u.joined_at
+        END ASC,
+        CASE 
+            WHEN :sort = '-joinedAt' THEN u.joined_at
+        END DESC
+    """, nativeQuery = true)
+    List<User> managementUser(
+            @Param("keyword") String keyword,
+            @Param("isActive") Boolean isActive,
+            @Param("isAccepted") Boolean isAccepted,
+            @Param("greaterThan") Integer greaterThan,
+            @Param("smallerThan") Integer smallerThan,
+            @Param("sort") String sort);
+
+    void deleteById(Long id);
 }
