@@ -7,7 +7,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+// import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -46,7 +46,7 @@ public class LoginScreen extends JPanel {
         add(passField);
 
         loginError = new JLabel("");
-        loginError.setBounds(510, 220, 200, 30);
+        loginError.setBounds(510, 205, 250, 30);
         loginError.setForeground(Color.red);
         add(loginError);
 
@@ -54,15 +54,23 @@ public class LoginScreen extends JPanel {
         loginButton.setBounds(600, 350, 150, 30);
         loginButton.setFocusable(false);
         loginButton.addActionListener(e -> {
-            JSONObject payload = new JSONObject();
-            
+
             String username = userField.getText();
             String password = new String(passField.getPassword());
-            
+
+            if (username.isEmpty() || password.isEmpty()) {
+                loginError.setText("Please enter both username and password");
+                return;
+            }
+
+            JSONObject payload = new JSONObject();
+
             payload.put("username", username);
             payload.put("password", password);
 
+            loginButton.setText("Logging in...");
             loginButton.setEnabled(false);
+
             new SwingWorker<JSONObject, Void>() {
                 @Override
                 protected JSONObject doInBackground() {
@@ -77,7 +85,7 @@ public class LoginScreen extends JPanel {
                         int status = res.optInt("httpStatus", 0);
                         if (status == 200) {
                             // Success → switch panel
-                            mainScreen.showPanel("register");
+                            mainScreen.showPanel("home");
                         } else {
                             // Failure → show error
                             String msg = res.optString("message", "Login failed");
@@ -88,12 +96,13 @@ public class LoginScreen extends JPanel {
                         e.printStackTrace();
                     } finally {
                         // Re-enable button
+                        loginButton.setText("Login");
                         loginButton.setEnabled(true);
                     }
                 }
             }.execute();
         });
-        
+
         add(loginButton);
 
         JLabel registerPrefix = new JLabel("Don't have an account?");
@@ -106,7 +115,7 @@ public class LoginScreen extends JPanel {
         registerLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         registerLink.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e){
+            public void mouseClicked(MouseEvent e) {
                 mainScreen.showPanel("register");
             }
         });
