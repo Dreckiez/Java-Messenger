@@ -12,8 +12,6 @@ public class User {
 
     public User() {
         avatar = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg")).getImage();
-        ImageEditor imgEdt = new ImageEditor();
-        avatar = imgEdt.makeCircularImage(avatar, 58).getImage();
         username = "Dreckiez";
     }
 

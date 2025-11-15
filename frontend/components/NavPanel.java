@@ -13,7 +13,7 @@ public class NavPanel extends JPanel {
 
     public NavPanel(HomeScreen home, CenterPanel center) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(270, 0));
+        setPreferredSize(new Dimension(350, 0));
         setBackground(new Color(245, 245, 245));
 
         // === LEFT: Navigation ===

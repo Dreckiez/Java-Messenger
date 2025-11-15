@@ -21,11 +21,13 @@ import utils.UserSession;
 public class NavBar extends JPanel {
     public NavBar(HomeScreen home, CenterPanel center, NavPanel navPanel) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(70, 0));
+        setPreferredSize(new Dimension(50, 0));
         setBackground(new Color(245, 245, 245));
 
+        ImageEditor editor = new ImageEditor();
+
         // Create button with the avatar
-        JButton avatarBtn = new JButton(new ImageIcon(UserSession.getUser().getAvatar()));
+        JButton avatarBtn = new JButton(editor.makeCircularImage(UserSession.getUser().getAvatar(), 36));
         avatarBtn.setFocusable(true); // Allow keyboard navigation
         avatarBtn.setBorderPainted(false);
         avatarBtn.setContentAreaFilled(false);
@@ -45,8 +47,6 @@ public class NavBar extends JPanel {
         centerButtons.setOpaque(false);
         centerButtons.setMaximumSize(new Dimension(70, 120)); // 50+50+10 for gap
         centerButtons.setPreferredSize(new Dimension(70, 120)); // 50+50+10 for gap
-
-        ImageEditor editor = new ImageEditor();
 
         JButton chatBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/chat.png")));
         JButton searchBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/search.png")));
