@@ -2,6 +2,7 @@ package components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -24,7 +25,7 @@ public class NavBar extends JPanel {
         setBackground(new Color(245, 245, 245));
 
         // Top: Avatar button
-        JLabel avatar = new JLabel(new ImageIcon(UserSession.getUser().getAvatar()));
+        // JLabel avatar = new JLabel(new ImageIcon(UserSession.getUser().getAvatar()));
         // JButton avatarBtn = new JButton(avatar);
         // avatarBtn.setFocusable(false);
         // avatarBtn.setBackground(new Color(240, 240, 240));
@@ -34,11 +35,39 @@ public class NavBar extends JPanel {
         // home.toggleInfoPanel(false);
         // });
 
-        avatar.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                center.showSettings();
-                home.toggleInfoPanel(false);
+        // avatar.addMouseListener(new MouseAdapter() {
+        // public void mouseClicked(MouseEvent e) {
+        // center.showSettings();
+        // home.toggleInfoPanel(false);
+        // }
+        // });
+
+        // Create the circular avatar image
+        ImageIcon avatarIcon = new ImageIcon(UserSession.getUser().getAvatar());
+
+        // Create button with the avatar
+        JButton avatarBtn = new JButton(avatarIcon);
+        avatarBtn.setFocusable(true); // Allow keyboard navigation
+        avatarBtn.setBorderPainted(false);
+        avatarBtn.setContentAreaFilled(false);
+        avatarBtn.setFocusPainted(false); // Or keep true for accessibility
+        avatarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Shows it's clickable
+
+        // Optional: Add hover effect
+        avatarBtn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                avatarBtn.setBorderPainted(true);
+                // Or change opacity, add highlight, etc.
             }
+
+            public void mouseExited(MouseEvent e) {
+                avatarBtn.setBorderPainted(false);
+            }
+        });
+
+        avatarBtn.addActionListener(e -> {
+            center.showSettings();
+            home.toggleInfoPanel(false);
         });
 
         // Center: Chat & Search buttons
@@ -62,8 +91,8 @@ public class NavBar extends JPanel {
         centerButtons.add(chatBtn);
         centerButtons.add(searchBtn);
 
-        // add(avatarBtn, BorderLayout.NORTH);
-        add(avatar, BorderLayout.NORTH);
+        add(avatarBtn, BorderLayout.NORTH);
+        // add(avatar, BorderLayout.NORTH);
         add(centerButtons, BorderLayout.CENTER);
     }
 }

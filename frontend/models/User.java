@@ -13,7 +13,7 @@ public class User {
     public User() {
         avatar = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg")).getImage();
         CircleImage ci = new CircleImage();
-        avatar = ci.makeCircularImage(avatar, 64).getImage();
+        avatar = ci.makeCircularImage(avatar, 58).getImage();
         username = "Dreckiez";
     }
 
