@@ -2,7 +2,6 @@ package components;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.security.DigestException;
 
 import javax.swing.JList;
 import javax.swing.JPanel;

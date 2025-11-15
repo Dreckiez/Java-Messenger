@@ -7,7 +7,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
-public class CircleImage {
+public class ImageEditor {
     public ImageIcon makeCircularImage(Image srcImg, int size) {
         BufferedImage circleBuffer = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = circleBuffer.createGraphics();

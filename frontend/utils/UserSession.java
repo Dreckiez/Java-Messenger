@@ -17,7 +17,7 @@ public class UserSession {
         return currentUser != null;
     }
 
-    public static void clear() {
+    public static void clearSession() {
         currentUser = null;
     }
 }

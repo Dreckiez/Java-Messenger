@@ -9,8 +9,10 @@ import utils.UserSession;
 public class HomeScreen extends JPanel {
     // private JPanel centerPanel;
     private JPanel infoPanel;
+    private BaseScreen screen;
 
     public HomeScreen(BaseScreen screen) {
+        this.screen = screen;
         setLayout(new BorderLayout());
         User user = new User();
         UserSession.setUser(user);
@@ -30,9 +32,9 @@ public class HomeScreen extends JPanel {
     }
 
     // --- Called from LeftPanel navigation ---
-    // public void showPanel(String name) {
-    // centerLayout.show(centerPanel, name);
-    // }
+    public void logout() {
+        screen.logout();
+    }
 
     // --- Toggle chat info visibility ---
     public void toggleInfoPanel(boolean visible) {

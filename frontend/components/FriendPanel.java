@@ -72,7 +72,7 @@ public class FriendPanel extends JPanel {
             String selected = friendList.getSelectedValue();
             if (selected != null) {
                 JOptionPane.showMessageDialog(this, "Opening chat with " + selected);
-                // TODO: call callback to switch to ChatPanel
+
             }
         });
 

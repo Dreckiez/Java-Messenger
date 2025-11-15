@@ -4,7 +4,7 @@ import java.awt.Image;
 
 import javax.swing.ImageIcon;
 
-import utils.CircleImage;
+import utils.ImageEditor;
 
 public class User {
     private Image avatar;
@@ -12,8 +12,8 @@ public class User {
 
     public User() {
         avatar = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg")).getImage();
-        CircleImage ci = new CircleImage();
-        avatar = ci.makeCircularImage(avatar, 58).getImage();
+        ImageEditor imgEdt = new ImageEditor();
+        avatar = imgEdt.makeCircularImage(avatar, 58).getImage();
         username = "Dreckiez";
     }
 
