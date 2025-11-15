@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.border.Border;
 
 import screens.HomeScreen;
+import utils.ImageEditor;
 import utils.StyleButton;
 import utils.UserSession;
 
@@ -45,8 +46,10 @@ public class NavBar extends JPanel {
         centerButtons.setMaximumSize(new Dimension(70, 120)); // 50+50+10 for gap
         centerButtons.setPreferredSize(new Dimension(70, 120)); // 50+50+10 for gap
 
-        JButton chatBtn = new JButton("💬");
-        JButton searchBtn = new JButton("🔍");
+        ImageEditor editor = new ImageEditor();
+
+        JButton chatBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/chat.png")));
+        JButton searchBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/search.png")));
 
         StyleButton st = new StyleButton();
         st.styleButton(chatBtn);
@@ -69,7 +72,12 @@ public class NavBar extends JPanel {
         centerWrapper.add(centerButtons);
         centerWrapper.add(Box.createVerticalGlue());
 
-        JButton logoutBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/logout.png")));
+        // Scale it down
+        ImageIcon logoutIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/logout.png"));
+
+        // Create button with scaled icon
+        JButton logoutBtn = new JButton(new ImageIcon(editor.scaleImage(logoutIcon.getImage(), 24)));
+
         st.styleButton(logoutBtn);
 
         logoutBtn.addActionListener(e -> {
