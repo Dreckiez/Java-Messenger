@@ -65,7 +65,7 @@ CREATE TABLE record_online_user (
     offline_at TIMESTAMP
 );
 
--- record_logging
+-- record_signin
 CREATE TABLE record_signin (
     record_signin_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES user_info(user_id) ON DELETE SET NULL,
@@ -130,6 +130,20 @@ CREATE TABLE private_conversation (
     CONSTRAINT chk_private_order CHECK (user1_id < user2_id),
     CONSTRAINT uq_private_pair UNIQUE (user1_id, user2_id)
 );
+
+CREATE TABLE delete_private_conversation (
+    private_conversation_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    deleted_at TIMESTAMP,
+    PRIMARY KEY (conversation_id, user_id, deleted_at),
+    CONSTRAINT fk_pcu_conversation FOREIGN KEY (conversation_id)
+        REFERENCES private_conversation(private_conversation_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_pcu_user FOREIGN KEY (user_id)
+        REFERENCES user_info(user_id)
+        ON DELETE CASCADE
+);
+
 
 -- private_conversation_message
 CREATE TABLE private_conversation_message (
@@ -240,6 +254,10 @@ CREATE INDEX idx_gcm_group ON group_conversation_message(group_conversation_id);
 CREATE INDEX idx_gcm_sender ON group_conversation_message(sender_id);
 CREATE INDEX idx_friend_request_receiver ON friend_request(receiver_id);
 CREATE INDEX idx_friend_request_sender ON friend_request(sender_id);
+CREATE UNIQUE INDEX idx_delete_private_conversation_user
+ON delete_private_conversation (user_id, private_conversation_id);
+CREATE INDEX idx_delete_msg_user_deletedat
+ON delete_private_conversation_message (user_id, deleted_at DESC);
 
 -- ======================
 -- Triggers

@@ -16,5 +16,4 @@ public interface UserFriendService {
     List<FriendRequestResponse> getListFriendRequestSent(Long id, String keyword);
     Map<String, String> updateStatus(UpdateStatusFriendRequest updateStatusFriendRequest, Long updatorId);
     Map<String, String> removeFriend(Long removerId, Long removedUserId);
-
 }

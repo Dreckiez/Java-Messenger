@@ -28,6 +28,9 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         System.out.println("Presend working!!!");
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+        if (accessor == null) System.out.println("Accessor: NULL");
+        System.out.println("Command: " + accessor.getCommand());
+        System.out.println("All native headers: " + accessor.toNativeHeaderMap());
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
             List<String> authHeader = accessor.getNativeHeader("Authorization");
             System.out.println("Header: " + authHeader);
