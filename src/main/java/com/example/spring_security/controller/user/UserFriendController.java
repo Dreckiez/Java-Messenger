@@ -31,7 +31,7 @@ public class UserFriendController {
         return ResponseEntity.ok(userFriendService.friendRequest(sender.getUserId(), receiverId));
     }
 
-    @PostMapping("/remove/{id}")
+    @DeleteMapping("/remove/{id}")
     public ResponseEntity<Map<String, String>> removeFriend(@AuthenticationPrincipal User remover, @PathVariable("id") Long removedUserId) {
         return ResponseEntity.ok(userFriendService.removeFriend(remover.getUserId(), removedUserId));
     }

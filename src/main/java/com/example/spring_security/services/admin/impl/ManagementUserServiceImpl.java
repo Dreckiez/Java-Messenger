@@ -256,16 +256,14 @@ public class ManagementUserServiceImpl implements ManagementUserService {
 
     public ListReportResponse getReports(String sortBy, String username, String email, LocalDate startDate, LocalDate endDate) {
 
-        LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
+        List<Report>reportList = reportRepository .findReportsWithFilterAndOrderBy(sortBy, username, email);
 
-        LocalDateTime end = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+        List<Report> reportListFilter = reportList.stream().filter(
+          r -> (startDate == null || r.getId().getReportedAt().isAfter(startDate.atStartOfDay()))
+                  && (endDate == null || r.getId().getReportedAt().isBefore(endDate.atTime(LocalTime.MAX)))
+        ).collect(Collectors.toList());
 
-        Timestamp timestampStart = start != null ? Timestamp.valueOf(start) : null;
-
-        Timestamp timestampEnd = end != null ? Timestamp.valueOf(end) : null;
-
-        List<Report>reportList = reportRepository .findReportsWithFilterAndOrderBy(sortBy, username, email, timestampStart, timestampEnd);
-        List<ReportResponse>reportResponseList = reportList.stream().map(r -> ReportResponse.builder()
+        List<ReportResponse>reportResponseList = reportListFilter.stream().map(r -> ReportResponse.builder()
                 .reporterId(r.getId().getReporterId())
                 .reportedUserId(r.getId().getReportedUserId())
                 .reporterUsername(r.getReporter().getUsername())

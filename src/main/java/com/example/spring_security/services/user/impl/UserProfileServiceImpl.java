@@ -43,6 +43,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     public UserProfileResponse getProfile(User user) {
         UserProfileResponse userProfileResponse = UserProfileResponse.builder()
+                .userId(user.getUserId())
                 .fullName(user.getLastName() + " " + user.getFirstName())
                 .address(user.getAddress())
                 .birthDay(user.getBirthday())

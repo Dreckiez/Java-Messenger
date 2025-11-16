@@ -34,6 +34,8 @@ public class UserFriendServiceImpl implements UserFriendService {
 
     private final BlockRepository blockRepository;
 
+    private final UserPrivateConversationServiceImpl userPrivateConversationService;
+
     public ListUserFriendResponse getFriendList(Long userId, String keyword) {
         if (keyword == null) keyword = "";
         List<UserFriendResponse> userFriendResponses =
@@ -119,6 +121,7 @@ public class UserFriendServiceImpl implements UserFriendService {
                         .userId(f.getSender().getUserId())
                         .fullName(f.getSender().getLastName() + " " + f.getSender().getFirstName())
                         .avatarUrl(f.getSender().getAvatarUrl())
+                        .sentAt(f.getId().getSentAt())
                         .build())
                         .collect(Collectors.toList());
         return listFriendRequestResponse;
@@ -132,9 +135,32 @@ public class UserFriendServiceImpl implements UserFriendService {
                         .userId(f.getReceiver().getUserId())
                         .fullName(f.getReceiver().getLastName() + " " + f.getReceiver().getFirstName())
                         .avatarUrl(f.getReceiver().getAvatarUrl())
+                        .sentAt(f.getId().getSentAt())
                         .build())
                         .collect(Collectors.toList());
         return listFriendRequestResponse;
+    }
+
+    private void makeFriend(Long userId1, Long userId2) {
+        FriendId friendId = FriendId.builder().userId1(userId1).userId2(userId2).build();
+
+        User user1 = userRepository.findById(userId1).orElseThrow(() -> new RuntimeException("User not found."));
+
+        User user2 = userRepository.findById(userId2).orElseThrow(() -> new RuntimeException("User not found."));
+
+        Friend friend = Friend.builder().id(friendId)
+                .user1Entity(user1)
+                .user2Entity(user2)
+                .madeFriendAt(LocalDateTime.now())
+                .build();
+
+        user1.setFriendCount(user1.getFriendCount() + 1);
+
+        user2.setFriendCount(user2.getFriendCount() + 1);
+
+        userRepository.save(user1);
+        userRepository.save(user2);
+        friendRepository.save(friend);
     }
 
     public Map<String, String> updateStatus(UpdateStatusFriendRequest updateStatusFriendRequest, Long updatorId) {
@@ -174,25 +200,15 @@ public class UserFriendServiceImpl implements UserFriendService {
                 moreInfo = " You are already friends.";
                 Long userId1 = Math.min(friendRequest.getSender().getUserId(), friendRequest.getReceiver().getUserId());
                 Long userId2 = Math.max(friendRequest.getSender().getUserId(), friendRequest.getReceiver().getUserId());
-                FriendId friendId = FriendId.builder().userId1(userId1).userId2(userId2).build();
-                Friend friend = Friend.builder().id(friendId)
-                        .user1Entity(userRepository.findById(userId1).orElseThrow(() -> new RuntimeException("User not found.")))
-                        .user2Entity(userRepository.findById(userId2).orElseThrow(() -> new RuntimeException("User not found.")))
-                        .madeFriendAt(LocalDateTime.now())
-                        .build();
 
-                User user1 = friendRequest.getSender();
+                // make friend
 
-                User user2 = friendRequest.getReceiver();
+                makeFriend(userId1, userId2);
 
-                user1.setFriendCount(user1.getFriendCount() + 1);
+                // create private conversation
 
-                user2.setFriendCount(user2.getFriendCount() + 1);
+                userPrivateConversationService.create(userId1, userId2);
 
-                userRepository.save(user1);
-                userRepository.save(user2);
-
-                friendRepository.save(friend);
             }
             else if (updateStatusFriendRequest.getStatus() == FriendRequestStatus.REJECTED) {
                 moreInfo = " You have rejected.";

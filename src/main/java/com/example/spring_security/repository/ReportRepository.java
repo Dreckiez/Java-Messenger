@@ -17,7 +17,6 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     WHERE
         (:username IS NULL OR u.username LIKE %:username%)
     AND (:email IS NULL OR u.email LIKE %:email%)
-
     ORDER BY 
         CASE WHEN :sortBy = 'reportedAt' THEN r.reported_at END ASC,
         CASE WHEN :sortBy = '-reportedAt' THEN r.reported_at END DESC,
@@ -27,11 +26,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findReportsWithFilterAndOrderBy(
             @Param("sortBy") String sortBy,
             @Param("username") String username,
-            @Param("email") String email,
-            @Param("startDate") Timestamp startDate,
-            @Param("endDate") Timestamp endDate
+            @Param("email") String email
     );
 
-    // AND (:startDate IS NULL OR r.reported_at >= :startDate)
-    // AND (:endDate IS NULL OR r.reported_at <= :endDate)
 }
