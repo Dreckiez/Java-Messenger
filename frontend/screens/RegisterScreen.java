@@ -61,8 +61,6 @@ public class RegisterScreen extends JPanel {
         emailField.setBounds(600, 325, 150, 30);
         add(emailField);
 
-        
-
         JLabel passLabel = new JLabel("Password:");
         passLabel.setBounds(500, 375, 100, 30);
         add(passLabel);
@@ -74,7 +72,7 @@ public class RegisterScreen extends JPanel {
         registerError = new JTextArea("");
         registerError.setEditable(false);
         registerError.setFocusable(false);
-        registerError.setBounds(550, 120, 200, 50);
+        registerError.setBounds(550, 140, 200, 50);
         registerError.setForeground(Color.red);
         registerError.setBackground(Color.lightGray);
         add(registerError);
@@ -89,6 +87,12 @@ public class RegisterScreen extends JPanel {
             String firstname = fnameField.getText();
             String lastname = lnameField.getText();
 
+            if (username.isEmpty() || password.isEmpty() || email.isEmpty() || firstname.isEmpty()
+                    || lastname.isEmpty()) {
+                registerError.setText("Please enter all the information");
+                return;
+            }
+
             JSONObject payload = new JSONObject();
             payload.put("username", username);
             payload.put("firstname", firstname);
@@ -96,7 +100,7 @@ public class RegisterScreen extends JPanel {
             payload.put("email", email);
             payload.put("password", password);
 
-
+            registerButton.setText("Registering");
             registerButton.setEnabled(false);
             new SwingWorker<JSONObject, Void>() {
                 @Override
@@ -123,12 +127,13 @@ public class RegisterScreen extends JPanel {
                         e.printStackTrace();
                     } finally {
                         // Re-enable button
+                        registerButton.setText("Register");
                         registerButton.setEnabled(true);
                     }
                 }
             }.execute();
         });
-        
+
         add(registerButton);
 
         JLabel loginPrefix = new JLabel("Already have an account?");
@@ -141,7 +146,7 @@ public class RegisterScreen extends JPanel {
         loginLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         loginLink.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e){
+            public void mouseClicked(MouseEvent e) {
                 mainScreen.showPanel("login");
             }
         });
