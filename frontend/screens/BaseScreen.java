@@ -3,6 +3,9 @@ package screens;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import utils.UserSession;
+
 import java.awt.CardLayout;
 
 public class BaseScreen extends JFrame {
@@ -30,6 +33,11 @@ public class BaseScreen extends JFrame {
 
     public void addPanel(JPanel p, String name) {
         panel.add(p, name);
+    }
+
+    public void logout() {
+        UserSession.clearSession();
+        showPanel("login");
     }
 
     public void showPanel(String name) {
