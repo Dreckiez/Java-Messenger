@@ -153,10 +153,15 @@ CREATE TABLE private_conversation_message (
     content TEXT NOT NULL,
     sent_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
-    type SMALLINT NOT NULL,
-    is_read BOOLEAN,
-    read_at TIMESTAMP
+    type SMALLINT NOT NULL
 );
+
+CREATE TABLE read_private_conversation_message {
+    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
+    private_conversation_id BIGINT NOT NULL REFERENCES private_conversation(private_conversation_id) ON DELETE CASCADE,
+    read_at TIMESTAMP,
+    PRIMARY KEY (user_id, private_conversation_id)
+}
 
 ALTER TABLE private_conversation
 ADD CONSTRAINT fk_private_preview

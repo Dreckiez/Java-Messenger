@@ -3,11 +3,13 @@ package com.example.spring_security.repository;
 import com.example.spring_security.entities.Block;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface BlockRepository extends JpaRepository<Block, Long> {
     @Query(value = """
             SELECT * FROM Block B
