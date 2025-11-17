@@ -2,6 +2,7 @@ package com.example.spring_security.dto.response;
 
 
 import com.example.spring_security.entities.Enum.Gender;
+import com.example.spring_security.entities.Enum.Role;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -18,4 +19,5 @@ public class UserProfileResponse extends BaseUserResponse {
     private LocalDate birthDay;
     private Gender gender;
     private LocalDateTime joinedAt;
+    private Role role;
 }

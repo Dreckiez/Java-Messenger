@@ -38,7 +38,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final VerifyEmailChangeTokenRepository verifyEmailChangeTokenRepository;
 
-    @Value("${app.base-url}")
+
     private String baseUrl;
 
     public UserProfileResponse getProfile(User user) {
@@ -49,6 +49,7 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .birthDay(user.getBirthday())
                 .avatarUrl(user.getAvatarUrl())
                 .gender(user.getGender())
+                .role(user.getRole())
                 .joinedAt(user.getJoinedAt())
                 .build();
 

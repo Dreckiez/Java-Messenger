@@ -22,7 +22,7 @@ public class PrivateConversationMessage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "private_conversation_id", nullable = false)
-    private PrivateConversation conversation;
+    private PrivateConversation privateConversation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
