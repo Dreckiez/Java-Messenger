@@ -7,16 +7,21 @@ import com.example.spring_security.dto.response.UserProfileResponse;
 import com.example.spring_security.entities.Token.VerifyEmailChangeToken;
 import com.example.spring_security.entities.Token.VerifyToken;
 import com.example.spring_security.entities.User;
+import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.repository.TokenRepo.VerifyEmailChangeTokenRepository;
 import com.example.spring_security.repository.TokenRepo.VerifyTokenRepository;
+import com.example.spring_security.services.third.CloudService;
 import com.example.spring_security.services.third.EmailService;
 import com.example.spring_security.services.user.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -38,8 +43,24 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final VerifyEmailChangeTokenRepository verifyEmailChangeTokenRepository;
 
-    @Value("${app.base-url}")
-    private String baseUrl;
+    private final CloudService cloudService;
+
+    public String updateAvatar(User user, MultipartFile avatar) {
+        if (avatar.isEmpty())
+            throw new CustomException(HttpStatus.BAD_REQUEST, "There is no avatar to set.");
+        else {
+            try {
+                String avatarUrl = cloudService.uploadAvatar(avatar, user.getUsername());
+                user.setAvatarUrl(avatarUrl);
+                userRepository.save(user);
+                return avatarUrl;
+            } catch (IOException err) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "Something went wrong. Unable to set avatar.");
+            } catch (Exception e) {
+                throw e;
+            }
+        }
+    }
 
     public UserProfileResponse getProfile(User user) {
         UserProfileResponse userProfileResponse = UserProfileResponse.builder()
@@ -49,6 +70,7 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .birthDay(user.getBirthday())
                 .avatarUrl(user.getAvatarUrl())
                 .gender(user.getGender())
+                .role(user.getRole())
                 .joinedAt(user.getJoinedAt())
                 .build();
 
@@ -74,10 +96,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         if (updateProfileRequest.getBirthday() != null) {
             user.setBirthday(updateProfileRequest.getBirthday());
-        }
-
-        if (updateProfileRequest.getAvatarUrl() != null) {
-            user.setAvatarUrl(updateProfileRequest.getAvatarUrl());
         }
 
         return userRepository.save(user);
