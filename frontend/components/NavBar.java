@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Image;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -13,7 +14,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import screens.HomeScreen;
+import services.AvatarService;
 import utils.ImageEditor;
+import utils.ImageLoader;
 import utils.StyleButton;
 import utils.UserSession;
 
@@ -26,7 +29,11 @@ public class NavBar extends JPanel {
         ImageEditor editor = new ImageEditor();
 
         // Create button with the avatar
-        JButton avatarBtn = new JButton(editor.makeCircularImage(UserSession.getUser().getAvatar(), 36));
+        Image avatar = AvatarService.loadAvatar(
+                UserSession.getUser() != null ? UserSession.getUser().getAvatar() : null);
+
+        JButton avatarBtn = new JButton(editor.makeCircularImage(avatar, 36));
+
         avatarBtn.setFocusable(true); // Allow keyboard navigation
         avatarBtn.setBorderPainted(false);
         avatarBtn.setContentAreaFilled(false);

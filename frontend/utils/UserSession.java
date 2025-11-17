@@ -13,6 +13,10 @@ public class UserSession {
         return currentUser;
     }
 
+    public static void setUserInfo(int id, String username, String role) {
+        currentUser.setUserInfo(id, username, role);
+    }
+
     public static boolean isLoggedIn() {
         return currentUser != null;
     }
