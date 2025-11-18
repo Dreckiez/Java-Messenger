@@ -4,6 +4,8 @@ package com.example.spring_security.entities;
 import com.example.spring_security.entities.Enum.FriendRequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,11 +25,11 @@ public class FriendRequest {
     @EmbeddedId
     private FriendRequestId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", insertable = false, updatable = false)
     private User sender;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id", insertable = false, updatable = false)
     private User receiver;
 

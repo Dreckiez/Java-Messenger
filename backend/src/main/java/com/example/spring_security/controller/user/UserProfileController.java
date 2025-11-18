@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -31,6 +32,11 @@ public class UserProfileController {
     public ResponseEntity<User> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest,
                                               @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.updateProfile(updateProfileRequest, user));
+    }
+
+    @PutMapping("/update-avatar")
+    public ResponseEntity<?> updateAvatar(@AuthenticationPrincipal User user, @RequestParam("avatar") MultipartFile avatar) {
+        return ResponseEntity.ok(Map.of("avatarUrl", userProfileService.updateAvatar(user, avatar)));
     }
 
     @PostMapping("/change-password")

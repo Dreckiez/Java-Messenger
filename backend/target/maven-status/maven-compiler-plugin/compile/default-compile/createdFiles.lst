@@ -1,6 +1,0 @@
-com\example\spring_security\config\JwtAuthenticationFilter.class
-com\example\spring_security\repository\UserRepository.class
-com\example\spring_security\Main.class
-com\example\spring_security\entities\User.class
-com\example\spring_security\config\SecurityConfiguration.class
-com\example\spring_security\exception\GlobalExceptionHandler.class
