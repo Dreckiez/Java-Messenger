@@ -14,8 +14,6 @@ public class HomeScreen extends JPanel {
     public HomeScreen(BaseScreen screen) {
         this.screen = screen;
         setLayout(new BorderLayout());
-        User user = new User();
-        UserSession.setUser(user);
 
         // === CENTER: Main Area ===
         CenterPanel centerPanel = new CenterPanel();

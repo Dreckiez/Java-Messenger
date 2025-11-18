@@ -15,8 +15,11 @@ import javax.swing.SwingWorker;
 
 import org.json.JSONObject;
 
+import models.User;
+import services.UserServices;
 import utils.ApiClient;
 import utils.ApiUrl;
+import utils.UserSession;
 
 public class LoginScreen extends JPanel {
     private BaseScreen mainScreen;
@@ -74,7 +77,7 @@ public class LoginScreen extends JPanel {
             new SwingWorker<JSONObject, Void>() {
                 @Override
                 protected JSONObject doInBackground() {
-                    return ApiClient.postJSON(ApiUrl.LOGIN, payload);
+                    return ApiClient.postJSON(ApiUrl.LOGIN, payload, null);
                 }
 
                 @Override
@@ -84,6 +87,41 @@ public class LoginScreen extends JPanel {
 
                         int status = res.optInt("httpStatus", 0);
                         if (status == 200) {
+                            String token = res.getString("token");
+                            String refreshToken = res.getString("refreshToken");
+
+                            User user = new User(token, refreshToken);
+                            UserSession.setUser(user);
+
+                            // Start another SwingWorker to fetch user profile
+                            new SwingWorker<JSONObject, Void>() {
+
+                                @Override
+                                protected JSONObject doInBackground() {
+                                    return UserServices.getMyProfile(token);
+                                }
+
+                                @Override
+                                protected void done() {
+                                    try {
+                                        JSONObject profile = get(); // result from UserService
+
+                                        String role = profile.optString("role", "USER");
+
+                                        if (role.equals("ADMIN")) {
+                                            mainScreen.showPanel("dashboard");
+                                        } else {
+                                            mainScreen.showPanel("chat");
+                                        }
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        loginError.setText("⚠️ Failed to load profile.");
+                                    }
+                                }
+
+                            }.execute();
+
                             // Success → switch panel
                             mainScreen.showPanel("home");
                         } else {

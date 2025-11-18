@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
 @Service
 @RequiredArgsConstructor
 public class UserProfileServiceImpl implements UserProfileService {
@@ -76,6 +75,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         return userProfileResponse;
     }
+
     public User updateProfile(UpdateProfileRequest updateProfileRequest, User user) {
 
         if (updateProfileRequest.getFirstName() != null) {
@@ -120,18 +120,18 @@ public class UserProfileServiceImpl implements UserProfileService {
         return msg;
     }
 
-
-
     public Map<String, String> changeEmail(String token, ChangeEmailRequest changeEmailRequest, User user) {
 
         VerifyToken verifyToken = verifyTokenRepository.findByToken(token).orElse(null);
 
         if (verifyToken == null || !verifyToken.getUser().getUsername().equals(user.getUsername())) {
-            throw new RuntimeException("Your email verification request could not be completed. Please request a new verification token.");
+            throw new RuntimeException(
+                    "Your email verification request could not be completed. Please request a new verification token.");
         }
 
         if (verifyToken.getExpiredAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("This email verification token is no longer valid. Please request a new verification link.");
+            throw new RuntimeException(
+                    "This email verification token is no longer valid. Please request a new verification link.");
         }
 
         if (changeEmailRequest.getEmail().equals(user.getEmail())) {
@@ -143,7 +143,8 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         String randomToken = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
 
-        VerifyEmailChangeToken verifyEmailChangeToken = verifyEmailChangeTokenRepository.findByUser(user).orElse(new VerifyEmailChangeToken());
+        VerifyEmailChangeToken verifyEmailChangeToken = verifyEmailChangeTokenRepository.findByUser(user)
+                .orElse(new VerifyEmailChangeToken());
 
         verifyEmailChangeToken.setNewEmail(changeEmailRequest.getEmail());
         verifyEmailChangeToken.setUser(user);
@@ -162,15 +163,12 @@ public class UserProfileServiceImpl implements UserProfileService {
                 "Verify your new email",
                 "Hi " + user.getUsername() + ",\n\n" +
                         "Please use the verification token below to verify your new email:\n" +
-                         randomToken + "\n\n" +
-                        "This token will expire in 10 minutes."
-        );
+                        randomToken + "\n\n" +
+                        "This token will expire in 10 minutes.");
         Map<String, String> msg = new HashMap<>();
         msg.put("message", "Please check your new email to verify the change.");
         return msg;
     }
-
-
 
     public Map<String, String> createToken(User user) {
         VerifyToken verifyToken = verifyTokenRepository.findByUser(user).orElse(new VerifyToken());
@@ -191,10 +189,10 @@ public class UserProfileServiceImpl implements UserProfileService {
                 "Hi " + user.getUsername() + ",\n\n" +
                         "To proceed with updating your email address, please use the verification token below:\n\n" +
                         randomToken + "\n\n" +
-                        "This token will expire in 30 minutes."
-        );
+                        "This token will expire in 30 minutes.");
         Map<String, String> msg = new HashMap<>();
-        msg.put("message", "Please check your email to get the verification token to proceed with changing your email.");
+        msg.put("message",
+                "Please check your email to get the verification token to proceed with changing your email.");
         return msg;
     }
 
@@ -211,7 +209,6 @@ public class UserProfileServiceImpl implements UserProfileService {
         msg.put("message", "Your email has been successfully updated.");
         return msg;
     }
-
 
     public UserProfileResponse getUserProfile(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found."));

@@ -105,7 +105,7 @@ public class RegisterScreen extends JPanel {
             new SwingWorker<JSONObject, Void>() {
                 @Override
                 protected JSONObject doInBackground() {
-                    return ApiClient.postJSON(ApiUrl.REGISTER, payload);
+                    return ApiClient.postJSON(ApiUrl.REGISTER, payload, null);
                 }
 
                 @Override
