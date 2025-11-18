@@ -1,30 +1,96 @@
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\config\JwtAuthenticationFilter.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\config\SecurityConfiguration.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\AdminController.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\AuthenticationController.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\UserController.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\JwtAuthenticationResponse.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\RefreshTokenRequest.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\SignInRequest.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\SignUpRequest.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\VerificationRequest.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\BaseToken.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Gender.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\PasswordResetToken.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Role.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\User.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\VerifyToken.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\exception\GlobalExceptionHandler.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\Main.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\BaseTokenRepository.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\PasswordResetTokenRepository.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\UserRepository.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\VerifyTokenRepository.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\AuthenticationService.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\EmailService.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\impl\AuthenticationServiceImpl.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\impl\EmailServiceImpl.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\impl\JWTServiceImpl.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\impl\UserServiceImpl.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\JWTService.java
-D:\HCMUS\Nam 3\KTPM\Java\Spring Boot Learn\New Project\Java-Messenger\backend\src\main\java\com\example\spring_security\services\UserService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\config\JwtAuthenticationFilter.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\config\JwtChannelInterceptor.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\config\SecurityConfiguration.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\config\WebSocketConfig.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\admin\UserManagementController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\third\AuthenticationController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\user\UserBlockController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\user\UserFriendController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\user\UserPrivateConversationController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\user\UserProfileController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\user\UserReportController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\controller\user\UserSearchController.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\ChangeEmailRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\ChangePasswordRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\ManageUserRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\RefreshTokenRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\RemoveBlockRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\ReportRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\SignInRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\SignUpRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\UpdateProfileRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\UpdateStatusFriendRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\request\VerificationRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\BaseUserResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\FriendRequestResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\JwtAuthenticationResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\ListReportResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\ListUserFriendResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\PrivateConversationResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\ReportResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\ResetPasswordResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\UserBlockResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\UserFriendResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\dto\response\UserProfileResponse.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Block.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\BlockId.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\DeletePrivateConversation.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\DeletePrivateConversationId.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Enum\FriendRequestStatus.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Enum\Gender.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Enum\MessageType.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Enum\Role.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Friend.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\FriendId.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\FriendRequest.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\FriendRequestId.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\PrivateConversation.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\PrivateConversationMessage.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\RecordSignIn.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Report.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\ReportId.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Token\BaseToken.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Token\RequestPasswordReset.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Token\VerifyEmailChangeToken.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\Token\VerifyToken.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\entities\User.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\exception\CustomException.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\exception\GlobalExceptionHandler.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\Main.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\BlockRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\DeletePrivateConversationRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\FriendRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\FriendRequestRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\PrivateConversationMessageRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\PrivateConversationRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\RecordSignInRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\ReportRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\TokenRepo\BaseTokenRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\TokenRepo\RequestPasswordResetRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\TokenRepo\VerifyEmailChangeTokenRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\TokenRepo\VerifyTokenRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\repository\UserRepository.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\admin\impl\ManagementUserServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\admin\ManagementUserService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\third\AuthenticationService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\third\EmailService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\third\impl\AuthenticationServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\third\impl\EmailServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\third\impl\JWTServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\third\JWTService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserBlockServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserFriendServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserPrivateConversationServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserProfileServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserReportServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserSearchServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\impl\UserServiceImpl.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserBlockService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserFriendService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserPrivateConversationService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserProfileService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserReportService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserSearchService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\services\user\UserService.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\websocket\UserFriendEventListener.java
+D:\Repo\Java-Messenger\backend\src\main\java\com\example\spring_security\websocket\WebSocketEventListener.java
