@@ -19,7 +19,7 @@ public class Main {
             screen.addPanel(register, "register");
             screen.addPanel(home, "home");
 
-            screen.showPanel("login");
+            screen.showPanel("home");
         });
     }
 }
