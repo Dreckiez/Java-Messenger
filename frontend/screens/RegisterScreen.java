@@ -2,16 +2,24 @@ package screens;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
 
 import org.json.JSONObject;
 
@@ -20,69 +28,262 @@ import utils.ApiUrl;
 
 public class RegisterScreen extends JPanel {
     private BaseScreen mainScreen;
-    private JTextArea registerError;
+    private JLabel registerError;
+    private JPanel registerCard;
+    private boolean passwordVisible = false;
+    private boolean confirmPasswordVisible = false;
 
     public RegisterScreen(BaseScreen main) {
         mainScreen = main;
 
-        setLayout(null);
+        setLayout(new GridBagLayout());
+        setBackground(new Color(240, 242, 245));
 
-        setBackground(Color.lightGray);
+        registerCard = new JPanel();
+        registerCard.setLayout(new GridBagLayout());
+        registerCard.setBackground(Color.WHITE);
+        registerCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+                new EmptyBorder(40, 50, 40, 50)));
 
-        JLabel userLabel = new JLabel("Username:");
-        userLabel.setBounds(500, 175, 100, 30);
-        add(userLabel);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 0);
 
-        JTextField userField = new JTextField();
-        userField.setBounds(600, 175, 150, 30);
-        add(userField);
+        JLabel titleLabel = new JLabel("Create Account", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(33, 37, 41));
+        gbc.insets = new Insets(0, 0, 10, 0);
+        registerCard.add(titleLabel, gbc);
 
-        JLabel fnameLabel = new JLabel("First Name:");
-        fnameLabel.setBounds(500, 225, 100, 30);
-        add(fnameLabel);
+        JLabel subtitleLabel = new JLabel("Sign up to get started", SwingConstants.CENTER);
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subtitleLabel.setForeground(new Color(108, 117, 125));
+        gbc.insets = new Insets(0, 0, 30, 0);
+        registerCard.add(subtitleLabel, gbc);
 
-        JTextField fnameField = new JTextField();
-        fnameField.setBounds(600, 225, 150, 30);
-        add(fnameField);
+        registerError = new JLabel("");
+        registerError.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        registerError.setForeground(new Color(220, 53, 69));
+        registerError.setHorizontalAlignment(SwingConstants.CENTER);
+        gbc.insets = new Insets(0, 0, 15, 0);
+        registerCard.add(registerError, gbc);
 
-        JLabel lnameLabel = new JLabel("Last Name:");
-        lnameLabel.setBounds(500, 275, 100, 30);
-        add(lnameLabel);
+        JLabel userLabel = new JLabel("Username");
+        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        userLabel.setForeground(new Color(73, 80, 87));
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        registerCard.add(userLabel, gbc);
 
-        JTextField lnameField = new JTextField();
-        lnameField.setBounds(600, 275, 150, 30);
-        add(lnameField);
+        JTextField userField = new JTextField(20);
+        userField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        userField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 12, 10, 12)));
+        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        registerCard.add(userField, gbc);
 
-        JLabel emailLabel = new JLabel("Email:");
-        emailLabel.setBounds(500, 325, 100, 30);
-        add(emailLabel);
+        JLabel fnameLabel = new JLabel("First Name");
+        fnameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        fnameLabel.setForeground(new Color(73, 80, 87));
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        registerCard.add(fnameLabel, gbc);
 
-        JTextField emailField = new JTextField();
-        emailField.setBounds(600, 325, 150, 30);
-        add(emailField);
+        JTextField fnameField = new JTextField(20);
+        fnameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        fnameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 12, 10, 12)));
+        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        registerCard.add(fnameField, gbc);
 
-        JLabel passLabel = new JLabel("Password:");
-        passLabel.setBounds(500, 375, 100, 30);
-        add(passLabel);
+        JLabel lnameLabel = new JLabel("Last Name");
+        lnameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lnameLabel.setForeground(new Color(73, 80, 87));
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        registerCard.add(lnameLabel, gbc);
 
-        JPasswordField passField = new JPasswordField();
-        passField.setBounds(600, 375, 150, 30);
-        add(passField);
+        JTextField lnameField = new JTextField(20);
+        lnameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lnameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 12, 10, 12)));
+        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        registerCard.add(lnameField, gbc);
 
-        registerError = new JTextArea("");
-        registerError.setEditable(false);
-        registerError.setFocusable(false);
-        registerError.setBounds(550, 140, 200, 50);
-        registerError.setForeground(Color.red);
-        registerError.setBackground(Color.lightGray);
-        add(registerError);
+        JLabel emailLabel = new JLabel("Email");
+        emailLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        emailLabel.setForeground(new Color(73, 80, 87));
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        registerCard.add(emailLabel, gbc);
+
+        JTextField emailField = new JTextField(20);
+        emailField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        emailField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 12, 10, 12)));
+        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        registerCard.add(emailField, gbc);
+
+        JLabel passLabel = new JLabel("Password");
+        passLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        passLabel.setForeground(new Color(73, 80, 87));
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        registerCard.add(passLabel, gbc);
+
+        // Password field container
+        JPanel passContainer = new JPanel();
+        passContainer.setLayout(new GridBagLayout());
+        passContainer.setBackground(Color.WHITE);
+
+        GridBagConstraints passGbc = new GridBagConstraints();
+        passGbc.gridx = 0;
+        passGbc.gridy = 0;
+        passGbc.weightx = 1.0;
+        passGbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JPasswordField passField = new JPasswordField(20);
+        passField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        passField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 12, 10, 12)));
+        passContainer.add(passField, passGbc);
+
+        passGbc.gridx = 1;
+        passGbc.weightx = 0;
+        passGbc.insets = new Insets(0, 5, 0, 0);
+
+        JButton togglePassBtn = new JButton("Show");
+        togglePassBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        togglePassBtn.setForeground(new Color(13, 110, 253));
+        togglePassBtn.setBackground(Color.WHITE);
+        togglePassBtn.setFocusable(false);
+        togglePassBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 15, 10, 15)));
+        togglePassBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        togglePassBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                togglePassBtn.setBackground(new Color(240, 242, 245));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                togglePassBtn.setBackground(Color.WHITE);
+            }
+        });
+
+        togglePassBtn.addActionListener(e -> {
+            passwordVisible = !passwordVisible;
+            if (passwordVisible) {
+                passField.setEchoChar((char) 0);
+                togglePassBtn.setText("Hide");
+            } else {
+                passField.setEchoChar('•');
+                togglePassBtn.setText("Show");
+            }
+        });
+
+        passContainer.add(togglePassBtn, passGbc);
+
+        gbc.insets = new Insets(0, 0, 20, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        registerCard.add(passContainer, gbc);
+
+        JLabel confirmPassLabel = new JLabel("Confirm Password");
+        confirmPassLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        confirmPassLabel.setForeground(new Color(73, 80, 87));
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        registerCard.add(confirmPassLabel, gbc);
+
+        // Confirm Password field container
+        JPanel confirmPassContainer = new JPanel();
+        confirmPassContainer.setLayout(new GridBagLayout());
+        confirmPassContainer.setBackground(Color.WHITE);
+
+        GridBagConstraints confirmPassGbc = new GridBagConstraints();
+        confirmPassGbc.gridx = 0;
+        confirmPassGbc.gridy = 0;
+        confirmPassGbc.weightx = 1.0;
+        confirmPassGbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JPasswordField confirmPassField = new JPasswordField(20);
+        confirmPassField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        confirmPassField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 12, 10, 12)));
+        confirmPassContainer.add(confirmPassField, confirmPassGbc);
+
+        confirmPassGbc.gridx = 1;
+        confirmPassGbc.weightx = 0;
+        confirmPassGbc.insets = new Insets(0, 5, 0, 0);
+
+        JButton toggleConfirmPassBtn = new JButton("Show");
+        toggleConfirmPassBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        toggleConfirmPassBtn.setForeground(new Color(13, 110, 253));
+        toggleConfirmPassBtn.setBackground(Color.WHITE);
+        toggleConfirmPassBtn.setFocusable(false);
+        toggleConfirmPassBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+                new EmptyBorder(10, 15, 10, 15)));
+        toggleConfirmPassBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        toggleConfirmPassBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                toggleConfirmPassBtn.setBackground(new Color(240, 242, 245));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                toggleConfirmPassBtn.setBackground(Color.WHITE);
+            }
+        });
+
+        toggleConfirmPassBtn.addActionListener(e -> {
+            confirmPasswordVisible = !confirmPasswordVisible;
+            if (confirmPasswordVisible) {
+                confirmPassField.setEchoChar((char) 0);
+                toggleConfirmPassBtn.setText("Hide");
+            } else {
+                confirmPassField.setEchoChar('•');
+                toggleConfirmPassBtn.setText("Show");
+            }
+        });
+
+        confirmPassContainer.add(toggleConfirmPassBtn, confirmPassGbc);
+
+        gbc.insets = new Insets(0, 0, 20, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        registerCard.add(confirmPassContainer, gbc);
 
         JButton registerButton = new JButton("Register");
-        registerButton.setBounds(600, 425, 150, 30);
+        registerButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setBackground(new Color(13, 110, 253));
         registerButton.setFocusable(false);
+        registerButton.setBorder(new EmptyBorder(12, 0, 12, 0));
+        registerButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        registerButton.setOpaque(true);
+        registerButton.setBorderPainted(false);
+
         registerButton.addActionListener(e -> {
             String username = userField.getText(); // Check user exists
             String password = new String(passField.getPassword()); // Check pass
+            String confirmPassword = new String(confirmPassField.getPassword()); // Check pass
             String email = emailField.getText(); // Check email
             String firstname = fnameField.getText();
             String lastname = lnameField.getText();
@@ -90,6 +291,11 @@ public class RegisterScreen extends JPanel {
             if (username.isEmpty() || password.isEmpty() || email.isEmpty() || firstname.isEmpty()
                     || lastname.isEmpty()) {
                 registerError.setText("Please enter all the information");
+                return;
+            }
+
+            if (!password.equals(confirmPassword)) {
+                registerError.setText("Passwords not matching");
                 return;
             }
 
@@ -134,23 +340,62 @@ public class RegisterScreen extends JPanel {
             }.execute();
         });
 
-        add(registerButton);
+        gbc.insets = new Insets(0, 0, 20, 0);
+        registerCard.add(registerButton, gbc);
+
+        JPanel loginPanel = new JPanel();
+        loginPanel.setBackground(Color.WHITE);
+        loginPanel.setLayout(new GridBagLayout());
+
+        GridBagConstraints loginGbc = new GridBagConstraints();
+        loginGbc.gridx = 0;
+        loginGbc.gridy = 0;
+        loginGbc.insets = new Insets(0, 0, 0, 5);
 
         JLabel loginPrefix = new JLabel("Already have an account?");
-        loginPrefix.setBounds(510, 465, 145, 30);
-        add(loginPrefix);
+        loginPrefix.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        loginPrefix.setForeground(new Color(108, 117, 125));
+        loginPanel.add(loginPrefix, loginGbc);
+
+        loginGbc.gridx = 1;
+        loginGbc.insets = new Insets(0, 0, 0, 0);
 
         JLabel loginLink = new JLabel("Login");
-        loginLink.setForeground(Color.blue);
-        loginLink.setBounds(660, 465, 35, 30);
+        loginLink.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        loginLink.setForeground(new Color(13, 110, 253));
         loginLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
         loginLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 mainScreen.showPanel("login");
             }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                loginLink.setForeground(new Color(11, 94, 215));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                loginLink.setForeground(new Color(13, 110, 253));
+            }
         });
 
-        add(loginLink);
+        loginPanel.add(loginLink, loginGbc);
+
+        gbc.insets = new Insets(0, 0, 0, 0);
+        registerCard.add(loginPanel, gbc);
+
+        GridBagConstraints mainGbc = new GridBagConstraints();
+        add(registerCard, mainGbc);
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                revalidate();
+                repaint();
+            }
+        });
     }
 }
