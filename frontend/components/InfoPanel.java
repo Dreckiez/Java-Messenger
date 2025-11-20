@@ -49,6 +49,10 @@ public class InfoPanel extends JPanel {
         searchResultsPanel.setLayout(new BoxLayout(searchResultsPanel, BoxLayout.Y_AXIS));
         searchResultsPanel.setBackground(Color.WHITE);
         searchResultsPanel.setVisible(false);
+
+        searchResultsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        searchResultsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
         contentPanel.add(searchResultsPanel);
 
         // Members section
@@ -68,6 +72,9 @@ public class InfoPanel extends JPanel {
         headerPanel.setBackground(Color.WHITE);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, headerPanel.getPreferredSize().height));
+
         // Avatar
         ImageIcon avatar = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg"));
 
@@ -79,13 +86,15 @@ public class InfoPanel extends JPanel {
         chatNameLabel = new JLabel("Chat Info");
         chatNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         chatNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        chatNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
         chatNameLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 0));
 
         // Status
         chatStatusLabel = new JLabel("Active now");
         chatStatusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         chatStatusLabel.setForeground(new Color(100, 100, 100));
-        chatStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        chatStatusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        chatStatusLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         headerPanel.add(avatarLabel);
         headerPanel.add(chatNameLabel);
@@ -95,10 +104,14 @@ public class InfoPanel extends JPanel {
     }
 
     private JPanel createSearchSection() {
-        JPanel searchSection = new JPanel(new BorderLayout());
+        JPanel searchSection = new JPanel();
+
         searchSection.setLayout(new BoxLayout(searchSection, BoxLayout.Y_AXIS));
         searchSection.setBackground(Color.WHITE);
         searchSection.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        searchSection.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        searchSection.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80)); // Approximate height
 
         JLabel searchLabel = new JLabel("Search in Conversation");
         searchLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -111,48 +124,9 @@ public class InfoPanel extends JPanel {
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 220, 220), 1, true),
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)));
-        searchField.setBackground(new Color(245, 245, 245));
-        searchField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Placeholder
-        searchField.setText("Search messages...");
-        searchField.setForeground(new Color(150, 150, 150));
-
-        searchField.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (searchField.getText().equals("Search messages...")) {
-                    searchField.setText("");
-                    searchField.setForeground(Color.BLACK);
-                }
-            }
-
-            public void focusLost(FocusEvent e) {
-                if (searchField.getText().isEmpty()) {
-                    searchField.setText("Search messages...");
-                    searchField.setForeground(new Color(150, 150, 150));
-                    searchResultsPanel.setVisible(false);
-                }
-            }
-        });
-
-        searchField.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-                String query = searchField.getText();
-                if (!query.isEmpty() && !query.equals("Search messages...")) {
-                    performSearch(query);
-                } else {
-                    searchResultsPanel.setVisible(false);
-                }
-            }
-        });
-
-        // JPanel wrapper = new JPanel();
-        // wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
-        // wrapper.setBackground(Color.WHITE);
         searchSection.add(searchLabel);
         searchSection.add(searchField);
-
-        // searchSection.add(wrapper, BorderLayout.CENTER);
 
         return searchSection;
     }
@@ -224,13 +198,20 @@ public class InfoPanel extends JPanel {
                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)));
 
+        section.setAlignmentX(Component.LEFT_ALIGNMENT);
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
         JLabel titleLabel = new JLabel("Members");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         membersPanel = new JPanel();
         membersPanel.setLayout(new BoxLayout(membersPanel, BoxLayout.Y_AXIS));
         membersPanel.setBackground(Color.WHITE);
+
+        membersPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         section.add(titleLabel);
         section.add(membersPanel);
@@ -251,9 +232,14 @@ public class InfoPanel extends JPanel {
                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)));
 
+        section.setAlignmentX(Component.LEFT_ALIGNMENT);
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
         JLabel titleLabel = new JLabel("Privacy & Support");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JButton muteBtn = createOptionButton("🔕", "Mute Notifications");
         JButton blockBtn = createOptionButton("🚫", "Block User");
@@ -345,7 +331,7 @@ public class InfoPanel extends JPanel {
                 g2d.dispose();
             }
         };
-        avatarPanel.setPreferredSize(new Dimension(36, 36));
+        avatarPanel.setPreferredSize(new Dimension(40, 40));
         avatarPanel.setOpaque(false);
 
         JLabel nameLabel = new JLabel(name);

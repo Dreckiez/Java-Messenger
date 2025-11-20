@@ -13,7 +13,9 @@ import java.util.Map;
 
 public interface ManagementUserService {
     List<User> getUserDetailList(String keyword, Boolean isActive,
-                                 Boolean isAccepted, Integer greaterThan, Integer smallerThan, String sort);
+                                 Boolean isAccepted, Integer greaterThan,
+                                 Integer smallerThan, String sort,
+                                 Integer days);
 
     Map<String, String> createUser(ManageUserRequest createUserRequest);
 

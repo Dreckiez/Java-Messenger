@@ -1,25 +1,30 @@
 package models;
 
-import java.awt.Image;
-
-import javax.swing.ImageIcon;
-
-import utils.ImageEditor;
-
 public class User {
-    private Image avatar;
+    private int id;
     private String username;
+    private String avatar;
+    private String role;
+    private String token;
+    private String refreshToken;
 
-    public User() {
-        avatar = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg")).getImage();
-        username = "Dreckiez";
+    public User(String t, String rt) {
+        token = t;
+        refreshToken = rt;
+    }
+
+    public void setUserInfo(int id, String username, String avatar, String role) {
+        this.id = id;
+        this.username = username;
+        this.avatar = avatar;
+        this.role = role;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public Image getAvatar() {
+    public String getAvatar() {
         return avatar;
     }
 }

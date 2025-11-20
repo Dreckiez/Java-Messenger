@@ -12,7 +12,7 @@ import java.util.Map;
 public interface UserProfileService {
     UserProfileResponse getProfile(User user);
     String updateAvatar(User user, MultipartFile avatar);
-    User updateProfile(UpdateProfileRequest updateProfileRequest, User user);
+    UserProfileResponse updateProfile(UpdateProfileRequest updateProfileRequest, User user);
     Map<String, String> changePassword(ChangePasswordRequest changPasswordRequest, User user);
     Map<String, String> changeEmail(String token, ChangeEmailRequest changeEmailRequest, User user);
     Map<String, String> createToken(User user);
