@@ -46,9 +46,9 @@ public class WebSocketEventListener {
                     .isOnline(friend.getIsOnline())
                     .address(friend.getAddress())
                     .build();
-
                 messagingTemplate.convertAndSend("/client/status/" + friend.getUserId(), payload);
             });
+
         }
     }
 

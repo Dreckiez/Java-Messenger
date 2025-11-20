@@ -1,16 +1,17 @@
 package com.example.spring_security.services.user.impl;
 
-import com.example.spring_security.dto.request.PrivateConversationMessageRequest;
+
+import com.example.spring_security.dto.request.SendMessageRequest;
 import com.example.spring_security.dto.response.ListPrivateConversationMessageResponse;
 import com.example.spring_security.dto.response.PrivateConversationMessageResponse;
-import com.example.spring_security.dto.response.PrivateConversationResponse;
+import com.example.spring_security.dto.response.SendMessageResponse;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.*;
 import com.example.spring_security.services.user.UserPrivateConversationService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserPrivateConversationServiceImpl implements UserPrivateConversationService {
@@ -51,8 +51,11 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 readPrivateConversationMessageRepository.findById(readPrivateConversationMessageId).orElse(null);
 
         if (readPrivateConversationMessage == null) {
+            System.out.println("here");
             readPrivateConversationMessage = ReadPrivateConversationMessage.builder()
-                    .Id(readPrivateConversationMessageId)
+                    .id(readPrivateConversationMessageId)
+                    .privateConversationMessage(entityManager.getReference(PrivateConversationMessage.class, privateConversationMessageId))
+                    .user(entityManager.getReference(User.class, userId))
                     .readAt(LocalDateTime.now()).build();
         }
         else {
@@ -110,17 +113,10 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
          return msg;
     }
 
-    public List<PrivateConversationResponse> getConversation(Long userId) {
-        List<PrivateConversationResponse> privateConversationList =
-                privateConversationRepository.findAllOf(userId);
-
-        return privateConversationList;
-    }
-
-    public Map<String, String> send
+    public SendMessageResponse sendMessage
             (Long senderId,
              Long privateConversationId,
-             PrivateConversationMessageRequest privateConversationMessageRequest) {
+             SendMessageRequest sendMessageRequest) {
 
         PrivateConversation privateConversation = privateConversationRepository
                 .findById(privateConversationId).orElseThrow(
@@ -133,8 +129,8 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 .sender(entityManager.getReference(User.class, senderId))
                 .isRead(false)
                 .sentAt(LocalDateTime.now())
-                .type(privateConversationMessageRequest.getType())
-                .content(privateConversationMessageRequest.getContent())
+                .type(sendMessageRequest.getType())
+                .content(sendMessageRequest.getContent())
                 .build();
 
         privateConversationMessageRepository.save(privateConversationMessage);
@@ -143,23 +139,39 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
 
         privateConversationRepository.save(privateConversation);
 
-        Map<String, String> msg = new HashMap<>();
-
-        msg.put("message", "Send successfully");
-
-        return msg;
+        return SendMessageResponse.builder()
+                .messageId(privateConversationMessage.getPrivateConversationMessageId())
+                .content(privateConversationMessage.getContent())
+                .sentAt(privateConversationMessage.getSentAt())
+                .updatedAt(privateConversationMessage.getUpdatedAt())
+                .type(privateConversationMessage.getType())
+                .build();
     }
 
-    public Map<String, String> removeMessage(Long userId, Long privateConversationMessageId, boolean isAll) {
+    public Map<String, String> removeMessage(Long userId, Long privateConversationId, Long privateConversationMessageId, boolean isAll) {
+
+        PrivateConversation privateConversation = privateConversationRepository.findById(privateConversationId)
+                .orElseThrow(
+                        () -> new CustomException(HttpStatus.NOT_FOUND, "This conversation no longer exists.")
+                );
 
         PrivateConversationMessage privateConversationMessage = privateConversationMessageRepository
                 .findById(privateConversationMessageId).orElseThrow(
                         () -> new CustomException(HttpStatus.NOT_FOUND, "This message is no longer exists.")
                 );
 
-        if (privateConversationMessage.getSender().getUserId() != userId && isAll) {
+        if (privateConversationMessage.getPrivateConversation().getPrivateConversationId() != privateConversationId) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Mismatch conversation and message.");
+        }
+        else if (userId != privateConversation.getUser1().getUserId() && userId != privateConversation.getUser2().getUserId()) {
+            throw new CustomException(HttpStatus.FORBIDDEN,
+                    "Illegal behavior. This user is not allowed to perform any actions to this conversation.");
+        }
+        else if (privateConversationMessage.getSender().getUserId() != userId && isAll) {
             throw new CustomException(HttpStatus.CONFLICT, "Illegal behavior. This user is not allowed to remove both sides.");
         }
+
+
 
         DeletePrivateConversationMessageId deletePrivateConversationMessageId
                 = DeletePrivateConversationMessageId.builder()
@@ -177,26 +189,27 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 .id(deletePrivateConversationMessageId)
                 .deletedAt(LocalDateTime.now())
                 .isAll(isAll)
-                .user(userRepository.findById(userId).orElse(null))
+                .user(userRepository.findById(userId).orElseThrow(
+                        () -> new CustomException(HttpStatus.NOT_FOUND, "User no longer exists.")
+                ))
                 .build();
 
         deletePrivateConversationMessageRepository.save(deletePrivateConversationMessage);
 
         Map<String, String> msg = new HashMap<>();
 
-        msg.put("message", "Remove successfully.");
+        msg.put("message", "Removed successfully.");
 
         return msg;
 
     }
 
-    public ListPrivateConversationMessageResponse getMessage(Long userId, Long privateConversationId, Long cursorId) {
+    public ListPrivateConversationMessageResponse getMessages(Long userId, Long privateConversationId, Long cursorId) {
         PrivateConversation privateConversation = privateConversationRepository
-                .findById(privateConversationId).orElse(null);
+                .findById(privateConversationId).orElseThrow(
+                        () -> new CustomException(HttpStatus.NOT_FOUND, "Illegal behaivor. This conversation no longer exists.")
+                );
 
-        if (privateConversation == null) {
-            throw new CustomException(HttpStatus.NOT_FOUND, "Illegal behavior. There is no private conversation.");
-        }
 
         LocalDateTime deletedAt = deletePrivateConversationRepository.findLastest(userId, privateConversationId).orElse(null);
 
@@ -212,7 +225,7 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 ? privateConversation.getUser2() : privateConversation.getUser1();
 
         ListPrivateConversationMessageResponse listPrivateConversationMessageResponse
-                = ListPrivateConversationMessageResponse.builder()
+                =  ListPrivateConversationMessageResponse.builder()
                 .privateConversationMessageResponseList(privateConversationMessageResponseList)
                 .userId(user.getUserId())
                 .fullName(user.getLastName() + " " + user.getFirstName())

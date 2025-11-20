@@ -20,5 +20,5 @@ public class ReportId implements Serializable {
     @Column(name = "reported_user_id")
     private Long reportedUserId;
     @Column(name = "reported_at")
-    LocalDateTime reportedAt;
+    private LocalDateTime reportedAt;
 }
