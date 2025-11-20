@@ -37,8 +37,9 @@ public class UserManagementController {
              @RequestParam(value = "isAccepted", required = false) Boolean isAccepted,
              @RequestParam(value = "greaterThan", required = false) Integer greaterThan,
              @RequestParam(value = "smallerThan", required = false) Integer smallerThan,
-             @RequestParam(value = "sort", required = false) String sort) {
-        return ResponseEntity.ok(managementUserService.getUserDetailList(keyword, isActive, isAccepted, greaterThan, smallerThan, sort));
+             @RequestParam(value = "sort", required = false) String sort,
+             @RequestParam(value = "days", required = false) Integer days) {
+        return ResponseEntity.ok(managementUserService.getUserDetailList(keyword, isActive, isAccepted, greaterThan, smallerThan, sort, days));
     }
 
     @PostMapping("/create-user")

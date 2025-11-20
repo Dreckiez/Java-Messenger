@@ -29,7 +29,7 @@ public class UserProfileController {
     }
 
     @PatchMapping("/update-profile")
-    public ResponseEntity<User> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest,
+    public ResponseEntity<UserProfileResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest,
                                               @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.updateProfile(updateProfileRequest, user));
     }

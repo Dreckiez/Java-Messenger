@@ -5,6 +5,7 @@ import com.example.spring_security.dto.request.SignInRequest;
 import com.example.spring_security.dto.request.SignUpRequest;
 import com.example.spring_security.dto.request.VerificationRequest;
 import com.example.spring_security.dto.response.JwtAuthenticationResponse;
+import com.example.spring_security.dto.response.UserProfileResponse;
 import com.example.spring_security.entities.Enum.Gender;
 import com.example.spring_security.entities.RecordSignIn;
 import com.example.spring_security.entities.Token.RequestPasswordReset;
@@ -110,6 +111,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             jwtAuthenticationResponse.setToken(token);
             jwtAuthenticationResponse.setRefreshToken(refreshToken);
+            jwtAuthenticationResponse.setUserProfileResponse(
+                    UserProfileResponse.builder()
+                            .userId(user.getUserId())
+                            .fullName(user.getLastName() + " " + user.getFirstName())
+                            .address(user.getAddress())
+                            .birthDay(user.getBirthday())
+                            .avatarUrl(user.getAvatarUrl())
+                            .gender(user.getGender())
+                            .joinedAt(user.getJoinedAt())
+                            .build()
+            );
             recordSignIn.setIsSuccessful(true);
             recordSignIn.setUser(user);
             recordSignInRepository.save(recordSignIn);

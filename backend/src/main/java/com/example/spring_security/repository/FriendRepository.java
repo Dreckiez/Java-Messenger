@@ -88,7 +88,9 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
         CASE WHEN :sort = 'fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END ASC,
         CASE WHEN :sort = '-fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END DESC
 """, nativeQuery = true)
-    List<UserFriendResponse> findAllFriendsByUserIdAndKeywordOrderBy(@Param("userId") Long userId, @Param("keyword") String keyword, @Param("sort") String sort);
+    List<UserFriendResponse> findAllFriendsByUserIdAndKeywordOrderBy(@Param("userId") Long userId,
+                                                                     @Param("keyword") String keyword,
+                                                                     @Param("sort") String sort);
 
 
     @Query(value = """

@@ -64,7 +64,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
         AND ( :isAccepted IS NULL OR u.is_accepted = :isAccepted )
         AND ( :greaterThan IS NULL OR u.friend_count > :greaterThan)
         AND ( :smallerThan IS NULL OR u.friend_count < :smallerThan)
+        AND ( :days IS NULL OR u.joined_at  >= NOW() - (:days * INTERVAL '1 day'))
     ORDER BY
+        CASE 
+            WHEN :sort = 'email' THEN u.email
+        END ASC,
+        CASE 
+            WHEN :sort = '-email' THEN u.email
+        END DESC,
         CASE 
             WHEN :sort = 'fullName' THEN LOWER(CONCAT(u.last_name, ' ', u.first_name))
         END ASC,
@@ -84,7 +91,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("isAccepted") Boolean isAccepted,
             @Param("greaterThan") Integer greaterThan,
             @Param("smallerThan") Integer smallerThan,
-            @Param("sort") String sort);
+            @Param("sort") String sort,
+            @Param("days") Integer days);
 
     void deleteById(Long id);
 }
