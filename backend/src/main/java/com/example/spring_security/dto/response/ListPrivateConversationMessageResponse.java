@@ -11,9 +11,9 @@ import java.util.List;
 @SuperBuilder
 public class ListPrivateConversationMessageResponse extends BaseUserResponse {
 
-    Boolean isOnline;
+    private Boolean isOnline;
 
-    Long privateConversationId;
+    private Long privateConversationId;
 
-    List<PrivateConversationMessageResponse> privateConversationMessageResponseList;
+    private List<PrivateConversationMessageResponse> privateConversationMessageResponseList;
 }

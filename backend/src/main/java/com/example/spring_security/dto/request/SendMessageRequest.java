@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PrivateConversationMessageRequest {
+public class SendMessageRequest {
 
     @NotBlank(message = "The content must not be blank.")
     @Size(max = 3000, message = "The content is not allowed to exceed more than 3000 characters.")

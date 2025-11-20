@@ -135,8 +135,8 @@ CREATE TABLE delete_private_conversation (
     private_conversation_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     deleted_at TIMESTAMP,
-    PRIMARY KEY (conversation_id, user_id, deleted_at),
-    CONSTRAINT fk_pcu_conversation FOREIGN KEY (conversation_id)
+    PRIMARY KEY (private_conversation_id, user_id),
+    CONSTRAINT fk_pcu_conversation FOREIGN KEY (private_conversation_id)
         REFERENCES private_conversation(private_conversation_id)
         ON DELETE CASCADE,
     CONSTRAINT fk_pcu_user FOREIGN KEY (user_id)
@@ -156,18 +156,19 @@ CREATE TABLE private_conversation_message (
     type SMALLINT NOT NULL
 );
 
-CREATE TABLE read_private_conversation_message {
-    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    private_conversation_id BIGINT NOT NULL REFERENCES private_conversation(private_conversation_id) ON DELETE CASCADE,
-    read_at TIMESTAMP,
-    PRIMARY KEY (user_id, private_conversation_id)
-}
-
 ALTER TABLE private_conversation
 ADD CONSTRAINT fk_private_preview
 FOREIGN KEY (preview_message_id)
 REFERENCES private_conversation_message(private_conversation_message_id)
 DEFERRABLE INITIALLY DEFERRED;
+
+CREATE TABLE read_private_conversation_message (
+    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
+    private_conversation_id BIGINT NOT NULL REFERENCES private_conversation(private_conversation_id) ON DELETE CASCADE,
+    private_conversation_message_id BIGINT NOT NULL REFERENCES private_conversation_message(private_conversation_message_id) ON DELETE SET NULL,
+    read_at TIMESTAMP,
+    PRIMARY KEY (user_id, private_conversation_id)
+);
 
 -- delete_private_conversation_message
 CREATE TABLE delete_private_conversation_message (
@@ -182,10 +183,24 @@ CREATE TABLE delete_private_conversation_message (
 CREATE TABLE group_conversation (
     group_conversation_id BIGSERIAL PRIMARY KEY,
     group_name VARCHAR(100) NOT NULL,
+    avatar_url TEXT,
     owner_id BIGINT REFERENCES user_info(user_id) ON DELETE SET NULL,
     preview_message_id BIGINT,
     created_at TIMESTAMP NOT NULL,
     is_encrypted BOOLEAN
+);
+
+CREATE TABLE delete_group_conversation (
+    group_conversation_id BIGINT NOT NULL,
+    member_id BIGINT NOT NULL,
+    deleted_at TIMESTAMP,
+    PRIMARY KEY (group_conversation_id, member_id),
+    CONSTRAINT fk_gcm_conversation FOREIGN KEY (group_conversation_id)
+        REFERENCES group_conversation(group_conversation_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_gcm_member FOREIGN KEY (member_id)
+        REFERENCES user_info(user_id)
+        ON DELETE CASCADE
 );
 
 -- group_conversation_member
@@ -193,15 +208,9 @@ CREATE TABLE group_conversation_member (
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     joined_at TIMESTAMP NOT NULL,
+    appointed_at TIMESTAMP,
+    group_role SMALLINT,
     PRIMARY KEY (group_conversation_id, member_id)
-);
-
--- group_conversation_admin
-CREATE TABLE group_conversation_admin (
-    group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
-    admin_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    appointed_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (group_conversation_id, admin_id)
 );
 
 -- group_conversation_message
@@ -210,7 +219,7 @@ CREATE TABLE group_conversation_message (
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     sender_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE SET NULL,
     content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
+    sent_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
     type SMALLINT NOT NULL
 );
@@ -231,11 +240,12 @@ CREATE TABLE delete_group_conversation_message (
 );
 
 -- group_conversation_read
-CREATE TABLE group_conversation_read (
+CREATE TABLE read_group_conversation_message (
     group_conversation_message_id BIGINT NOT NULL REFERENCES group_conversation_message(group_conversation_message_id) ON DELETE CASCADE,
+    group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     read_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (group_conversation_message_id, member_id)
+    PRIMARY KEY (group_conversation_id, member_id)
 );
 
 -- encryption_group

@@ -1,5 +1,6 @@
 package com.example.spring_security.dto.response;
 
+import com.example.spring_security.entities.User;
 import lombok.*;
 
 @Getter
@@ -11,4 +12,6 @@ public class JwtAuthenticationResponse {
     private String token;
 
     private String refreshToken;
+
+    private UserProfileResponse userProfileResponse;
 }

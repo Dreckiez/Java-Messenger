@@ -14,8 +14,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ReadPrivateConversationMessageId implements Serializable {
     @Column(name = "user_id")
-    Long userId;
+    private Long userId;
 
     @Column(name = "private_conversation_id")
-    Long privateConversationId;
+    private Long privateConversationId;
 }
