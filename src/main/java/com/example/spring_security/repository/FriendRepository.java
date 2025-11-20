@@ -1,5 +1,7 @@
 package com.example.spring_security.repository;
 
+import com.example.spring_security.dto.response.BaseUserResponse;
+import com.example.spring_security.dto.response.BasicUserResponse;
 import com.example.spring_security.dto.response.UserFriendResponse;
 import com.example.spring_security.entities.Friend;
 import com.example.spring_security.entities.FriendId;
@@ -87,5 +89,30 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
         CASE WHEN :sort = '-fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END DESC
 """, nativeQuery = true)
     List<UserFriendResponse> findAllFriendsByUserIdAndKeywordOrderBy(@Param("userId") Long userId, @Param("keyword") String keyword, @Param("sort") String sort);
+
+
+    @Query(value = """
+    SELECT 
+        u.user_id AS userId,
+        CONCAT(u.last_name, ' ', u.first_name) AS fullName,
+        u.avatar_url AS avatarUrl,
+        u.is_online AS isOnline
+    FROM friend f
+    JOIN user_info u ON (
+        (f.user_id1 = :userId AND f.user_id2 = u.user_id)
+        OR 
+        (f.user_id2 = :userId AND f.user_id1 = u.user_id)
+    )
+    WHERE (:keyword = '' OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%'))
+    AND NOT EXISTS (
+                        SELECT 1
+                        FROM group_conversation_member gc
+                        WHERE gc.member_id = u.user_id AND gc.group_conversation_id = :groupConversationId
+                   )
+    ORDER BY u.is_online DESC
+""", nativeQuery = true)
+    List<BasicUserResponse> findFriendsToAddGroup(@Param("userId") Long userId,
+                                                  @Param("groupConversationId") Long groupConversationId,
+                                                  @Param("keyword") String keyword);
 
 }

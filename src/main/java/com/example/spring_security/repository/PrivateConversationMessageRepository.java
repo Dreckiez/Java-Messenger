@@ -14,6 +14,7 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
     @Query(value = """
         SELECT
             pcm.private_conversation_message_id AS privateConversationMessageId,
+            pcm.sender_id AS senderId,
             pcm.content AS content,
             pcm.sent_at AS sentAt,
             pcm.updated_at AS updatedAt,
@@ -21,7 +22,11 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
             pcm.is_read AS isRead,
             pcm.read_at AS readAt
         FROM private_conversation_message pcm
+        LEFT JOIN delete_private_conversation dpc
+               ON dpc.private_conversation_id = pcm.private_conversation_id
+              AND dpc.user_id = :userId
         WHERE pcm.private_conversation_id = :privateConversationId
+        
           AND (:cursorId IS NULL OR pcm.private_conversation_message_id < :cursorId)
           AND NOT EXISTS (
                 SELECT 1
@@ -29,6 +34,9 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
                 WHERE dpcm.private_conversation_message_id = pcm.private_conversation_message_id
                   AND (dpcm.is_all = TRUE OR dpcm.user_id = :userId)
           )
+    
+          AND (dpc.deleted_at IS NULL OR pcm.sent_at > dpc.deleted_at)
+    
         ORDER BY pcm.private_conversation_message_id DESC
         LIMIT 50
         """, nativeQuery = true)
@@ -37,8 +45,4 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
             Long privateConversationId,
             Long cursorId
     );
-
-
-
-
 }

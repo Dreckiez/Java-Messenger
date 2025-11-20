@@ -27,7 +27,16 @@ public class CloudServiceImpl implements CloudService {
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 ObjectUtils.asMap(
                         "folder", "avatars",
-                        "public_id", username  // đặt theo userId để overwrite khi update
+                        "public_id", username
+                ));
+        return uploadResult.get("secure_url").toString(); // URL avatar
+    }
+
+    public String uploadGroupAvatars(MultipartFile file, String username) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap(
+                        "folder", "group_avatars",
+                        "public_id", username
                 ));
         return uploadResult.get("secure_url").toString(); // URL avatar
     }

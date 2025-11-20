@@ -1,8 +1,7 @@
 package com.example.spring_security.controller.user;
-import com.example.spring_security.dto.request.PrivateConversationMessageRequest;
+import com.example.spring_security.dto.request.SendMessageRequest;
 import com.example.spring_security.dto.response.ListPrivateConversationMessageResponse;
-import com.example.spring_security.dto.response.PrivateConversationResponse;
-import com.example.spring_security.entities.PrivateConversation;
+import com.example.spring_security.dto.response.SendMessageResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.services.user.UserPrivateConversationService;
 import jakarta.validation.Valid;
@@ -27,35 +26,31 @@ public class UserPrivateConversationController {
                 userPrivateConversationService.removeConversation(user.getUserId(), id));
     }
 
-    @GetMapping("")
-    public ResponseEntity<List<PrivateConversationResponse>> getConversationList(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(userPrivateConversationService.getConversation(user.getUserId()));
-    }
-
     @PostMapping("/{id}/private-conversation-messages")
-    public ResponseEntity<Map<String, String>> send
+    public ResponseEntity<SendMessageResponse> sendMessage
             (@AuthenticationPrincipal User sender,
             @PathVariable("id") Long privateConversationId,
-            @Valid @RequestBody PrivateConversationMessageRequest privateConversationMessageRequest) {
+            @Valid @RequestBody SendMessageRequest sendMessageRequest) {
 
         return ResponseEntity.ok(userPrivateConversationService
-                .send(sender.getUserId(), privateConversationId, privateConversationMessageRequest));
+                .sendMessage(sender.getUserId(), privateConversationId, sendMessageRequest));
     }
 
 
-    @DeleteMapping("/private-conversation-messages/{id}")
+    @DeleteMapping("{privateConversationId}/private-conversation-messages/{privateConversationMessageId}")
     public ResponseEntity<Map<String, String>> removeMessage
             (@AuthenticationPrincipal User remover,
-             @PathVariable("id") Long privateConversationMessageId,
+             @PathVariable("privateConversationId") Long privateConversationId,
+             @PathVariable("privateConversationMessageId") Long privateConversationMessageId,
             @RequestParam(value = "isAll", required = true) boolean isAll) {
 
-        return ResponseEntity.ok(userPrivateConversationService.removeMessage(remover.getUserId(), privateConversationMessageId, isAll));
+        return ResponseEntity.ok(userPrivateConversationService.removeMessage(remover.getUserId(), privateConversationId, privateConversationMessageId, isAll));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ListPrivateConversationMessageResponse> getMessageList
+    @GetMapping("/{id}/private-conversation-messages")
+    public ResponseEntity<ListPrivateConversationMessageResponse> getMessages
             (@AuthenticationPrincipal User user, @PathVariable("id") Long privateConversationId,
             @RequestParam(value = "cursorId", required = false) Long cursorId) {
-        return ResponseEntity.ok(userPrivateConversationService.getMessage(user.getUserId(), privateConversationId, cursorId));
+        return ResponseEntity.ok(userPrivateConversationService.getMessages(user.getUserId(), privateConversationId, cursorId));
     }
 }

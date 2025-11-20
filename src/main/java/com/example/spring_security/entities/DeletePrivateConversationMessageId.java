@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Embeddable
 public class DeletePrivateConversationMessageId implements Serializable {
     @Column(name = "user_id")
-    Long userId;
+    private Long userId;
     @Column(name = "private_conversation_message_id")
-    Long privateConversationMessageId;
+    private Long privateConversationMessageId;
 }
