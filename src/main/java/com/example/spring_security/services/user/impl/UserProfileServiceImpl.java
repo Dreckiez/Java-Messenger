@@ -76,7 +76,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         return userProfileResponse;
     }
 
-    public User updateProfile(UpdateProfileRequest updateProfileRequest, User user) {
+    public UserProfileResponse updateProfile(UpdateProfileRequest updateProfileRequest, User user) {
 
         if (updateProfileRequest.getFirstName() != null) {
             user.setFirstName(updateProfileRequest.getFirstName());
@@ -98,7 +98,15 @@ public class UserProfileServiceImpl implements UserProfileService {
             user.setBirthday(updateProfileRequest.getBirthday());
         }
 
-        return userRepository.save(user);
+        return UserProfileResponse.builder()
+                .userId(user.getUserId())
+                .fullName(user.getLastName() + " " + user.getFirstName())
+                .address(user.getAddress())
+                .birthDay(user.getBirthday())
+                .avatarUrl(user.getAvatarUrl())
+                .gender(user.getGender())
+                .joinedAt(user.getJoinedAt())
+                .build();
     }
 
     public Map<String, String> changePassword(ChangePasswordRequest changePasswordRequest, User user) {
@@ -214,6 +222,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found."));
 
         UserProfileResponse response = UserProfileResponse.builder()
+                .userId(user.getUserId())
                 .fullName(user.getLastName() + " " + user.getFirstName())
                 .address(user.getAddress())
                 .birthDay(user.getBirthday())
