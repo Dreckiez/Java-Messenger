@@ -6,4 +6,5 @@ import java.io.IOException;
 
 public interface CloudService {
     String uploadAvatar(MultipartFile file, String username) throws IOException;
+    String uploadGroupAvatars(MultipartFile file, String username) throws IOException;
 }

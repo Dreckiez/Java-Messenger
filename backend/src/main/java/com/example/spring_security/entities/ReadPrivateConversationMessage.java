@@ -14,12 +14,16 @@ import java.time.LocalDateTime;
 @Builder
 public class ReadPrivateConversationMessage {
     @EmbeddedId
-    private ReadPrivateConversationMessageId Id;
+    private ReadPrivateConversationMessageId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "private_conversation_message_id")
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "private_conversation_message_id", nullable = false)
     private PrivateConversationMessage privateConversationMessage;
 
     @Column(name = "read_at")
-    LocalDateTime readAt;
+    private LocalDateTime readAt;
 }

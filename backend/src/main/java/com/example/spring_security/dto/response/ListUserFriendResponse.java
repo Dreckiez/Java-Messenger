@@ -10,6 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ListUserFriendResponse {
-    List<UserFriendResponse> listOfFriend;
-    Long count;
+    private List<UserFriendResponse> listOfFriend;
+    private Long count;
 }

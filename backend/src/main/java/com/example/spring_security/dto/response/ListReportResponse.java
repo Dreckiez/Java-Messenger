@@ -10,6 +10,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ListReportResponse {
-    List<ReportResponse> reportResponseList;
-    int count;
+    private List<ReportResponse> reportResponseList;
+    private int count;
 }

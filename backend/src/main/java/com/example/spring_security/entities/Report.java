@@ -19,16 +19,16 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "reporter_id", insertable = false, updatable = false)
-    User reporter;
+    private User reporter;
 
     @ManyToOne
     @JoinColumn(name = "reported_user_id", insertable = false, updatable = false)
-    User reportedUser;
+    private User reportedUser;
 
     @Column(name = "title", length = 50)
-    String title;
+    private String title;
 
     @Column(name = "content", columnDefinition = "TEXT")
-    String content;
+    private String content;
 
 }

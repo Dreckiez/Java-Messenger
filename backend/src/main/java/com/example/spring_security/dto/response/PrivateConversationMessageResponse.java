@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 public class PrivateConversationMessageResponse {
     private Long privateConversationMessageId;
+    private Long senderId;
     private String content;
     private LocalDateTime sentAt;
     private LocalDateTime updatedAt;
@@ -20,6 +21,7 @@ public class PrivateConversationMessageResponse {
 
     public PrivateConversationMessageResponse(
             Long privateConversationMessageId,
+            Long senderId,
             String content,
             java.sql.Timestamp sentAt,
             java.sql.Timestamp updatedAt,
@@ -27,11 +29,13 @@ public class PrivateConversationMessageResponse {
             Boolean isRead,
             java.sql.Timestamp readAt
     ) {
+        this.senderId = senderId;
         this.privateConversationMessageId = privateConversationMessageId;
         this.content = content;
         this.sentAt = sentAt != null ? sentAt.toLocalDateTime() : null;
         this.updatedAt = updatedAt != null ? updatedAt.toLocalDateTime() : null;
-        this.type = type == 0 ? MessageType.TEXT : MessageType.IMAGE;
+        MessageType.Converter converter = new MessageType.Converter();
+        this.type = converter.fromShort(type);
         this.isRead = isRead;
         this.readAt = readAt != null ? readAt.toLocalDateTime() : null;
     }
