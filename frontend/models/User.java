@@ -20,6 +20,10 @@ public class User {
         this.role = role;
     }
 
+    public String getToken() {
+        return token;
+    }
+
     public String getUsername() {
         return username;
     }
