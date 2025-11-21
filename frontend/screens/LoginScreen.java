@@ -191,6 +191,9 @@ public class LoginScreen extends JPanel {
             String username = userField.getText();
             String password = new String(passField.getPassword());
 
+            userField.setText("");
+            passField.setText("");
+
             if (username.isEmpty() || password.isEmpty()) {
                 loginError.setText("Please enter both username and password");
                 return;

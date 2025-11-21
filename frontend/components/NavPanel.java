@@ -27,10 +27,13 @@ public class NavPanel extends JPanel {
         chatList = new ChatList(selectedUser -> {
             center.showChat(selectedUser);
         });
-        SearchFriend searchFriend = new SearchFriend();
+
+        SearchFriend searchFriend = new SearchFriend(this);
+        FriendRequests request = new FriendRequests();
 
         centerPanel.add(chatList, "chatlist");
         centerPanel.add(searchFriend, "searchfriend");
+        centerPanel.add(request, "request");
 
         add(centerPanel, BorderLayout.CENTER);
     }

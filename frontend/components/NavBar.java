@@ -54,17 +54,21 @@ public class NavBar extends JPanel implements UserListener {
         centerWrapper.setLayout(new BoxLayout(centerWrapper, BoxLayout.Y_AXIS));
         centerWrapper.setOpaque(false);
 
-        JPanel centerButtons = new JPanel(new GridLayout(2, 1, 0, 0));
+        JPanel centerButtons = new JPanel(new GridLayout(4, 1, 0, 0));
         centerButtons.setOpaque(false);
-        centerButtons.setMaximumSize(new Dimension(70, 120)); // 50+50+10 for gap
-        centerButtons.setPreferredSize(new Dimension(70, 120)); // 50+50+10 for gap
+        centerButtons.setMaximumSize(new Dimension(70, 240)); // 50+50+10 for gap
+        centerButtons.setPreferredSize(new Dimension(70, 240)); // 50+50+10 for gap
 
         JButton chatBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/chat.png")));
         JButton searchBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/search.png")));
+        JButton friendBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/friend.png")));
+        JButton requestBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/request.png")));
 
         StyleButton st = new StyleButton();
         st.styleButton(chatBtn);
         st.styleButton(searchBtn);
+        st.styleButton(requestBtn);
+        st.styleButton(friendBtn);
 
         chatBtn.addActionListener(e -> {
             navPanel.showChat();
@@ -76,8 +80,18 @@ public class NavBar extends JPanel implements UserListener {
             navPanel.showPanel("searchfriend");
         });
 
+        friendBtn.addActionListener(e -> {
+            navPanel.showPanel("onlinefriend");
+        });
+
+        requestBtn.addActionListener(e -> {
+            navPanel.showPanel("request");
+        });
+
         centerButtons.add(chatBtn);
         centerButtons.add(searchBtn);
+        centerButtons.add(requestBtn);
+        centerButtons.add(friendBtn);
 
         // Add glue to push buttons to center
         centerWrapper.add(centerButtons);
