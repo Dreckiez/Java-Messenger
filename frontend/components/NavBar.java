@@ -15,7 +15,6 @@ import javax.swing.JPanel;
 
 import models.User;
 import screens.HomeScreen;
-import services.AvatarService;
 import services.UserListener;
 import utils.ImageEditor;
 import utils.ImageLoader;
@@ -71,7 +70,7 @@ public class NavBar extends JPanel implements UserListener {
         st.styleButton(friendBtn);
 
         chatBtn.addActionListener(e -> {
-            navPanel.showChat();
+            navPanel.showPanel("chatlist");
             center.showChat();
             home.toggleInfoPanel(true);
         });

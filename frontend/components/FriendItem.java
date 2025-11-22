@@ -1,6 +1,7 @@
 package components;
 
 import javax.swing.*;
+
 import java.awt.*;
 
 public class FriendItem extends BaseItem {

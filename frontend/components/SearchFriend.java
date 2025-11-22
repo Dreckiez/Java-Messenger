@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import models.Contact;
-import models.User;
 import utils.ApiClient;
 import utils.ApiUrl;
 import utils.UserSession;
@@ -185,11 +184,12 @@ public class SearchFriend extends JPanel {
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
 
+                    int id = o.getInt("userId");
                     String name = o.optString("fullName", "");
                     String avatar = o.optString("avatarUrl", "");
                     boolean isFriend = false; // backend doesn't send this
 
-                    list.add(new Contact(name, avatar, isFriend));
+                    list.add(new Contact(id, name, avatar, isFriend));
                 }
                 return list;
             }
