@@ -80,8 +80,8 @@ public class ApiClient {
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoInput(true);
 
-            conn.setConnectTimeout(5000); // if cant connect to server within 5s getout
-            conn.setReadTimeout(5000); // if server dont res in 5s getout
+            conn.setConnectTimeout(7000); // if cant connect to server within 5s getout
+            conn.setReadTimeout(7000); // if server dont res in 5s getout
 
             int status = conn.getResponseCode();
             InputStream inputStream = (status < 400) ? conn.getInputStream() : conn.getErrorStream();

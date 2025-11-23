@@ -9,4 +9,5 @@ public class ApiUrl {
     public static final String FRIENDREQUESTLIST = BASE + "chat/user/friend/list-request-received";
     public static final String FRIENDLIST = BASE + "chat/user/friend/list";
     public static final String DECIDE_FRIEND_REQUEST = BASE + "chat/user/friend/update-status";
+    public static final String FORGOT_PASSWORD = BASE + "chat/auth/reset-password";
 }

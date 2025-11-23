@@ -1,6 +1,5 @@
 package com.example.spring_security.controller.user;
 
-
 import com.example.spring_security.dto.request.ChangeEmailRequest;
 import com.example.spring_security.dto.request.ChangePasswordRequest;
 import com.example.spring_security.dto.request.UpdateProfileRequest;
@@ -29,20 +28,22 @@ public class UserProfileController {
     }
 
     @PatchMapping("/update-profile")
-    public ResponseEntity<UserProfileResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest,
-                                              @AuthenticationPrincipal User user) {
+    public ResponseEntity<UserProfileResponse> updateProfile(
+            @Valid @RequestBody UpdateProfileRequest updateProfileRequest,
+            @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.updateProfile(updateProfileRequest, user));
     }
 
     @PutMapping("/update-avatar")
-    public ResponseEntity<?> updateAvatar(@AuthenticationPrincipal User user, @RequestParam("avatar") MultipartFile avatar) {
+    public ResponseEntity<?> updateAvatar(@AuthenticationPrincipal User user,
+            @RequestParam("avatar") MultipartFile avatar) {
         return ResponseEntity.ok(Map.of("avatarUrl", userProfileService.updateAvatar(user, avatar)));
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Map<String, String>> changePassword(String token,
-                                                              @Valid @RequestBody ChangePasswordRequest changePasswordRequest,
-                                                              @AuthenticationPrincipal User user) {
+    public ResponseEntity<Map<String, String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest changePasswordRequest,
+            @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.changePassword(changePasswordRequest, user));
     }
 
@@ -53,10 +54,11 @@ public class UserProfileController {
 
     @PostMapping("/change-email")
     public ResponseEntity<Map<String, String>> changeEmail(@RequestParam("token") String token,
-                                                           @Valid @RequestBody ChangeEmailRequest changeEmailRequest,
-                                                           @AuthenticationPrincipal User user) {
+            @Valid @RequestBody ChangeEmailRequest changeEmailRequest,
+            @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.changeEmail(token, changeEmailRequest, user));
     }
+
     @GetMapping("/apply-change-email")
     public ResponseEntity<Map<String, String>> applyChangeEmail(@RequestParam("token") String token) {
         return ResponseEntity.ok(userProfileService.applyChangeEmail(token));
@@ -67,5 +69,3 @@ public class UserProfileController {
         return ResponseEntity.ok(userProfileService.getUserProfile(id));
     }
 }
-
-
