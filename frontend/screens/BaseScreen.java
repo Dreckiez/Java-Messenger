@@ -14,7 +14,7 @@ public class BaseScreen extends JFrame {
     private JPanel panel;
 
     public BaseScreen() {
-        setTitle("Chat Sech with Loli");
+        setTitle("W Chat");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setSize(1280, 720);

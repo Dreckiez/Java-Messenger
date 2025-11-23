@@ -3,8 +3,6 @@ package screens;
 import javax.swing.*;
 import java.awt.*;
 import components.*;
-import models.User;
-import utils.UserSession;
 
 public class HomeScreen extends JPanel {
     // private JPanel centerPanel;

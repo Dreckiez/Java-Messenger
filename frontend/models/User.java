@@ -31,4 +31,8 @@ public class User {
     public String getAvatar() {
         return avatar;
     }
+
+    public int getUserId() {
+        return id;
+    }
 }

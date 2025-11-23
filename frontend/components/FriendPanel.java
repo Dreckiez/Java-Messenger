@@ -1,32 +1,41 @@
 package components;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import models.Friend;
 import models.Request;
 import utils.ApiClient;
 import utils.ApiUrl;
 import utils.UserSession;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
-
-public class FriendRequests extends JPanel {
+public class FriendPanel extends JPanel {
     private JTextField searchField;
     private JPanel requestsPanel;
 
-    private List<Request> allRequests;
-    private List<RequestItem> displayedItems;
-    private RequestItem selectedItem;
+    private List<Friend> allRequests;
+    private List<FriendItem> displayedItems;
+    private FriendItem selectedItem;
 
-    private SwingWorker<List<Request>, Void> worker;
+    private SwingWorker<List<Friend>, Void> worker;
 
-    public FriendRequests() {
+    public FriendPanel() {
         allRequests = new ArrayList<>();
         displayedItems = new ArrayList<>();
 
@@ -55,7 +64,7 @@ public class FriendRequests extends JPanel {
         header.setBorder(BorderFactory.createEmptyBorder(15, 20, 10, 20));
 
         // Title
-        JLabel titleLabel = new JLabel("Friend Requests");
+        JLabel titleLabel = new JLabel("Friends");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titleLabel.setForeground(new Color(5, 5, 5));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -64,7 +73,7 @@ public class FriendRequests extends JPanel {
         header.add(Box.createVerticalStrut(10));
 
         // Search field
-        searchField = new JTextField("Search friend requests...");
+        searchField = new JTextField("Search friends...");
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         searchField.setForeground(new Color(150, 150, 150));
         searchField.setBackground(new Color(240, 242, 245));
@@ -76,7 +85,7 @@ public class FriendRequests extends JPanel {
         searchField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (searchField.getText().equals("Search friend requests...")) {
+                if (searchField.getText().equals("Search friends...")) {
                     searchField.setText("");
                     searchField.setForeground(new Color(50, 50, 50));
                 }
@@ -85,7 +94,7 @@ public class FriendRequests extends JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 if (searchField.getText().isEmpty()) {
-                    searchField.setText("Search friend requests...");
+                    searchField.setText("Search friends...");
                     searchField.setForeground(new Color(150, 150, 150));
                 }
             }
@@ -96,7 +105,7 @@ public class FriendRequests extends JPanel {
             @Override
             public void keyReleased(KeyEvent e) {
                 String text = searchField.getText().trim();
-                if (text.equals("Search friend requests...") || text.isEmpty()) {
+                if (text.equals("Search friends...") || text.isEmpty()) {
                     displayAllRequests();
                 } else {
                     filterRequests(text);
@@ -148,8 +157,8 @@ public class FriendRequests extends JPanel {
         requestsPanel.repaint();
     }
 
-    private void removeRequestItem(RequestItem item) {
-        allRequests.remove(item.getRequest());
+    private void removeRequestItem(FriendItem item) {
+        allRequests.remove(item.getFriend());
         displayedItems.remove(item);
         requestsPanel.remove(item);
 
@@ -164,8 +173,8 @@ public class FriendRequests extends JPanel {
     private void displayAllRequests() {
         clearList();
 
-        for (Request request : allRequests) {
-            RequestItem item = new RequestItem(request);
+        for (Friend request : allRequests) {
+            FriendItem item = new FriendItem(request);
             setupItemClick(item);
 
             item.setOnRequestHandled(e -> removeRequestItem(item));
@@ -181,9 +190,9 @@ public class FriendRequests extends JPanel {
     private void filterRequests(String query) {
         clearList();
 
-        for (Request request : allRequests) {
+        for (Friend request : allRequests) {
             if (request.getName().toLowerCase().contains(query.toLowerCase())) {
-                RequestItem item = new RequestItem(request);
+                FriendItem item = new FriendItem(request);
                 setupItemClick(item);
 
                 item.setOnRequestHandled(e -> removeRequestItem(item));
@@ -197,16 +206,16 @@ public class FriendRequests extends JPanel {
         requestsPanel.repaint();
     }
 
-    private void setupItemClick(RequestItem item) {
+    private void setupItemClick(FriendItem item) {
         item.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
+            public void mousePressed(java.awt.event.MouseEvent e) {
                 selectRequest(item);
             }
         });
     }
 
-    private void selectRequest(RequestItem item) {
+    private void selectRequest(FriendItem item) {
         // Deselect previous
         if (selectedItem != null) {
             selectedItem.deselect();
@@ -227,13 +236,13 @@ public class FriendRequests extends JPanel {
         // Clear selection
         selectedItem = null;
 
-        worker = new SwingWorker<List<Request>, Void>() {
+        worker = new SwingWorker<List<Friend>, Void>() {
             @Override
-            protected List<Request> doInBackground() throws Exception {
-                List<Request> list = new ArrayList<>();
+            protected List<Friend> doInBackground() throws Exception {
+                List<Friend> list = new ArrayList<>();
 
-                JSONObject json = ApiClient.getJSON(ApiUrl.FRIENDREQUESTLIST, UserSession.getUser().getToken());
-                JSONArray arr = json.getJSONArray("array"); // Adjust based on your API response
+                JSONObject json = ApiClient.getJSON(ApiUrl.FRIENDLIST, UserSession.getUser().getToken());
+                JSONArray arr = json.getJSONArray("listOfFriend"); // Adjust based on your API response
 
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
@@ -241,9 +250,9 @@ public class FriendRequests extends JPanel {
                     String name = o.optString("fullName", "");
                     String avatar = o.optString("avatarUrl", "");
                     int userId = o.getInt("userId");
-                    String time = o.getString("sentAt");
+                    Boolean isonline = o.getBoolean("isOnline");
 
-                    list.add(new Request(name, avatar, userId, time));
+                    list.add(new Friend(name, avatar, userId, isonline));
                 }
                 return list;
             }
@@ -252,15 +261,15 @@ public class FriendRequests extends JPanel {
             protected void done() {
                 try {
                     if (!isCancelled()) {
-                        List<Request> results = get();
+                        List<Friend> results = get();
                         allRequests = results;
                         displayAllRequests();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                     clearList();
-                    JOptionPane.showMessageDialog(FriendRequests.this,
-                            "Failed to load friend requests",
+                    JOptionPane.showMessageDialog(FriendPanel.this,
+                            "Failed to load friend",
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -271,7 +280,7 @@ public class FriendRequests extends JPanel {
 
     // Reset the panel (optional, similar to SearchFriend)
     public void resetPanel() {
-        searchField.setText("Search friend requests...");
+        searchField.setText("Search friend...");
         searchField.setForeground(new Color(150, 150, 150));
         selectedItem = null;
         clearList();

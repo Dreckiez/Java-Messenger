@@ -161,6 +161,33 @@ public class LoginScreen extends JPanel {
         gbc.anchor = GridBagConstraints.CENTER;
         loginCard.add(passContainer, gbc);
 
+        JLabel forgotPasswordLink = new JLabel("Forgot password?");
+        forgotPasswordLink.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        forgotPasswordLink.setForeground(new Color(13, 110, 253));
+        forgotPasswordLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        forgotPasswordLink.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        forgotPasswordLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                mainScreen.showPanel("forgotPassword");
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                forgotPasswordLink.setForeground(new Color(11, 94, 215));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                forgotPasswordLink.setForeground(new Color(13, 110, 253));
+            }
+        });
+
+        gbc.insets = new Insets(0, 0, 20, 0);
+        gbc.anchor = GridBagConstraints.EAST;
+        loginCard.add(forgotPasswordLink, gbc);
+
         // Login button
         JButton loginButton = new JButton("Login");
         loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
