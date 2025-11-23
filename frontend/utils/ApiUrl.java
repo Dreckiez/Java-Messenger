@@ -7,6 +7,6 @@ public class ApiUrl {
     public static final String MYPROFILE = BASE + "chat/user/profile";
     public static final String SEARCH = BASE + "chat/user/search";
     public static final String FRIENDREQUESTLIST = BASE + "chat/user/friend/list-request-received";
-    public static final String ACCEPT_FRIEND_REQUEST = BASE + "chat/user/friend/list-request-received";
-    public static final String DENY_FRIEND_REQUEST = BASE + "chat/user/friend/list-request-received";
+    public static final String FRIENDLIST = BASE + "chat/user/friend/list";
+    public static final String DECIDE_FRIEND_REQUEST = BASE + "chat/user/friend/update-status";
 }

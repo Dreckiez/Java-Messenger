@@ -13,6 +13,7 @@ public class NavPanel extends JPanel {
 
     private SearchFriend search;
     private FriendRequests request;
+    private FriendPanel friend;
 
     public NavPanel(HomeScreen home, CenterPanel center) {
         setLayout(new BorderLayout());
@@ -33,10 +34,12 @@ public class NavPanel extends JPanel {
 
         search = new SearchFriend(this);
         request = new FriendRequests();
+        friend = new FriendPanel();
 
         centerPanel.add(chatList, "chatlist");
         centerPanel.add(search, "searchfriend");
         centerPanel.add(request, "request");
+        centerPanel.add(friend, "onlinefriend");
 
         add(centerPanel, BorderLayout.CENTER);
     }
@@ -50,6 +53,7 @@ public class NavPanel extends JPanel {
                 search.resetSearch(); // Reset search when showing
                 break;
             case "onlinefriend":
+                friend.fetchRequests();
                 break;
             // Add other cases as needed
         }

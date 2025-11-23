@@ -2,6 +2,8 @@ package components;
 
 import javax.swing.*;
 
+import org.json.JSONObject;
+
 import models.Request;
 import utils.ApiClient;
 import utils.ApiUrl;
@@ -10,6 +12,8 @@ import utils.UserSession;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class RequestItem extends BaseItem {
     private Request request;
@@ -19,7 +23,12 @@ public class RequestItem extends BaseItem {
     public RequestItem(Request r) {
         super(r.getName(), r.getAvatarUrl());
         this.request = r;
-        this.sentAt = r.getSendTime();
+        this.sentAt = (r.getSendTime() != null) ? r.getSendTime() : getCurrentTimestamp();
+    }
+
+    private String getCurrentTimestamp() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     public Request getRequest() {
@@ -124,14 +133,20 @@ public class RequestItem extends BaseItem {
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 
+        JSONObject payload = new JSONObject();
+
+        payload.put("senderId", request.getUserId());
+        payload.put("receiverId", UserSession.getUser().getUserId());
+        payload.put("sentAt", request.getSendTime());
+        payload.put("status", "ACCEPTED");
+
         if (response == JOptionPane.YES_OPTION) {
             // Call backend API to accept
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
                     try {
-                        String url = ApiUrl.ACCEPT_FRIEND_REQUEST + "?userId=" + request.getUserId();
-                        ApiClient.postJSON(url, null, UserSession.getUser().getToken());
+                        ApiClient.postJSON(ApiUrl.DECIDE_FRIEND_REQUEST, payload, UserSession.getUser().getToken());
                         return true;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -178,14 +193,20 @@ public class RequestItem extends BaseItem {
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 
+        JSONObject payload = new JSONObject();
+
+        payload.put("senderId", request.getUserId());
+        payload.put("receiverId", UserSession.getUser().getUserId());
+        payload.put("sentAt", request.getSendTime());
+        payload.put("status", "REJECTED");
+
         if (response == JOptionPane.YES_OPTION) {
             // Call backend API to deny
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
                     try {
-                        String url = ApiUrl.DENY_FRIEND_REQUEST + "?userId=" + request.getUserId();
-                        ApiClient.postJSON(url, null, UserSession.getUser().getToken());
+                        ApiClient.postJSON(ApiUrl.DECIDE_FRIEND_REQUEST, payload, UserSession.getUser().getToken());
                         return true;
                     } catch (Exception e) {
                         e.printStackTrace();
