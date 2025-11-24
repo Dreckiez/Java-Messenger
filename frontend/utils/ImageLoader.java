@@ -1,13 +1,10 @@
 package utils;
 
-import javax.imageio.ImageIO;
 import javax.swing.SwingWorker;
 
 import services.AvatarService;
 
 import java.awt.Image;
-import java.net.URI;
-import java.net.URL;
 
 public class ImageLoader {
 

@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ApiClient {
@@ -79,8 +80,8 @@ public class ApiClient {
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoInput(true);
 
-            conn.setConnectTimeout(5000); // if cant connect to server within 5s getout
-            conn.setReadTimeout(5000); // if server dont res in 5s getout
+            conn.setConnectTimeout(7000); // if cant connect to server within 5s getout
+            conn.setReadTimeout(7000); // if server dont res in 5s getout
 
             int status = conn.getResponseCode();
             InputStream inputStream = (status < 400) ? conn.getInputStream() : conn.getErrorStream();
@@ -96,7 +97,17 @@ public class ApiClient {
             conn.disconnect();
 
             // Convert string response to JSONObject
-            res = new JSONObject(response.toString());
+            String body = response.toString();
+
+            // Detect JSON type
+            if (body.startsWith("[")) {
+                // It's a raw array -> wrap it
+                JSONArray arr = new JSONArray(body);
+                res.put("array", arr);
+            } else {
+                // Normal JSON object
+                res = new JSONObject(body);
+            }
             res.put("httpStatus", status);
 
         } catch (java.net.ConnectException e) {

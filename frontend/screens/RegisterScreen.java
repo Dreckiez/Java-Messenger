@@ -305,6 +305,7 @@ public class RegisterScreen extends JPanel {
             payload.put("lastname", lastname);
             payload.put("email", email);
             payload.put("password", password);
+            payload.put("confirmPassword", confirmPassword);
 
             registerButton.setText("Registering");
             registerButton.setEnabled(false);

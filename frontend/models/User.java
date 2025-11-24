@@ -20,11 +20,19 @@ public class User {
         this.role = role;
     }
 
+    public String getToken() {
+        return token;
+    }
+
     public String getUsername() {
         return username;
     }
 
     public String getAvatar() {
         return avatar;
+    }
+
+    public int getUserId() {
+        return id;
     }
 }

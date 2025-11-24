@@ -5,10 +5,6 @@ import javax.swing.*;
 import utils.ImageEditor;
 
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,37 +64,39 @@ public class InfoPanel extends JPanel {
 
     private JPanel createHeaderSection() {
         JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        headerPanel.setLayout(new GridBagLayout());
         headerPanel.setBackground(Color.WHITE);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
         headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, headerPanel.getPreferredSize().height));
+        headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(0, 0, 0, 0);
 
         // Avatar
         ImageIcon avatar = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg"));
 
         ImageEditor editor = new ImageEditor();
         JLabel avatarLabel = new JLabel(editor.makeCircularImage(avatar.getImage(), 80));
-        avatarLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        headerPanel.add(avatarLabel, gbc);
 
         // Chat name
+        gbc.gridy = 1;
+        gbc.insets = new Insets(15, 0, 5, 0);
         chatNameLabel = new JLabel("Chat Info");
         chatNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        chatNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        chatNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        chatNameLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 0));
+        headerPanel.add(chatNameLabel, gbc);
 
         // Status
+        gbc.gridy = 2;
+        gbc.insets = new Insets(0, 0, 0, 0);
         chatStatusLabel = new JLabel("Active now");
         chatStatusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         chatStatusLabel.setForeground(new Color(100, 100, 100));
-        chatStatusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        chatStatusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        headerPanel.add(avatarLabel);
-        headerPanel.add(chatNameLabel);
-        headerPanel.add(chatStatusLabel);
+        headerPanel.add(chatStatusLabel, gbc);
 
         return headerPanel;
     }
@@ -295,8 +293,9 @@ public class InfoPanel extends JPanel {
     public void addMember(String name, boolean isOnline) {
         JPanel memberItem = new JPanel(new BorderLayout(10, 0));
         memberItem.setBackground(Color.WHITE);
-        memberItem.setBorder(BorderFactory.createEmptyBorder(8, 5, 8, 5));
-        memberItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        memberItem.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        memberItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        memberItem.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Avatar with online indicator
         JPanel avatarPanel = new JPanel() {
@@ -308,30 +307,45 @@ public class InfoPanel extends JPanel {
 
                 // Avatar circle
                 g2d.setColor(new Color(59, 130, 246));
-                g2d.fillOval(0, 0, 36, 36);
+                g2d.fillOval(2, 2, 36, 36);
 
                 // Initial
                 g2d.setColor(Color.WHITE);
                 g2d.setFont(new Font("Segoe UI", Font.BOLD, 16));
                 String initial = name.substring(0, 1);
                 FontMetrics fm = g2d.getFontMetrics();
-                int x = (36 - fm.stringWidth(initial)) / 2;
-                int y = ((36 - fm.getHeight()) / 2) + fm.getAscent();
+                int x = 2 + (36 - fm.stringWidth(initial)) / 2;
+                int y = 2 + ((36 - fm.getHeight()) / 2) + fm.getAscent();
                 g2d.drawString(initial, x, y);
 
                 // Online indicator
                 if (isOnline) {
                     g2d.setColor(new Color(34, 197, 94));
-                    g2d.fillOval(26, 26, 10, 10);
+                    g2d.fillOval(28, 28, 12, 12);
                     g2d.setColor(Color.WHITE);
                     g2d.setStroke(new BasicStroke(2));
-                    g2d.drawOval(26, 26, 10, 10);
+                    g2d.drawOval(28, 28, 12, 12);
                 }
 
                 g2d.dispose();
             }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(45, 45);
+            }
+
+            @Override
+            public Dimension getMinimumSize() {
+                return new Dimension(45, 45);
+            }
+
+            @Override
+            public Dimension getMaximumSize() {
+                return new Dimension(45, 45);
+            }
         };
-        avatarPanel.setPreferredSize(new Dimension(40, 40));
+        // avatarPanel.setPreferredSize(new Dimension(40, 40));
         avatarPanel.setOpaque(false);
 
         JLabel nameLabel = new JLabel(name);

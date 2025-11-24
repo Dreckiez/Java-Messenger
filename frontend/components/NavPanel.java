@@ -11,6 +11,10 @@ public class NavPanel extends JPanel {
     private CardLayout centerLayout;
     private JPanel centerPanel;
 
+    private SearchFriend search;
+    private FriendRequests request;
+    private FriendPanel friend;
+
     public NavPanel(HomeScreen home, CenterPanel center) {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(350, 0));
@@ -27,20 +31,32 @@ public class NavPanel extends JPanel {
         chatList = new ChatList(selectedUser -> {
             center.showChat(selectedUser);
         });
-        SearchFriend searchFriend = new SearchFriend();
+
+        search = new SearchFriend(this);
+        request = new FriendRequests();
+        friend = new FriendPanel();
 
         centerPanel.add(chatList, "chatlist");
-        centerPanel.add(searchFriend, "searchfriend");
+        centerPanel.add(search, "searchfriend");
+        centerPanel.add(request, "request");
+        centerPanel.add(friend, "onlinefriend");
 
         add(centerPanel, BorderLayout.CENTER);
     }
 
     public void showPanel(String name) {
+        switch (name) {
+            case "request":
+                request.fetchRequests(); // Fetch when showing requests
+                break;
+            case "searchfriend":
+                search.resetSearch(); // Reset search when showing
+                break;
+            case "onlinefriend":
+                friend.fetchRequests();
+                break;
+            // Add other cases as needed
+        }
         centerLayout.show(centerPanel, name);
-    }
-
-    public void showChat() {
-        showPanel("chatlist");
-        chatList.selectFirstChat();
     }
 }
