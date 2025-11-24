@@ -29,9 +29,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers("/api/chat/auth/**", "/error", "/ws/**").permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers("/api/chat/auth/**", "/ws/**").permitAll()
                         .requestMatchers("/api/chat/admin").hasAnyAuthority(Role.ADMIN.name())
-                        .requestMatchers("/api/chat/user", "/ws/**").hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
+                        .requestMatchers("/api/chat/user").hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
                         .anyRequest().authenticated())
 
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

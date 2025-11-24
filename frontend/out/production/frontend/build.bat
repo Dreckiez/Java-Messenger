@@ -1,0 +1,9 @@
+@echo off
+echo Compiling source files...
+javac -cp "lib/*;." -d out app\*.java screens\*.java
+
+echo Copying assets...
+xcopy assets out\assets /E /I /Y >nul
+
+echo Running app...
+java -cp "out;lib/*" app.Main

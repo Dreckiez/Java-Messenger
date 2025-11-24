@@ -34,4 +34,7 @@ public interface UserGroupConversationService {
     Map<String, String> modifyRoleMembers(Long userId, Long groupConversationId, ModifyRoleRequest modifyRoleRequest);
 
     Map<String, String> out(Long userId, Long groupConversationId);
+
+    interface WebSocketSenderService {
+    }
 }
