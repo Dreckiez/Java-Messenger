@@ -20,7 +20,9 @@ public interface GroupConversationMemberRepository
     @Query(value = """
             SELECT 
                 u.user_id AS userId,
-                CONCAT(u.last_name, ' ', u.first_name) AS fullName,
+                u.username AS username,
+                u.first_name AS firstName,
+                u.last_name AS lastName,
                 u.avatar_url AS avatarUrl,
                 u.is_online AS isOnline,
                 gcm.group_role AS groupRole,

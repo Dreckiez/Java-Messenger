@@ -1,9 +1,9 @@
 package com.example.spring_security.services.user;
 
 import com.example.spring_security.dto.request.*;
-import com.example.spring_security.dto.response.BasicUserResponse;
 import com.example.spring_security.dto.response.ListGroupConversationMessageResponse;
 import com.example.spring_security.dto.response.SendMessageResponse;
+import com.example.spring_security.dto.response.UserFriendResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public interface UserGroupConversationService {
 
     Map<String, String> updateAvatar(Long userId, Long groupConversationId, MultipartFile avatar);
 
-    List<BasicUserResponse> list(Long userId, Long groupConversationId, String keyword);
+    List<UserFriendResponse> list(Long userId, Long groupConversationId, String keyword);
 
     Map<String, String> addMembers(Long userId, Long groupConversationId, ModifyGroupMemberRequest modifyGroupMemberRequest);
 

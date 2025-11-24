@@ -31,6 +31,11 @@ public class UserBlockServiceImpl implements UserBlockService {
     private final BlockRepository blockRepository;
 
     public Map<String, String> blockRequest(Long blockerId, Long blockedUserId) {
+
+        if (blockerId.equals(blockedUserId)) {
+            throw new CustomException(HttpStatus.CONFLICT, "Illegal behavior. You can not block yourself.");
+        }
+
         if (!userRepository.existsById(blockerId) || !userRepository.existsById(blockedUserId))
             throw new RuntimeException("User no longer exists.");
 
@@ -75,7 +80,9 @@ public class UserBlockServiceImpl implements UserBlockService {
                 .map(b -> UserBlockResponse.builder()
                         .userId(b.getBlockedUser().getUserId())
                         .avatarUrl(b.getBlockedUser().getAvatarUrl())
-                        .fullName(b.getBlockedUser().getLastName() + " " + b.getBlockedUser().getFirstName())
+                        .username(b.getBlockedUser().getUsername())
+                        .firstName(b.getBlockedUser().getFirstName())
+                        .lastName(b.getBlockedUser().getLastName())
                         .blockedAt(b.getBlockedAt())
                         .build())
                 .collect(Collectors.toList());

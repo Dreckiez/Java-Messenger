@@ -80,7 +80,8 @@ CREATE TABLE report (
     title VARCHAR(50),
     content TEXT,
     reported_at TIMESTAMP NOT NULL,
-    PRIMARY KEY(reporter_id, reported_user_id, reported_at)
+    PRIMARY KEY(reporter_id, reported_user_id, reported_at),
+    CONSTRAINT chk_report_not_self CHECK (reporter_id <> reported_user_id)
 );
 
 -- friend_request
@@ -92,7 +93,6 @@ CREATE TABLE friend_request (
     updated_at TIMESTAMP,
     is_active BOOLEAN,
     PRIMARY KEY (sender_id, receiver_id, sent_at),
-    CONSTRAINT uq_friend_request_sender_receiver UNIQUE (sender_id, receiver_id, sent_at),
     CONSTRAINT chk_friend_request_not_self CHECK (sender_id <> receiver_id)
 );
 
@@ -165,7 +165,7 @@ DEFERRABLE INITIALLY DEFERRED;
 CREATE TABLE read_private_conversation_message (
     user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     private_conversation_id BIGINT NOT NULL REFERENCES private_conversation(private_conversation_id) ON DELETE CASCADE,
-    private_conversation_message_id BIGINT NOT NULL REFERENCES private_conversation_message(private_conversation_message_id) ON DELETE SET NULL,
+    private_conversation_message_id BIGINT NOT NULL REFERENCES private_conversation_message(private_conversation_message_id) ON DELETE CASCADE,
     read_at TIMESTAMP,
     PRIMARY KEY (user_id, private_conversation_id)
 );
