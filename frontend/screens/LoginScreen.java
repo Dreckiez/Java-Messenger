@@ -270,8 +270,12 @@ public class LoginScreen extends JPanel {
                                         String role = profile.getString("role");
                                         String avatar = profile.getString("avatarUrl");
                                         int user_id = profile.getInt("userId");
+                                        String address = profile.getString("address");
+                                        String gender = profile.getString("gender");
+                                        String birthDay = profile.optString("birthDay", "2025-11-17");
 
-                                        UserSession.setUserInfo(user_id, username, avatar, role);
+                                        UserSession.setUserInfo(user_id, username, avatar, role, address, gender,
+                                                birthDay);
 
                                         if (role.equals("ADMIN")) {
                                             mainScreen.showPanel("dashboard");

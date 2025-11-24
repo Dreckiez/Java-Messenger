@@ -30,9 +30,10 @@ public class UserSession {
         return currentUser;
     }
 
-    public static void setUserInfo(int id, String username, String avatar, String role) {
+    public static void setUserInfo(int id, String username, String avatar, String role, String address, String gender,
+            String birthday) {
         if (currentUser != null) {
-            currentUser.setUserInfo(id, username, avatar, role);
+            currentUser.setUserInfo(id, username, avatar, role, address, gender, birthday);
             notifyListeners();
         }
     }
