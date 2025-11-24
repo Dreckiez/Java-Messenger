@@ -20,9 +20,9 @@ public class GroupMemberResponse extends BaseUserResponse {
 
     private LocalDateTime appointedAt;
 
-    GroupMemberResponse(Long userId, String fullName, String avatarUrl, Boolean isOnline,
+    GroupMemberResponse(Long userId, String username, String firstName, String lastName, String avatarUrl, Boolean isOnline,
                         Short groupRole, java.sql.Timestamp joinedAt, java.sql.Timestamp appointedAt) {
-        super(userId, fullName, avatarUrl);
+        super(userId, username, firstName, lastName, avatarUrl);
         this.isOnline = isOnline;
         GroupRole.Converter converter = new GroupRole.Converter();
         this.groupRole = converter.fromShort(groupRole);

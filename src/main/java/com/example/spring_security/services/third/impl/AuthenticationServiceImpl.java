@@ -112,15 +112,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             jwtAuthenticationResponse.setToken(token);
             jwtAuthenticationResponse.setRefreshToken(refreshToken);
             jwtAuthenticationResponse.setUserProfileResponse(
-                    UserProfileResponse.builder()
-                            .userId(user.getUserId())
-                            .fullName(user.getLastName() + " " + user.getFirstName())
-                            .address(user.getAddress())
-                            .birthDay(user.getBirthday())
-                            .avatarUrl(user.getAvatarUrl())
-                            .gender(user.getGender())
-                            .joinedAt(user.getJoinedAt())
-                            .build()
+                    new UserProfileResponse(user)
             );
             recordSignIn.setIsSuccessful(true);
             recordSignIn.setUser(user);

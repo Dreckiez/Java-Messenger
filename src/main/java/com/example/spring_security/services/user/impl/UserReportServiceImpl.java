@@ -8,6 +8,7 @@ import com.example.spring_security.repository.ReportRepository;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.services.user.UserReportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,10 @@ public class UserReportServiceImpl implements UserReportService {
     private final ReportRepository reportRepository;
 
     public Map<String, String> report(ReportRequest reportRequest, Long reporterId, Long reportedUserId) {
+
+        if (reportedUserId.equals(reporterId)) {
+            throw new CustomException(HttpStatus.CONFLICT, "Illegal behavior. You can not report yourself.");
+        }
 
         ReportId reportId = new ReportId(reporterId, reportedUserId, LocalDateTime.now());
         Report report = Report.builder()

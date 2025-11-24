@@ -62,18 +62,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     public UserProfileResponse getProfile(User user) {
-        UserProfileResponse userProfileResponse = UserProfileResponse.builder()
-                .userId(user.getUserId())
-                .fullName(user.getLastName() + " " + user.getFirstName())
-                .address(user.getAddress())
-                .birthDay(user.getBirthday())
-                .avatarUrl(user.getAvatarUrl())
-                .gender(user.getGender())
-                .role(user.getRole())
-                .joinedAt(user.getJoinedAt())
-                .build();
-
-        return userProfileResponse;
+        return new UserProfileResponse(user);
     }
 
     public UserProfileResponse updateProfile(UpdateProfileRequest updateProfileRequest, User user) {
@@ -98,15 +87,9 @@ public class UserProfileServiceImpl implements UserProfileService {
             user.setBirthday(updateProfileRequest.getBirthday());
         }
 
-        return UserProfileResponse.builder()
-                .userId(user.getUserId())
-                .fullName(user.getLastName() + " " + user.getFirstName())
-                .address(user.getAddress())
-                .birthDay(user.getBirthday())
-                .avatarUrl(user.getAvatarUrl())
-                .gender(user.getGender())
-                .joinedAt(user.getJoinedAt())
-                .build();
+        userRepository.save(user);
+
+        return new UserProfileResponse(user);
     }
 
     public Map<String, String> changePassword(ChangePasswordRequest changePasswordRequest, User user) {
@@ -220,18 +203,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     public UserProfileResponse getUserProfile(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found."));
-
-        UserProfileResponse response = UserProfileResponse.builder()
-                .userId(user.getUserId())
-                .fullName(user.getLastName() + " " + user.getFirstName())
-                .address(user.getAddress())
-                .birthDay(user.getBirthday())
-                .avatarUrl(user.getAvatarUrl())
-                .gender(user.getGender())
-                .joinedAt(user.getJoinedAt())
-                .build();
-
-        return response;
+        return new UserProfileResponse(user);
     }
 
 }

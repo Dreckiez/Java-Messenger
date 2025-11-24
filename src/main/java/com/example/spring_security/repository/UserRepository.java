@@ -1,6 +1,7 @@
 package com.example.spring_security.repository;
 
 import com.example.spring_security.dto.response.BaseUserResponse;
+import com.example.spring_security.dto.response.UserSearchResponse;
 import com.example.spring_security.entities.Enum.Role;
 import com.example.spring_security.entities.User;
 import jakarta.validation.constraints.Email;
@@ -31,10 +32,35 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     @Query(value = """
-            SELECT * 
+            SELECT 
+                u.user_id AS userId,
+                u.username AS username,
+                u.first_name AS firstName,
+                u.last_name AS lastName,
+                u.avatar_url AS avatarUrl,
+                CASE
+                    WHEN f.user_id1 IS NOT NULL THEN 'friend'
+                    WHEN fr.sender_id = :currentUserId THEN 'sent'
+                    WHEN fr.receiver_id = :currentUserId AND fr.status = 0 THEN 'received'
+                    ELSE 'none'
+                END AS status
             FROM user_info u
-            WHERE u.user_id <> :currentUserId
-            AND u.is_active = TRUE AND u.is_accepted = TRUE
+            
+            LEFT JOIN friend f ON (
+                                    f.user_id1 = :currentUserId AND f.user_id2 = u.user_id
+                                    OR 
+                                    f.user_id2 = :currentUserId AND f.user_id1 = u.user_id
+                                  )
+                                  
+                                  
+            LEFT JOIN friend_request fr ON (    fr.is_active = true
+                                                AND
+                                                (fr.sender_id = :currentUserId AND fr.receiver_id = u.user_id
+                                                OR 
+                                                fr.receiver_id = :currentUserId AND fr.sender_id = u.user_id)
+                                           )
+            
+            WHERE u.is_active = TRUE AND u.is_accepted = TRUE
             AND (u.username ILIKE CONCAT('%', :keyword, '%')
             OR 
             CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%'))
@@ -45,9 +71,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 OR (B.blocker_id = u.user_id AND B.blocked_user_id = :currentUserId))
                 AND B.is_active = TRUE
                 )
+            ORDER BY 
+                     (u.user_id = :currentUserId) DESC
             """, nativeQuery = true)
-    List<User> searchUserByUsernameOrFullName(@Param("currentUserId") Long currentUserId,
-                                              @Param("keyword") String keyword);
+    List<UserSearchResponse> searchUserByUsernameOrFullName(@Param("currentUserId") Long currentUserId,
+                                                            @Param("keyword") String keyword);
 
 
 
@@ -59,6 +87,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
           OR :keyword = ''
           OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%')
           OR u.username ILIKE CONCAT('%', :keyword, '%')
+          OR u.email ILIKE CONCAT('%', :keyword, '%')
         )
         AND ( :isActive IS NULL OR u.is_active = :isActive )
         AND ( :isAccepted IS NULL OR u.is_accepted = :isAccepted )

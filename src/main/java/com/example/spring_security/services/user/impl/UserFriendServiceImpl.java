@@ -117,12 +117,7 @@ public class UserFriendServiceImpl implements UserFriendService {
     public List<FriendRequestResponse> getListFriendRequestReceive(Long id, String keyword) {
         List<FriendRequest> listFriendRequest = friendRequestRepository.findPendingRequestsReceived(id, keyword);
         List<FriendRequestResponse> listFriendRequestResponse = listFriendRequest.stream()
-                .map(f -> FriendRequestResponse.builder()
-                        .userId(f.getSender().getUserId())
-                        .fullName(f.getSender().getLastName() + " " + f.getSender().getFirstName())
-                        .avatarUrl(f.getSender().getAvatarUrl())
-                        .sentAt(f.getId().getSentAt())
-                        .build())
+                .map(f -> new FriendRequestResponse(f.getSender(), f.getId().getSentAt()))
                         .collect(Collectors.toList());
         return listFriendRequestResponse;
     }
@@ -131,12 +126,7 @@ public class UserFriendServiceImpl implements UserFriendService {
     public List<FriendRequestResponse> getListFriendRequestSent(Long id, String keyword) {
         List<FriendRequest> listFriendRequest = friendRequestRepository.findPendingRequestsSent(id, keyword);
         List<FriendRequestResponse> listFriendRequestResponse = listFriendRequest.stream()
-                .map(f -> FriendRequestResponse.builder()
-                        .userId(f.getReceiver().getUserId())
-                        .fullName(f.getReceiver().getLastName() + " " + f.getReceiver().getFirstName())
-                        .avatarUrl(f.getReceiver().getAvatarUrl())
-                        .sentAt(f.getId().getSentAt())
-                        .build())
+                .map(f -> new FriendRequestResponse(f.getReceiver(), f.getId().getSentAt()))
                         .collect(Collectors.toList());
         return listFriendRequestResponse;
     }

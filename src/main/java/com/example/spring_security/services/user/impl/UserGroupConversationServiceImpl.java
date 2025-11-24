@@ -352,7 +352,7 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
         }
     }
 
-    public List<BasicUserResponse> list(Long userId, Long groupConversationId, String keyword) {
+    public List<UserFriendResponse> list(Long userId, Long groupConversationId, String keyword) {
         GroupConversation groupConversation = groupConversationRepository.findById(groupConversationId)
                 .orElseThrow(
                         () -> new CustomException(HttpStatus.NOT_FOUND, "This conversation no longer exists.")
@@ -367,9 +367,7 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
         if (keyword == null) keyword = "";
 
-        System.out.println("Here");
-
-        List<BasicUserResponse> basicUserResponseList = friendRepository
+        List<UserFriendResponse> basicUserResponseList = friendRepository
                 .findFriendsToAddGroup(userId, groupConversationId, keyword);
 
         return basicUserResponseList;

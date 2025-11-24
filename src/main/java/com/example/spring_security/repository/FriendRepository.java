@@ -1,13 +1,8 @@
 package com.example.spring_security.repository;
 
-import com.example.spring_security.dto.response.BaseUserResponse;
-import com.example.spring_security.dto.response.BasicUserResponse;
 import com.example.spring_security.dto.response.UserFriendResponse;
 import com.example.spring_security.entities.Friend;
 import com.example.spring_security.entities.FriendId;
-import com.example.spring_security.entities.User;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -69,7 +64,9 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
     @Query(value = """
     SELECT 
         u.user_id AS userId,
-        CONCAT(u.last_name, ' ', u.first_name) AS fullName,
+        u.username AS username,
+        u.first_name AS firstName,
+        u.last_name AS lastName,
         u.avatar_url AS avatarUrl,
         u.is_online AS isOnline,
         u.address AS address,
@@ -96,9 +93,13 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
     @Query(value = """
     SELECT 
         u.user_id AS userId,
-        CONCAT(u.last_name, ' ', u.first_name) AS fullName,
+        u.username AS username,
+        u.first_name AS firstName,
+        u.last_name AS lastName,
         u.avatar_url AS avatarUrl,
-        u.is_online AS isOnline
+        u.is_online AS isOnline,
+        u.address AS address,
+        f.made_friend_at AS madeFriendAt
     FROM friend f
     JOIN user_info u ON (
         (f.user_id1 = :userId AND f.user_id2 = u.user_id)
@@ -113,7 +114,7 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
                    )
     ORDER BY u.is_online DESC
 """, nativeQuery = true)
-    List<BasicUserResponse> findFriendsToAddGroup(@Param("userId") Long userId,
+    List<UserFriendResponse> findFriendsToAddGroup(@Param("userId") Long userId,
                                                   @Param("groupConversationId") Long groupConversationId,
                                                   @Param("keyword") String keyword);
 

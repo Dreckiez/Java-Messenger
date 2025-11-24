@@ -1,8 +1,8 @@
 package com.example.spring_security.controller.user;
 import com.example.spring_security.dto.request.*;
-import com.example.spring_security.dto.response.BasicUserResponse;
 import com.example.spring_security.dto.response.ListGroupConversationMessageResponse;
 import com.example.spring_security.dto.response.SendMessageResponse;
+import com.example.spring_security.dto.response.UserFriendResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.services.user.UserGroupConversationService;
 import jakarta.validation.Valid;
@@ -88,7 +88,7 @@ public class UserGroupConversationController {
     }
 
     @GetMapping("{id}/list-add-members")
-    public ResponseEntity<List<BasicUserResponse>> list(
+    public ResponseEntity<List<UserFriendResponse>> list(
             @AuthenticationPrincipal User user,
             @PathVariable("id") Long groupConversationId,
             @RequestParam(value = "keyword", required = false) String keyword
