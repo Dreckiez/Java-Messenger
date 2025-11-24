@@ -14,6 +14,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class BaseUserResponse {
     private Long userId;
-    private String fullName;
+    private String username;
+    private String firstName;
+    private String lastName;
     private String avatarUrl;
 }

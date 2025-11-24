@@ -80,7 +80,8 @@ CREATE TABLE report (
     title VARCHAR(50),
     content TEXT,
     reported_at TIMESTAMP NOT NULL,
-    PRIMARY KEY(reporter_id, reported_user_id, reported_at)
+    PRIMARY KEY(reporter_id, reported_user_id, reported_at),
+    CONSTRAINT chk_block_not_self CHECK (reporter_id <> reported_user_id)
 );
 
 -- friend_request
