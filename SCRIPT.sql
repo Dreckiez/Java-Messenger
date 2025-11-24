@@ -81,7 +81,7 @@ CREATE TABLE report (
     content TEXT,
     reported_at TIMESTAMP NOT NULL,
     PRIMARY KEY(reporter_id, reported_user_id, reported_at),
-    CONSTRAINT chk_block_not_self CHECK (reporter_id <> reported_user_id)
+    CONSTRAINT chk_report_not_self CHECK (reporter_id <> reported_user_id)
 );
 
 -- friend_request
