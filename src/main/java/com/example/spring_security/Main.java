@@ -4,6 +4,7 @@ import com.example.spring_security.entities.Enum.Gender;
 import com.example.spring_security.entities.Enum.Role;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.repository.UserRepository;
+import com.example.spring_security.services.third.InitializationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -14,33 +15,15 @@ import java.time.LocalDateTime;
 
 @SpringBootApplication
 public class Main implements CommandLineRunner {
-
     @Autowired
-    private UserRepository userRepository;
+    private InitializationService initializationService;
+
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
     }
 
     @Override
     public void run(String... args) throws Exception {
-        User adminAccount = userRepository.findByRole(Role.ADMIN);
-        if (adminAccount == null) {
-            User user = new User();
-            user.setUsername("admin123");
-            user.setEmail("admin123@gmail.com");
-            user.setFirstName("User");
-            user.setLastName("Super");
-            user.setRole(Role.ADMIN);
-            user.setHashPassword(new BCryptPasswordEncoder().encode("admin123"));
-            user.setIsAccepted(true);
-            user.setIsActive(true);
-            user.setIsOnline(false);
-            user.setAvatarUrl("");
-            user.setAddress("");
-            user.setJoinedAt(LocalDateTime.now());
-            user.setGender(Gender.HIDDEN);
-            user.setFriendCount(0);
-            userRepository.save(user);
-        }
+        initializationService.initAdmin();
     }
 }
