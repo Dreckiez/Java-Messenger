@@ -20,7 +20,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import models.Friend;
-import models.Request;
 import utils.ApiClient;
 import utils.ApiUrl;
 import utils.UserSession;
@@ -247,7 +246,7 @@ public class FriendPanel extends JPanel {
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
 
-                    String name = o.optString("fullName", "");
+                    String name = o.optString("username", "");
                     String avatar = o.optString("avatarUrl", "");
                     int userId = o.getInt("userId");
                     Boolean isonline = o.getBoolean("isOnline");

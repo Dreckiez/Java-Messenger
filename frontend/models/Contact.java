@@ -4,9 +4,9 @@ public class Contact {
     private int id;
     private String name;
     private String avatar;
-    private boolean isFriend;
+    private String isFriend;
 
-    public Contact(int id, String name, String avatarUrl, boolean isFriend) {
+    public Contact(int id, String name, String avatarUrl, String isFriend) {
         this.name = name;
         this.avatar = avatarUrl;
         this.isFriend = isFriend;
@@ -20,7 +20,7 @@ public class Contact {
         return avatar;
     }
 
-    public Boolean isFriend() {
+    public String isFriend() {
         return isFriend;
     }
 

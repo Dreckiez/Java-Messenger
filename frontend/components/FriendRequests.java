@@ -238,7 +238,7 @@ public class FriendRequests extends JPanel {
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
 
-                    String name = o.optString("fullName", "");
+                    String name = o.optString("username", "");
                     String avatar = o.optString("avatarUrl", "");
                     int userId = o.getInt("userId");
                     String time = o.getString("sentAt");

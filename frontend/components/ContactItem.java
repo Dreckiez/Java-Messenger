@@ -8,9 +8,9 @@ import java.awt.*;
 
 public class ContactItem extends BaseItem {
 
-    private boolean isFriend;
+    private String isFriend;
 
-    public ContactItem(String username, String avatarUrl, boolean isFriend) {
+    public ContactItem(String username, String avatarUrl, String isFriend) {
         super(username, avatarUrl);
         this.isFriend = isFriend;
     }
@@ -28,7 +28,7 @@ public class ContactItem extends BaseItem {
         JLabel name = new JLabel(username);
         name.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        JLabel status = new JLabel(isFriend ? "Friend" : "Not friends yet");
+        JLabel status = new JLabel(isFriend.equals("friend") ? "Friend" : "Not friends yet");
         status.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         status.setForeground(new Color(130, 130, 130));
         status.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));

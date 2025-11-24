@@ -185,9 +185,9 @@ public class SearchFriend extends JPanel {
                     JSONObject o = arr.getJSONObject(i);
 
                     int id = o.getInt("userId");
-                    String name = o.optString("fullName", "");
+                    String name = o.optString("username", "");
                     String avatar = o.optString("avatarUrl", "");
-                    boolean isFriend = false; // backend doesn't send this
+                    String isFriend = o.getString("status"); // backend doesn't send this
 
                     list.add(new Contact(id, name, avatar, isFriend));
                 }
