@@ -3,6 +3,7 @@ package com.example.spring_security.config;
 import com.example.spring_security.services.third.JWTService;
 
 import com.example.spring_security.services.user.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,11 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        jwt = authHeader.substring(7);
-        username = jwtService.extractUsername(jwt);
 
-        if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
+        jwt = authHeader.substring(7);
+
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
+
+                username = jwtService.extractUsername(jwt);
+
                 UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -59,6 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"message\": \"User not found or deleted\"}");
+                return;
+            }
+            catch (ExpiredJwtException e) {
+                response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"message\": \"" + e.getMessage() + "\"}");
                 return;
             }
         }

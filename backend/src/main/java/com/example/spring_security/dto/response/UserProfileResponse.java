@@ -19,7 +19,7 @@ public class UserProfileResponse extends BaseUserResponse {
     private LocalDate birthDay;
     private Gender gender;
     private LocalDateTime joinedAt;
-
+    private Role role;
     public UserProfileResponse(User user) {
         super(user.getUserId(), user.getUsername(), user.getFirstName(), user.getLastName(), user.getAvatarUrl());
 
@@ -31,6 +31,7 @@ public class UserProfileResponse extends BaseUserResponse {
 
         this.gender = user.getGender();
 
+        this.role = user.getRole();
     }
 
 }

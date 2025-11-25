@@ -1,8 +1,10 @@
 package com.example.spring_security.config;
 
+import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.services.third.JWTService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -26,21 +28,25 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        System.out.println("Presend working!!!");
+
+
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        if (accessor == null) System.out.println("Accessor: NULL");
-        System.out.println("Command: " + accessor.getCommand());
-        System.out.println("All native headers: " + accessor.toNativeHeaderMap());
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
             List<String> authHeader = accessor.getNativeHeader("Authorization");
-            System.out.println("Header: " + authHeader);
+
             if (authHeader != null && !authHeader.isEmpty()) {
+
                 String token = authHeader.get(0).replace("Bearer ", "");
+
                 String username = jwtService.extractUsername(token);
+
                 UserDetails userDetails = userRepository.findByUsername(username).orElse(null);
-                if (userDetails != null) {
-                    accessor.setUser(new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities()));
-                }
+
+                if (jwtService.isTokenValid(token, userDetails))
+                    if (userDetails != null) {
+                        accessor.setUser(new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities()));
+                    }
+
             }
         }
         return message;
