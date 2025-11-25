@@ -21,4 +21,5 @@ public interface AuthenticationService {
     User verifyToken (String token);
 
     Map<String, String> resetPassword(VerificationRequest verificationRequest);
+
 }
