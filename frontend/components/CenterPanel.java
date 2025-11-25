@@ -33,5 +33,6 @@ public class CenterPanel extends JPanel {
 
     public void showSettings() {
         layout.show(this, "settings");
+        settingPanel.refreshData();
     }
 }

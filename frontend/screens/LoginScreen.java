@@ -270,8 +270,15 @@ public class LoginScreen extends JPanel {
                                         String role = profile.getString("role");
                                         String avatar = profile.getString("avatarUrl");
                                         int user_id = profile.getInt("userId");
+                                        String address = profile.getString("address");
+                                        String gender = profile.getString("gender");
+                                        String birthDay = profile.optString("birthDay", "");
+                                        String email = profile.getString("email");
+                                        String fname = profile.getString("firstName");
+                                        String lname = profile.getString("lastName");
 
-                                        UserSession.setUserInfo(user_id, username, avatar, role);
+                                        UserSession.setUserInfo(user_id, username, avatar, role, address, gender,
+                                                birthDay, email, fname, lname);
 
                                         if (role.equals("ADMIN")) {
                                             mainScreen.showPanel("dashboard");
