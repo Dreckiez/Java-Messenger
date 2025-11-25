@@ -1,6 +1,3 @@
--- ======================
--- Core tables
--- ======================
 
 -- user_info
 CREATE TABLE user_info (
@@ -258,9 +255,7 @@ CREATE TABLE encryption_group (
     PRIMARY KEY (user_id, group_conversation_id, device_id)
 );
 
--- ======================
 -- Indexes
--- ======================
 CREATE INDEX idx_userinfo_email ON user_info(email);
 CREATE INDEX idx_private_conv_user1 ON private_conversation(user1_id);
 CREATE INDEX idx_private_conv_user2 ON private_conversation(user2_id);
@@ -274,9 +269,8 @@ ON delete_private_conversation (user_id, private_conversation_id);
 CREATE INDEX idx_delete_msg_user_deletedat
 ON delete_private_conversation_message (user_id, deleted_at DESC);
 
--- ======================
+
 -- Triggers
--- ======================
 CREATE OR REPLACE FUNCTION trigger_set_timestamptz_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
