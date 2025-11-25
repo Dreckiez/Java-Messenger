@@ -6,6 +6,7 @@ public class User {
     private String firstName;
     private String lastName;
     private String avatar;
+    private String email;
     private String address;
     private String gender;
     private String bDay;
@@ -19,11 +20,12 @@ public class User {
     }
 
     public void setUserInfo(int id, String username, String avatar, String role, String address, String gender,
-            String birthDay) {
+            String birthDay, String email, String firstName, String lastName) {
         this.id = id;
         this.username = username;
-        // this.firstName = firstName;
-        // this.lastName = lastName;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
         this.address = address;
         this.gender = gender;
         this.bDay = birthDay;
@@ -49,6 +51,10 @@ public class User {
 
     public String getLName() {
         return lastName;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getAddress() {

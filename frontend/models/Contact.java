@@ -7,6 +7,7 @@ public class Contact {
     private String isFriend;
 
     public Contact(int id, String name, String avatarUrl, String isFriend) {
+        this.id = id;
         this.name = name;
         this.avatar = avatarUrl;
         this.isFriend = isFriend;

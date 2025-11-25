@@ -6,6 +6,7 @@ import models.Friend;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 
 public class FriendItem extends BaseItem {
     private Friend friend;
@@ -16,6 +17,39 @@ public class FriendItem extends BaseItem {
         super(f.getName(), f.getAvatarUrl());
         this.friend = f;
         this.isOnline = (f.getOnline() != null) ? f.getOnline() : false;
+
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // 15px left margin
+        centerWrapper.add(createCenterPanel(), BorderLayout.CENTER);
+        add(centerWrapper, BorderLayout.CENTER);
+
+        actionPanel = createActionPanel();
+        if (actionPanel != null) {
+            JPanel actionWrapper = new JPanel(new BorderLayout());
+            actionWrapper.setOpaque(false);
+            actionWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // 10px top margin
+
+            // Add horizontal separator line
+            JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+            separator.setForeground(new Color(120, 120, 120));
+            actionWrapper.add(separator, BorderLayout.NORTH);
+
+            actionWrapper.add(actionPanel, BorderLayout.CENTER);
+            add(actionWrapper, BorderLayout.SOUTH);
+            actionWrapper.setVisible(false);
+            this.actionPanel = actionWrapper; // Store wrapper instead
+        }
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                setSelected(true);
+            }
+        });
+
+        setAlignmentX(Component.LEFT_ALIGNMENT);
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height));
     }
 
     public Friend getFriend() {

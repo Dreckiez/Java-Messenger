@@ -31,9 +31,9 @@ public class UserSession {
     }
 
     public static void setUserInfo(int id, String username, String avatar, String role, String address, String gender,
-            String birthday) {
+            String birthday, String email, String firstName, String lastName) {
         if (currentUser != null) {
-            currentUser.setUserInfo(id, username, avatar, role, address, gender, birthday);
+            currentUser.setUserInfo(id, username, avatar, role, address, gender, birthday, email, firstName, lastName);
             notifyListeners();
         }
     }

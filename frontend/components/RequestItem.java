@@ -12,6 +12,7 @@ import utils.UserSession;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -24,6 +25,39 @@ public class RequestItem extends BaseItem {
         super(r.getName(), r.getAvatarUrl());
         this.request = r;
         this.sentAt = (r.getSendTime() != null) ? r.getSendTime() : getCurrentTimestamp();
+
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // 15px left margin
+        centerWrapper.add(createCenterPanel(), BorderLayout.CENTER);
+        add(centerWrapper, BorderLayout.CENTER);
+
+        actionPanel = createActionPanel();
+        if (actionPanel != null) {
+            JPanel actionWrapper = new JPanel(new BorderLayout());
+            actionWrapper.setOpaque(false);
+            actionWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // 10px top margin
+
+            // Add horizontal separator line
+            JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+            separator.setForeground(new Color(120, 120, 120));
+            actionWrapper.add(separator, BorderLayout.NORTH);
+
+            actionWrapper.add(actionPanel, BorderLayout.CENTER);
+            add(actionWrapper, BorderLayout.SOUTH);
+            actionWrapper.setVisible(false);
+            this.actionPanel = actionWrapper; // Store wrapper instead
+        }
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                setSelected(true);
+            }
+        });
+
+        setAlignmentX(Component.LEFT_ALIGNMENT);
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height));
     }
 
     private String getCurrentTimestamp() {

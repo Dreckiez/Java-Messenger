@@ -187,7 +187,7 @@ public class SearchFriend extends JPanel {
                     int id = o.getInt("userId");
                     String name = o.optString("username", "");
                     String avatar = o.optString("avatarUrl", "");
-                    String isFriend = o.getString("status"); // backend doesn't send this
+                    String isFriend = o.getString("status");
 
                     list.add(new Contact(id, name, avatar, isFriend));
                 }

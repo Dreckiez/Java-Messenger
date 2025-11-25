@@ -5,19 +5,86 @@ import javax.swing.*;
 import models.Contact;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 
 public class ContactItem extends BaseItem {
 
-    private String isFriend;
+    private String isFriend = "none";
 
     public ContactItem(String username, String avatarUrl, String isFriend) {
         super(username, avatarUrl);
-        this.isFriend = isFriend;
+        this.isFriend = (isFriend != null) ? isFriend : "none";
+
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // 15px left margin
+        centerWrapper.add(createCenterPanel(), BorderLayout.CENTER);
+        add(centerWrapper, BorderLayout.CENTER);
+
+        actionPanel = createActionPanel();
+        if (actionPanel != null) {
+            JPanel actionWrapper = new JPanel(new BorderLayout());
+            actionWrapper.setOpaque(false);
+            actionWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // 10px top margin
+
+            // Add horizontal separator line
+            JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+            separator.setForeground(new Color(120, 120, 120));
+            actionWrapper.add(separator, BorderLayout.NORTH);
+
+            actionWrapper.add(actionPanel, BorderLayout.CENTER);
+            add(actionWrapper, BorderLayout.SOUTH);
+            actionWrapper.setVisible(false);
+            this.actionPanel = actionWrapper; // Store wrapper instead
+        }
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                setSelected(true);
+            }
+        });
+
+        setAlignmentX(Component.LEFT_ALIGNMENT);
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height));
     }
 
     public ContactItem(Contact c) {
         super(c.getName(), c.getAvatarUrl());
-        this.isFriend = c.isFriend();
+        this.isFriend = (c.isFriend() != null) ? c.isFriend() : "none";
+
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // 15px left margin
+        centerWrapper.add(createCenterPanel(), BorderLayout.CENTER);
+        add(centerWrapper, BorderLayout.CENTER);
+
+        actionPanel = createActionPanel();
+        if (actionPanel != null) {
+            JPanel actionWrapper = new JPanel(new BorderLayout());
+            actionWrapper.setOpaque(false);
+            actionWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // 10px top margin
+
+            // Add horizontal separator line
+            JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+            separator.setForeground(new Color(120, 120, 120));
+            actionWrapper.add(separator, BorderLayout.NORTH);
+
+            actionWrapper.add(actionPanel, BorderLayout.CENTER);
+            add(actionWrapper, BorderLayout.SOUTH);
+            actionWrapper.setVisible(false);
+            this.actionPanel = actionWrapper; // Store wrapper instead
+        }
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                setSelected(true);
+            }
+        });
+
+        setAlignmentX(Component.LEFT_ALIGNMENT);
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height));
     }
 
     @Override
@@ -28,7 +95,7 @@ public class ContactItem extends BaseItem {
         JLabel name = new JLabel(username);
         name.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        JLabel status = new JLabel(isFriend.equals("friend") ? "Friend" : "Not friends yet");
+        JLabel status = new JLabel((isFriend != null && isFriend.equals("friend")) ? "Friend" : "Not friends yet");
         status.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         status.setForeground(new Color(130, 130, 130));
         status.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
@@ -44,7 +111,10 @@ public class ContactItem extends BaseItem {
                                                                              // padding
         panel.setOpaque(false); // Transparent background
 
-        JButton addBtn = new JButton("Send Friend Request");
+        Boolean friend = (isFriend != null && isFriend.equals("friend")) ? true : false;
+        String text = friend ? "Friend" : "Not friends yet";
+
+        JButton addBtn = new JButton(text);
         addBtn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         addBtn.setForeground(Color.WHITE);
         addBtn.setBackground(new Color(0, 122, 255)); // iOS-style blue
