@@ -84,7 +84,7 @@ public class UserManage extends JPanel {
         centerPanel.add(filtersPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = { "ID", "Username", "Full Name", "Email", "Status", "Friends", "Activities", "Date Joined" };
+        String[] columns = { "ID", "Username", "Full Name", "Email", "Status", "Friends", "Date Joined" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -186,7 +186,7 @@ public class UserManage extends JPanel {
 
         gbc.gridx = 5;
         gbc.weightx = 0.5;
-        statusFilter = new JComboBox<>(new String[] { "All", "Working", "Locked" });
+        statusFilter = new JComboBox<>(new String[] { "All", "Active", "Locked" });
         panel.add(statusFilter, gbc);
 
         // Row 2: Friend count, Activity count, Date
@@ -202,18 +202,9 @@ public class UserManage extends JPanel {
 
         gbc.gridx = 2;
         gbc.weightx = 0;
-        panel.add(new JLabel("Activities (from):"), gbc);
-
-        gbc.gridx = 3;
-        gbc.weightx = 1;
-        activityCountFilter = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1));
-        panel.add(activityCountFilter, gbc);
-
-        gbc.gridx = 4;
-        gbc.weightx = 0;
         panel.add(new JLabel("Date Joined (from):"), gbc);
 
-        gbc.gridx = 5;
+        gbc.gridx = 3;
         gbc.weightx = 0.5;
         dateFilter = new JTextField("yyyy-MM-dd");
         dateFilter.setForeground(Color.GRAY);
@@ -265,11 +256,11 @@ public class UserManage extends JPanel {
 
     private void loadUserData() {
         Object[][] sampleData = {
-                { 1, "John Doe", "john_doe", "john@example.com", "Working", 45, 230, "2024-01-15" },
-                { 2, "Jane Smith", "jane_smith", "jane@example.com", "Working", 78, 450, "2024-02-20" },
-                { 3, "Admin User", "admin", "admin@example.com", "Working", 120, 890, "2023-12-10" },
-                { 4, "Bob Wilson", "bob_wilson", "bob@example.com", "Locked", 23, 105, "2024-03-05" },
-                { 5, "Alice Brown", "alice_brown", "alice@example.com", "Working", 92, 567, "2024-01-28" }
+                { 1, "John Doe", "john_doe", "john@example.com", "Active", 45, "2024-01-15" },
+                { 2, "Jane Smith", "jane_smith", "jane@example.com", "Active", 78, "2024-02-20" },
+                { 3, "Admin User", "admin", "admin@example.com", "Active", 120, "2023-12-10" },
+                { 4, "Bob Wilson", "bob_wilson", "bob@example.com", "Locked", 23, "2024-03-05" },
+                { 5, "Alice Brown", "alice_brown", "alice@example.com", "Active", 92, "2024-01-28" }
         };
 
         for (Object[] row : sampleData) {
@@ -345,7 +336,7 @@ public class UserManage extends JPanel {
     }
 
     private void unlockSelectedUser() {
-        updateUserStatus("Working");
+        updateUserStatus("Active");
     }
 
     private void updateUserStatus(String status) {
@@ -372,7 +363,7 @@ public class UserManage extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a user!");
             return;
         }
-        screen.showLoginHistory();
+        screen.showDashboard("history");
     }
 
     private void showFriendList() {
