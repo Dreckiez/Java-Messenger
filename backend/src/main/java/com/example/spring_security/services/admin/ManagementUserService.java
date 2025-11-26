@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ManagementUserService {
-    List<User> getUserDetailList(String keyword, Boolean isActive,
+    List<User> getUserDetailList(String keyword, String username, String fullName, String email, Boolean isActive,
                                  Boolean isAccepted, Integer greaterThan,
                                  Integer smallerThan, String sort,
                                  Integer days);

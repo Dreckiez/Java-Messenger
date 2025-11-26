@@ -60,7 +60,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                                                 fr.receiver_id = :currentUserId AND fr.sender_id = u.user_id)
                                            )
             
-            WHERE u.is_active = TRUE AND u.is_accepted = TRUE
+            WHERE u.is_active = TRUE AND u.is_accepted = TRUE AND u.role = 0
             AND (u.username ILIKE CONCAT('%', :keyword, '%')
             OR 
             CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%'))
@@ -83,11 +83,28 @@ public interface UserRepository extends JpaRepository<User, Long> {
     SELECT * 
     FROM user_info u
     WHERE
-        ( :keyword IS NULL 
-          OR :keyword = ''
-          OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%')
-          OR u.username ILIKE CONCAT('%', :keyword, '%')
-          OR u.email ILIKE CONCAT('%', :keyword, '%')
+        (
+            ( :keyword IS NULL 
+              OR :keyword = ''
+              OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%')
+              OR u.username ILIKE CONCAT('%', :keyword, '%')
+              OR u.email ILIKE CONCAT('%', :keyword, '%')
+            )
+            OR 
+            ( :username IS NULL 
+              OR  :username = ''
+              OR u.username ILIKE CONCAT('%', :username, '%')
+            )
+            OR 
+            ( :fullName IS NULL 
+              OR  :fullName = ''
+              OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :fullName, '%')
+            )
+            OR 
+            ( :email IS NULL 
+              OR  :email = ''
+              OR u.email ILIKE CONCAT('%', :email, '%')
+            )
         )
         AND ( :isActive IS NULL OR u.is_active = :isActive )
         AND ( :isAccepted IS NULL OR u.is_accepted = :isAccepted )
@@ -116,6 +133,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """, nativeQuery = true)
     List<User> managementUser(
             @Param("keyword") String keyword,
+            @Param("username") String username,
+            @Param("fullName") String fullName,
+            @Param("email") String email,
             @Param("isActive") Boolean isActive,
             @Param("isAccepted") Boolean isAccepted,
             @Param("greaterThan") Integer greaterThan,

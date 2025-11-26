@@ -33,13 +33,16 @@ public class UserManagementController {
     @GetMapping("/get-user")
     public ResponseEntity<List<User>> getUserDetailList
             (@RequestParam(value = "keyword", required = false) String keyword,
+             @RequestParam(value = "username", required = false) String username,
+             @RequestParam(value = "fullName", required = false) String fullName,
+             @RequestParam(value = "email", required = false) String email,
              @RequestParam(value = "isActive", required = false) Boolean isActive,
              @RequestParam(value = "isAccepted", required = false) Boolean isAccepted,
              @RequestParam(value = "greaterThan", required = false) Integer greaterThan,
              @RequestParam(value = "smallerThan", required = false) Integer smallerThan,
              @RequestParam(value = "sort", required = false) String sort,
              @RequestParam(value = "days", required = false) Integer days) {
-        return ResponseEntity.ok(managementUserService.getUserDetailList(keyword, isActive, isAccepted, greaterThan, smallerThan, sort, days));
+        return ResponseEntity.ok(managementUserService.getUserDetailList(keyword, username, fullName, email, isActive, isAccepted, greaterThan, smallerThan, sort, days));
     }
 
     @PostMapping("/create-user")
