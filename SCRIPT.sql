@@ -74,9 +74,9 @@ CREATE TABLE record_signin (
 CREATE TABLE report (
     reporter_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     reported_user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    title VARCHAR(50),
-    content TEXT,
+    reason VARCHAR(200),
     reported_at TIMESTAMP NOT NULL,
+    status SMALLINT NOT NULL,
     PRIMARY KEY(reporter_id, reported_user_id, reported_at),
     CONSTRAINT chk_report_not_self CHECK (reporter_id <> reported_user_id)
 );
