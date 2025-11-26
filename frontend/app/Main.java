@@ -2,6 +2,7 @@ package app;
 
 import javax.swing.SwingUtilities;
 import screens.BaseScreen;
+import screens.DashboardScreen;
 import screens.ForgotPass;
 import screens.HomeScreen;
 import screens.LoginScreen;
@@ -16,11 +17,13 @@ public class Main {
             RegisterScreen register = new RegisterScreen(screen);
             HomeScreen home = new HomeScreen(screen);
             ForgotPass resetPass = new ForgotPass(screen);
+            DashboardScreen dashboard = new DashboardScreen(screen);
 
             screen.addPanel(login, "login");
             screen.addPanel(register, "register");
             screen.addPanel(home, "home");
             screen.addPanel(resetPass, "forgotPassword");
+            screen.addPanel(dashboard, "dashboard");
 
             screen.showPanel("login");
         });
