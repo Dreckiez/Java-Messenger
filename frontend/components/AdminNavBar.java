@@ -1,6 +1,7 @@
 package components;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
@@ -9,6 +10,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import screens.DashboardScreen;
 import utils.ImageEditor;
@@ -27,7 +29,7 @@ public class AdminNavBar extends JPanel {
         ImageEditor editor = new ImageEditor();
         StyleButton st = new StyleButton();
 
-        ImageIcon userIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/friend.png"));
+        ImageIcon userIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/friend_white.png"));
 
         JButton userBtn = new JButton(new ImageIcon(editor.scaleImage(userIcon.getImage(), 24)));
 
@@ -43,7 +45,11 @@ public class AdminNavBar extends JPanel {
             dashboard.showUserManagement();
         });
 
-        JButton loginHistoryButton = new JButton("Login History");
+        ImageIcon historyIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/history_white.png"));
+
+        JButton loginHistoryButton = new JButton(new ImageIcon(editor.scaleImage(historyIcon.getImage(), 24)));
+
+        loginHistoryButton.setText("Login History");
 
         st.styleButton(loginHistoryButton);
 
@@ -56,7 +62,11 @@ public class AdminNavBar extends JPanel {
             dashboard.showLoginHistory();
         });
 
-        JButton groupBtn = new JButton("Group Chat");
+        ImageIcon groupIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/group_white.png"));
+
+        JButton groupBtn = new JButton(new ImageIcon(editor.scaleImage(groupIcon.getImage(), 24)));
+
+        groupBtn.setText("Group Management");
 
         st.styleButton(groupBtn);
 
@@ -69,7 +79,11 @@ public class AdminNavBar extends JPanel {
             dashboard.showGroupChat();
         });
 
-        JButton reportBtn = new JButton("Spam Report");
+        ImageIcon reportIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/report_white.png"));
+
+        JButton reportBtn = new JButton(new ImageIcon(editor.scaleImage(reportIcon.getImage(), 24)));
+
+        reportBtn.setText("Spam Reports");
 
         st.styleButton(reportBtn);
 
@@ -82,7 +96,11 @@ public class AdminNavBar extends JPanel {
             dashboard.showSpamReport();
         });
 
-        JButton analyticsBtn = new JButton("Analytics");
+        ImageIcon analyticsIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/analytics_white.png"));
+
+        JButton analyticsBtn = new JButton(new ImageIcon(editor.scaleImage(analyticsIcon.getImage(), 24)));
+
+        analyticsBtn.setText("Analytics");
 
         st.styleButton(analyticsBtn);
 
@@ -95,6 +113,21 @@ public class AdminNavBar extends JPanel {
             dashboard.showAnalyticsDashboard();
         });
 
+        userBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
+        userBtn.setHorizontalAlignment(SwingConstants.LEFT);
+
+        loginHistoryButton.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
+        loginHistoryButton.setHorizontalAlignment(SwingConstants.LEFT);
+
+        groupBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
+        groupBtn.setHorizontalAlignment(SwingConstants.LEFT);
+
+        reportBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
+        reportBtn.setHorizontalAlignment(SwingConstants.LEFT);
+
+        analyticsBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
+        analyticsBtn.setHorizontalAlignment(SwingConstants.LEFT);
+
         add(userBtn);
         add(loginHistoryButton);
         add(groupBtn);
@@ -104,7 +137,7 @@ public class AdminNavBar extends JPanel {
         // Logout button at bottom
         add(Box.createVerticalGlue());
 
-        ImageIcon logoutIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/logout.png"));
+        ImageIcon logoutIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/logout_white.png"));
 
         JButton logoutBtn = new JButton(new ImageIcon(editor.scaleImage(logoutIcon.getImage(), 24)));
 
