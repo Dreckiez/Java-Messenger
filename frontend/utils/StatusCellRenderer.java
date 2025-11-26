@@ -15,7 +15,7 @@ public class StatusCellRenderer extends DefaultTableCellRenderer {
 
         if (value != null) {
             String status = value.toString();
-            if (status.equals("Working")) {
+            if (status.equals("Working") || status.equals("Proccessed") || status.equals("Active")) {
                 setForeground(new Color(34, 197, 94));
                 setText("● " + status);
             } else if (status.equals("Locked")) {
@@ -24,17 +24,11 @@ public class StatusCellRenderer extends DefaultTableCellRenderer {
             } else if (status.equals("Success")) {
                 setForeground(new Color(34, 197, 94));
                 setText(status);
-            } else if (status.equals("Failed")) {
+            } else if (status.equals("Failed") || status.equals("Expired")) {
                 setForeground(new Color(239, 68, 68));
                 setText(status);
             } else if (status.equals("Pending")) {
                 setForeground(new Color(251, 146, 60)); // Orange
-                setText("● " + status);
-            } else if (status.equals("Proccessed")) {
-                setForeground(new Color(34, 197, 94)); // Green
-                setText("● " + status);
-            } else if (status.equals("Locked")) {
-                setForeground(new Color(239, 68, 68)); // Red
                 setText("● " + status);
             }
             setFont(new Font("Arial", Font.BOLD, 12));

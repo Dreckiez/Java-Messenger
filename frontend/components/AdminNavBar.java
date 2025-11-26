@@ -1,7 +1,6 @@
 package components;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
@@ -42,7 +41,23 @@ public class AdminNavBar extends JPanel {
         userBtn.setForeground(Color.WHITE);
 
         userBtn.addActionListener(e -> {
-            dashboard.showUserManagement();
+            dashboard.showDashboard("user");
+        });
+
+        ImageIcon activeIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/friend_white.png"));
+
+        JButton activeBtn = new JButton(new ImageIcon(editor.scaleImage(activeIcon.getImage(), 24)));
+
+        activeBtn.setText("Active Users");
+        st.styleButton(activeBtn);
+
+        activeBtn.setIconTextGap(15);
+        activeBtn.setMaximumSize(new Dimension(200, 50));
+        activeBtn.setPreferredSize(new Dimension(150, 50));
+        activeBtn.setForeground(Color.WHITE);
+
+        activeBtn.addActionListener(e -> {
+            dashboard.showDashboard("active");
         });
 
         ImageIcon historyIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/history_white.png"));
@@ -59,7 +74,7 @@ public class AdminNavBar extends JPanel {
         loginHistoryButton.setForeground(Color.WHITE);
 
         loginHistoryButton.addActionListener(e -> {
-            dashboard.showLoginHistory();
+            dashboard.showDashboard("history");
         });
 
         ImageIcon groupIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/group_white.png"));
@@ -76,7 +91,7 @@ public class AdminNavBar extends JPanel {
         groupBtn.setForeground(Color.WHITE);
 
         groupBtn.addActionListener(e -> {
-            dashboard.showGroupChat();
+            dashboard.showDashboard("group");
         });
 
         ImageIcon reportIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/report_white.png"));
@@ -93,7 +108,7 @@ public class AdminNavBar extends JPanel {
         reportBtn.setForeground(Color.WHITE);
 
         reportBtn.addActionListener(e -> {
-            dashboard.showSpamReport();
+            dashboard.showDashboard("report");
         });
 
         ImageIcon analyticsIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/analytics_white.png"));
@@ -110,11 +125,14 @@ public class AdminNavBar extends JPanel {
         analyticsBtn.setForeground(Color.WHITE);
 
         analyticsBtn.addActionListener(e -> {
-            dashboard.showAnalyticsDashboard();
+            dashboard.showDashboard("analytics");
         });
 
         userBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
         userBtn.setHorizontalAlignment(SwingConstants.LEFT);
+
+        activeBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        activeBtn.setHorizontalAlignment(SwingConstants.LEFT);
 
         loginHistoryButton.setHorizontalTextPosition(SwingConstants.RIGHT); // Places text to the right of the icon
         loginHistoryButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -129,6 +147,7 @@ public class AdminNavBar extends JPanel {
         analyticsBtn.setHorizontalAlignment(SwingConstants.LEFT);
 
         add(userBtn);
+        add(activeBtn);
         add(loginHistoryButton);
         add(groupBtn);
         add(reportBtn);
