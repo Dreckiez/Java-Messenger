@@ -5,16 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Enum/ReportStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../DatabaseDesign.png" beforeDir="false" afterPath="$PROJECT_DIR$/../DatabaseDesign.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../SCRIPT.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../SCRIPT.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ReportRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/request/ReportRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ReportResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ReportResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Report.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Report.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserReportServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/Main.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtAuthenticationFilter.class" beforeDir="false" />
@@ -125,6 +117,7 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Enum/GroupRole.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Enum/MessageType$Converter.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Enum/MessageType.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Enum/ReportStatus.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Enum/Role$Converter.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Enum/Role.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/entities/Friend$FriendBuilder.class" beforeDir="false" />
@@ -222,8 +215,11 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserServiceImpl.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/UserFriendEventListener.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/WebSocketEventListener.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/app/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/app/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/out/production/frontend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/out/production/frontend/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/out/app/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/out/app/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/out/components/ProfilePass$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/out/components/ProfilePass$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/out/components/ProfilePass$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/out/components/ProfilePass$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/out/components/ProfilePass$3.class" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/out/components/ProfilePass$3.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/out/components/ProfilePass.class" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/out/components/ProfilePass.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -273,24 +269,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Application.SpringSecurityApplication.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "Application.SpringSecurityApplication.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example.spring_security" />
