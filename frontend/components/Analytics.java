@@ -49,7 +49,7 @@ public class Analytics extends JPanel {
 
         JPanel yearPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         yearPanel.setBackground(Color.WHITE);
-        yearPanel.add(new JLabel("Năm:"));
+        yearPanel.add(new JLabel("Year:"));
         registrationYearCombo = new JComboBox<>(new String[] { "2024", "2023", "2022", "2021", "2020" });
         registrationYearCombo.addActionListener(e -> updateRegistrationChart());
         yearPanel.add(registrationYearCombo);
@@ -85,7 +85,7 @@ public class Analytics extends JPanel {
 
         JPanel yearPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         yearPanel.setBackground(Color.WHITE);
-        yearPanel.add(new JLabel("Năm:"));
+        yearPanel.add(new JLabel("Year:"));
         activeUsersYearCombo = new JComboBox<>(new String[] { "2024", "2023", "2022", "2021", "2020" });
         activeUsersYearCombo.addActionListener(e -> updateActiveUsersChart());
         yearPanel.add(activeUsersYearCombo);

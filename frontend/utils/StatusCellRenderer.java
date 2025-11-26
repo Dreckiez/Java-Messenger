@@ -29,13 +29,13 @@ public class StatusCellRenderer extends DefaultTableCellRenderer {
                 setText(status);
             } else if (status.equals("Pending")) {
                 setForeground(new Color(251, 146, 60)); // Orange
-                setText("⏳ " + status);
+                setText("● " + status);
             } else if (status.equals("Proccessed")) {
                 setForeground(new Color(34, 197, 94)); // Green
-                setText("✓ " + status);
+                setText("● " + status);
             } else if (status.equals("Locked")) {
                 setForeground(new Color(239, 68, 68)); // Red
-                setText("🔒 " + status);
+                setText("● " + status);
             }
             setFont(new Font("Arial", Font.BOLD, 12));
         }
