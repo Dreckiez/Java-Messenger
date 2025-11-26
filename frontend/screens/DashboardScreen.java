@@ -49,7 +49,7 @@ public class DashboardScreen extends JPanel {
 
     public void showUserManagement() {
         contentPanel.removeAll();
-        contentPanel.add(new UserManage(), BorderLayout.CENTER);
+        contentPanel.add(new UserManage(this), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
