@@ -112,12 +112,12 @@ public class ContactItem extends BaseItem {
         panel.setOpaque(false); // Transparent background
 
         Boolean friend = (isFriend != null && isFriend.equals("friend")) ? true : false;
-        String text = friend ? "Friend" : "Not friends yet";
+        String text = friend ? "Unfriend" : "Send Friend Request";
 
         JButton addBtn = new JButton(text);
         addBtn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         addBtn.setForeground(Color.WHITE);
-        addBtn.setBackground(new Color(0, 122, 255)); // iOS-style blue
+        addBtn.setBackground(friend ? new Color(220, 53, 69) : new Color(0, 122, 255)); // iOS-style blue
         addBtn.setFocusPainted(false);
         addBtn.setBorderPainted(false);
         addBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -126,11 +126,11 @@ public class ContactItem extends BaseItem {
         // Add hover effect
         addBtn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                addBtn.setBackground(new Color(0, 105, 217));
+                addBtn.setBackground(friend ? new Color(200, 35, 51) : new Color(0, 105, 217));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                addBtn.setBackground(new Color(0, 122, 255));
+                addBtn.setBackground(friend ? new Color(220, 53, 69) : new Color(0, 122, 255));
             }
         });
 
