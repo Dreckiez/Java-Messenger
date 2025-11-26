@@ -163,7 +163,6 @@ public class ProfilePass extends JPanel {
             return;
         }
 
-        // TODO: API call
         JOptionPane.showMessageDialog(this,
                 "Password changed successfully! (API integration pending)",
                 "Success",
