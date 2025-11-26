@@ -272,8 +272,8 @@ public class ManagementUserServiceImpl implements ManagementUserService {
                 .reporterFullName(r.getReporter().getLastName() + " " + r.getReporter().getFirstName())
                 .reportedUserFullName(r.getReportedUser().getLastName() + " " + r.getReportedUser().getFirstName())
                 .reporterAvtUrl(r.getReporter().getAvatarUrl()) .reportedUserAvtUrl(r.getReportedUser().getAvatarUrl())
-                .title(r.getTitle())
-                .content(r.getContent())
+                .reason(r.getReason())
+                .status(r.getStatus())
                 .reportedAt(r.getId().getReportedAt())
                 .build()).collect(Collectors.toList());
         ListReportResponse listReportResponse = ListReportResponse.builder()
