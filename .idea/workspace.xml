@@ -5,15 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserConversationController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ConversationListItem.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/DeletePrivateMessageWsResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/PrivateMessageWsResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Enum/RealTimeAction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/ConversationRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserConversationService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/admin/UserManagementController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/admin/UserManagementController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/ManagementUserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/ManagementUserService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/UserFriendEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketMessageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketEventListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/WebSocketConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/WebSocketConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/UserFriendEventListener.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/WebSocketEventListener.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,8 +33,8 @@
       <list>
         <option value="Record" />
         <option value="Interface" />
-        <option value="Class" />
         <option value="Enum" />
+        <option value="Class" />
       </list>
     </option>
   </component>
