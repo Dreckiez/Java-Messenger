@@ -1,5 +1,6 @@
 package com.example.spring_security.repository;
 
+import com.example.spring_security.dto.response.ConversationListItem;
 import com.example.spring_security.entities.PrivateConversation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

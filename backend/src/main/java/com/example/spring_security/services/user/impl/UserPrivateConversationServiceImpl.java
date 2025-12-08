@@ -2,16 +2,15 @@ package com.example.spring_security.services.user.impl;
 
 
 import com.example.spring_security.dto.request.SendMessageRequest;
-import com.example.spring_security.dto.response.ListPrivateConversationMessageResponse;
-import com.example.spring_security.dto.response.PrivateConversationMessageResponse;
-import com.example.spring_security.dto.response.SendMessageResponse;
+import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
+import com.example.spring_security.entities.Enum.RealTimeAction;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.*;
 import com.example.spring_security.services.user.UserPrivateConversationService;
+import com.example.spring_security.websocket.WebSocketMessageService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserPrivateConversationServiceImpl implements UserPrivateConversationService {
+
+    private final WebSocketMessageService webSocketMessageService;
 
     private final ReadPrivateConversationMessageRepository readPrivateConversationMessageRepository;
 
@@ -92,6 +93,10 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
 
     public Map<String, String> removeConversation(Long removerId, Long privateConversationId) {
 
+        PrivateConversation privateConversation = privateConversationRepository.findById(privateConversationId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "This conversation no longer exists."));
+
+
         DeletePrivateConversationId id = DeletePrivateConversationId.builder()
                 .userId(removerId)
                 .privateConversationId(privateConversationId)
@@ -138,6 +143,33 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
         privateConversation.setPreviewMessage(privateConversationMessage);
 
         privateConversationRepository.save(privateConversation);
+
+
+        //  building for sender's info
+
+        User sender = userRepository.findById(senderId).orElseThrow(
+                () -> new CustomException(HttpStatus.NOT_FOUND, "Sender not found")
+        );
+
+        PrivateMessageWsResponse privateMessageWsResponse = PrivateMessageWsResponse.builder()
+                .userId(senderId)
+                .username(sender.getUsername())
+                .firstName(sender.getFirstName())
+                .lastName(sender.getLastName())
+                .avatarUrl(sender.getAvatarUrl())
+                .privateConversationMessageId(privateConversationMessage.getPrivateConversationMessageId())
+                .content(privateConversationMessage.getContent())
+                .sentAt(privateConversationMessage.getSentAt())
+                .updatedAt(privateConversationMessage.getUpdatedAt())
+                .type(privateConversationMessage.getType())
+                .realTimeAction(RealTimeAction.SEND)
+                .build();
+
+        // push for receiver
+
+        User receiver = !privateConversation.getUser1().getUserId().equals(senderId) ? privateConversation.getUser1() : privateConversation.getUser2();
+
+        webSocketMessageService.sendMessageToUser(receiver.getUsername(), privateMessageWsResponse);
 
         return SendMessageResponse.builder()
                 .messageId(privateConversationMessage.getPrivateConversationMessageId())
@@ -195,6 +227,25 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 .build();
 
         deletePrivateConversationMessageRepository.save(deletePrivateConversationMessage);
+
+        if (isAll) {
+
+            User partner = !privateConversation.getUser1().getUserId().equals(userId) ? privateConversation.getUser1() : privateConversation.getUser2();
+
+            User remover = userRepository.findById(userId).orElseThrow(
+                    () -> new CustomException(HttpStatus.NOT_FOUND, "Remover not found.")
+            );
+
+            DeletePrivateMessageWsResponse deletePrivateMessageWsResponse = DeletePrivateMessageWsResponse.builder()
+                    .userId(remover.getUserId())
+                    .privateConversationMessageId(privateConversationMessage.getPrivateConversationMessageId())
+                    .privateConversationId(privateConversation.getPrivateConversationId())
+                    .realTimeAction(RealTimeAction.DELETE)
+                    .build();
+
+            webSocketMessageService.sendDeleteMessage(partner.getUsername(), deletePrivateMessageWsResponse);
+
+        }
 
         Map<String, String> msg = new HashMap<>();
 
