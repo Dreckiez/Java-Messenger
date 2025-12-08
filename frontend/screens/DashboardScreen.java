@@ -4,6 +4,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import components.ActiveUser;
 import components.AdminNavBar;
 import components.Analytics;
 import components.GroupChat;
@@ -44,40 +45,36 @@ public class DashboardScreen extends JPanel {
         add(contentPanel, BorderLayout.CENTER);
 
         // Load default view (User Management)
-        showUserManagement();
+        showDashboard("user");
     }
 
-    public void showUserManagement() {
+    public void showDashboard(String name) {
         contentPanel.removeAll();
-        contentPanel.add(new UserManage(this), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
 
-    public void showLoginHistory() {
-        contentPanel.removeAll();
-        contentPanel.add(new LoginHistory(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
+        switch (name) {
+            case "user":
+                contentPanel.add(new UserManage(this), BorderLayout.CENTER);
+                break;
+            case "active":
+                contentPanel.add(new ActiveUser(), BorderLayout.CENTER);
+                break;
+            case "history":
+                contentPanel.add(new LoginHistory(), BorderLayout.CENTER);
+                break;
+            case "group":
+                contentPanel.add(new GroupChat(), BorderLayout.CENTER);
+                break;
+            case "report":
+                contentPanel.add(new SpamReport(), BorderLayout.CENTER);
+                break;
+            case "analytics":
+                contentPanel.add(new Analytics(), BorderLayout.CENTER);
+                break;
 
-    public void showGroupChat() {
-        contentPanel.removeAll();
-        contentPanel.add(new GroupChat(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
+            default:
+                break;
+        }
 
-    public void showSpamReport() {
-        contentPanel.removeAll();
-        contentPanel.add(new SpamReport(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    public void showAnalyticsDashboard() {
-        contentPanel.removeAll();
-        contentPanel.add(new Analytics(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }

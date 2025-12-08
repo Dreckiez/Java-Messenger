@@ -5,20 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../frontend/assets/analytics_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frontend/assets/friend_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frontend/assets/group_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frontend/assets/history_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frontend/assets/logout_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frontend/assets/report_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frontend/components/UserForm.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/assets/logout.png" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/assets/logout.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/AdminNavBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/AdminNavBar.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/Analytics.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/Analytics.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/LoginHistory.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/LoginHistory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/UserManage.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/UserManage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/screens/DashboardScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/screens/DashboardScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/utils/StatusCellRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/utils/StatusCellRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/admin/UserManagementController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/admin/UserManagementController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/ManagementUserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/ManagementUserService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +71,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "Merging Minh",
+    "git-widget-placeholder": "Minh",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend",
