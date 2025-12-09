@@ -1,6 +1,7 @@
 package com.example.spring_security.repository;
 
 import com.example.spring_security.dto.response.BaseUserResponse;
+import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.UserSearchResponse;
 import com.example.spring_security.entities.Enum.Role;
 import com.example.spring_security.entities.User;
@@ -144,4 +145,109 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("days") Integer days);
 
     void deleteById(Long id);
+
+
+    @Query(value = """
+    SELECT 
+        pc.private_conversation_id AS id,
+        m.private_conversation_message_id AS messageId,
+        u.avatar_url AS avatarUrl,
+        CONCAT(u.first_name, ' ', u.last_name) AS name,
+        m.content AS content,
+        m.sent_at AS sentAt,
+        m.updated_at AS updatedAt,
+        m.type AS messageType,
+        CAST(0 AS SMALLINT) AS conversationType
+    FROM private_conversation_message m
+    JOIN private_conversation pc 
+        ON pc.private_conversation_id = m.private_conversation_id
+    JOIN user_info u
+        ON u.user_id = m.sender_id
+    WHERE m.private_conversation_id = :conversationId
+      AND ( :keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%') )
+    ORDER BY m.sent_at DESC
+    """,
+            nativeQuery = true)
+    List<MessageSearchResponse> searchPrivateMessages(
+            @Param("conversationId") Long conversationId,
+            @Param("keyword") String keyword
+    );
+
+    @Query(value = """
+    SELECT 
+        gc.group_conversation_id AS id,
+        m.group_conversation_message_id AS messageId,
+        u.avatar_url AS avatarUrl,
+        CONCAT(u.first_name, ' ', u.last_name) AS name,
+        m.content AS content,
+        m.sent_at AS sentAt,
+        m.updated_at AS updatedAt,
+        m.type AS messageType,
+        CAST(1 AS SMALLINT) AS conversationType
+    FROM group_conversation_message m
+    JOIN group_conversation gc
+        ON gc.group_conversation_id = m.group_conversation_id
+    JOIN user_info u
+        ON u.user_id = m.sender_id
+    WHERE m.group_conversation_id = :groupId
+      AND ( :keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%') )
+    ORDER BY m.sent_at DESC
+    """,
+            nativeQuery = true)
+    List<MessageSearchResponse> searchGroupMessages(
+            @Param("groupId") Long groupId,
+            @Param("keyword") String keyword
+    );
+
+    @Query(value = """
+    (
+   
+        SELECT 
+            pc.private_conversation_id AS id,
+            m.private_conversation_message_id AS messageId,
+            u.avatar_url AS avatarUrl,
+            CONCAT(u.first_name, ' ', u.last_name) AS name,
+            m.content AS content,
+            m.sent_at AS sentAt,
+            m.updated_at AS updatedAt,
+            m.type AS messageType,
+            CAST(0 AS SMALLINT) AS conversationType
+        FROM private_conversation_message m
+        JOIN private_conversation pc 
+            ON pc.private_conversation_id = m.private_conversation_id
+        JOIN user_info u
+            ON u.user_id = m.sender_id
+        WHERE 
+            (pc.user1_id = :userId OR pc.user2_id = :userId)
+            AND (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+    )
+    UNION ALL
+    (
+        SELECT 
+            gcm.group_conversation_id AS id,
+            m.group_conversation_message_id AS messageId,
+            u.avatar_url AS avatarUrl,
+            CONCAT(u.first_name, ' ', u.last_name) AS name,
+            m.content AS content,
+            m.sent_at AS sentAt,
+            m.updated_at AS updatedAt,
+            m.type AS messageType,
+            CAST(1 AS SMALLINT) AS conversationType
+        FROM group_conversation_message m
+        JOIN group_conversation_member gcm
+            ON gcm.group_conversation_id = m.group_conversation_id
+        JOIN user_info u
+            ON u.user_id = m.sender_id
+        WHERE 
+            gcm.member_id = :userId
+            AND (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+    )
+    ORDER BY sentAt DESC
+    """,
+            nativeQuery = true)
+    List<MessageSearchResponse> searchAllMessages(
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword
+    );
+
 }

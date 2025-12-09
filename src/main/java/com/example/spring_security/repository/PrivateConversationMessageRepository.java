@@ -1,9 +1,11 @@
 package com.example.spring_security.repository;
 
+import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.PrivateConversationMessageResponse;
 import com.example.spring_security.entities.PrivateConversationMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,4 +47,9 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
             Long privateConversationId,
             Long cursorId
     );
+
+
+
+
+
 }
