@@ -2,18 +2,13 @@ package com.example.spring_security.services.admin.impl;
 
 import com.example.spring_security.dto.request.ManageUserRequest;
 import com.example.spring_security.dto.response.*;
+import com.example.spring_security.entities.*;
 import com.example.spring_security.entities.Enum.Gender;
 import com.example.spring_security.entities.Enum.Role;
-import com.example.spring_security.entities.RecordSignIn;
-import com.example.spring_security.entities.Report;
 import com.example.spring_security.entities.Token.RequestPasswordReset;
-import com.example.spring_security.entities.User;
 import com.example.spring_security.exception.CustomException;
-import com.example.spring_security.repository.FriendRepository;
-import com.example.spring_security.repository.RecordSignInRepository;
-import com.example.spring_security.repository.ReportRepository;
+import com.example.spring_security.repository.*;
 import com.example.spring_security.repository.TokenRepo.RequestPasswordResetRepository;
-import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.services.admin.ManagementUserService;
 import com.example.spring_security.services.third.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +41,10 @@ public class ManagementUserServiceImpl implements ManagementUserService {
     private final FriendRepository friendRepository;
 
     private final ReportRepository reportRepository;
+
+    private final GroupConversationRepository groupConversationRepository;
+
+    private final GroupConversationMemberRepository groupConversationMemberRepository;
 
     public List<User> getUserDetailList(String keyword, String username, String fullName, String email, Boolean isActive, Boolean isAccepted,
                                         Integer greaterThan, Integer smallerThan,
@@ -281,6 +280,18 @@ public class ManagementUserServiceImpl implements ManagementUserService {
                 .count(reportResponseList.size())
                 .build();
         return listReportResponse;
+    }
+
+    public List<GroupConversationItemListResponse> getGroupList(String keyword, String sort) {
+        return groupConversationRepository.managementList(keyword, sort);
+    }
+
+    public List<GroupMemberResponse> getMemberList(Long groupConversationId) {
+        return groupConversationMemberRepository.findMembersByGroupConversationId(groupConversationId);
+    }
+
+    public List<GroupMemberResponse> getAdminList(Long groupConversationId) {
+        return groupConversationMemberRepository.findAdminsByGroupConversationId(groupConversationId);
     }
 
 }
