@@ -282,6 +282,9 @@ public class LoginScreen extends JPanel {
 
                                         if (role.equals("ADMIN")) {
                                             mainScreen.showPanel("dashboard");
+                                            if (mainScreen.getDashboardScreen() != null) {
+                                                mainScreen.getDashboardScreen().onLoginSuccess();
+                                            }
                                         } else {
                                             mainScreen.showPanel("home");
                                         }
