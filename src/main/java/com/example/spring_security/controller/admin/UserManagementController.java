@@ -105,4 +105,11 @@ public class UserManagementController {
         return ResponseEntity.ok(managementUserService.getAdminList(groupConversationId));
     }
 
+    @GetMapping("/get-record-online")
+    public ResponseEntity<List<UserRecordOnlineResponse>> getRecordOnline
+            (@RequestParam(value = "keyword", required = false) String keyword,
+             @RequestParam(value = "sort", required = false) String sort) {
+        return ResponseEntity.ok(managementUserService.getRecordOnline(keyword, sort));
+    }
+
 }

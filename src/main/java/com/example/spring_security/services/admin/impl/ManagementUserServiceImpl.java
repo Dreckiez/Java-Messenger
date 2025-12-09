@@ -46,6 +46,8 @@ public class ManagementUserServiceImpl implements ManagementUserService {
 
     private final GroupConversationMemberRepository groupConversationMemberRepository;
 
+    private final RecordOnlineUserRepository recordOnlineUserRepository;
+
     public List<User> getUserDetailList(String keyword, String username, String fullName, String email, Boolean isActive, Boolean isAccepted,
                                         Integer greaterThan, Integer smallerThan,
                                         String sort, Integer days) {
@@ -292,6 +294,10 @@ public class ManagementUserServiceImpl implements ManagementUserService {
 
     public List<GroupMemberResponse> getAdminList(Long groupConversationId) {
         return groupConversationMemberRepository.findAdminsByGroupConversationId(groupConversationId);
+    }
+
+    public List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort) {
+        return recordOnlineUserRepository.managementRecordList(keyword, sort);
     }
 
 }
