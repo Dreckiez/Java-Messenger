@@ -35,4 +35,6 @@ public interface ManagementUserService {
     List<GroupMemberResponse> getMemberList(Long groupConversationId);
 
     List<GroupMemberResponse> getAdminList(Long groupConversationId);
+
+    List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort);
 }
