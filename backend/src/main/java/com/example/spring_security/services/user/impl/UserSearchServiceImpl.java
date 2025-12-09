@@ -2,6 +2,7 @@ package com.example.spring_security.services.user.impl;
 
 
 import com.example.spring_security.dto.response.BaseUserResponse;
+import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.UserSearchResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.exception.CustomException;
@@ -25,5 +26,17 @@ public class UserSearchServiceImpl implements UserSearchService {
             throw new CustomException(HttpStatus.NOT_FOUND, "User no longer exists.");
         List<UserSearchResponse> listUser = userRepository.searchUserByUsernameOrFullName(currentUserId, keyword);
         return listUser;
+    }
+
+    public List<MessageSearchResponse> searchPrivateMessage(Long privateConversationId, String keyword) {
+        return userRepository.searchPrivateMessages(privateConversationId, keyword);
+    }
+
+    public List<MessageSearchResponse> searchGroupMessages(Long groupConversationId, String keyword) {
+        return userRepository.searchGroupMessages(groupConversationId, keyword);
+    }
+
+    public List<MessageSearchResponse> searchAllMessages(Long userId, String keyword) {
+        return userRepository.searchAllMessages(userId, keyword);
     }
 }

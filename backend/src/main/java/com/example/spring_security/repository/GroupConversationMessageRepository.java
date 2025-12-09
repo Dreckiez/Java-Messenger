@@ -1,9 +1,11 @@
 package com.example.spring_security.repository;
 
 import com.example.spring_security.dto.response.GroupConversationMessageResponse;
+import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.entities.GroupConversationMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -36,5 +38,10 @@ public interface GroupConversationMessageRepository
           LIMIT 50
            """, nativeQuery = true)
     List<GroupConversationMessageResponse> findMessages(Long userId, Long groupConversationId, Long cursorId);
+
+
+
+
+
 
 }

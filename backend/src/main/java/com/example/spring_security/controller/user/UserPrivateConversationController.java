@@ -1,6 +1,7 @@
 package com.example.spring_security.controller.user;
 import com.example.spring_security.dto.request.SendMessageRequest;
 import com.example.spring_security.dto.response.ListPrivateConversationMessageResponse;
+import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.SendMessageResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.services.user.UserPrivateConversationService;
