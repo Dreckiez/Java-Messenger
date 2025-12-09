@@ -8,7 +8,7 @@ import com.example.spring_security.entities.Enum.RealTimeAction;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.*;
 import com.example.spring_security.services.user.UserPrivateConversationService;
-import com.example.spring_security.websocket.WebSocketMessageService;
+import com.example.spring_security.websocket.WebSocketPrivateMessageService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserPrivateConversationServiceImpl implements UserPrivateConversationService {
 
-    private final WebSocketMessageService webSocketMessageService;
+    private final WebSocketPrivateMessageService webSocketMessageService;
 
     private final ReadPrivateConversationMessageRepository readPrivateConversationMessageRepository;
 

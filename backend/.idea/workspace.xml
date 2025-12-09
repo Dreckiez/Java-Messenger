@@ -5,23 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserConversationController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ConversationListItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/DeletePrivateMessageWsResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/PrivateMessageWsResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/Enum/RealTimeAction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/ConversationRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserConversationService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/DeleteGroupMessageWsResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/GroupConversationItemListResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/GroupMessageWsResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/RecordOnlineUser.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/RecordOnlineUserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserConversationServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketEventListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketGroupMessageService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketStatusService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtChannelInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/JwtChannelInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/admin/UserManagementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserConversationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserConversationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ConversationListItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/ConversationListItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/ConversationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/GroupConversationMemberRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/GroupConversationMemberRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/GroupConversationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/GroupConversationRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/ManagementUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserConversationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserConversationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserGroupConversationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserGroupConversationServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/UserFriendEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketMessageService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketEventListener.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/WebSocketConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/WebSocketConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketMessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/websocket/WebSocketPrivateMessageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtChannelInterceptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/JwtChannelInterceptor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/admin/UserManagementController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/controller/admin/UserManagementController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/GroupConversationMemberRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/GroupConversationMemberRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/GroupConversationRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/GroupConversationRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/PrivateConversationRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/PrivateConversationRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/ManagementUserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/ManagementUserService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/admin/impl/ManagementUserServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserGroupConversationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserGroupConversationServiceImpl.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/UserFriendEventListener.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/WebSocketEventListener.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/websocket/WebSocketMessageService.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,9 +49,9 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Record" />
-        <option value="Interface" />
         <option value="Enum" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -48,6 +65,7 @@
     <setting file="jar://$MAVEN_REPOSITORY$/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar!/jakarta/validation/constraints/Size.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/3.5.5/spring-data-commons-3.5.5.jar!/org/springframework/data/repository/CrudRepository.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-jpa/3.5.5/spring-data-jpa-3.5.5.jar!/org/springframework/data/jpa/repository/JpaRepository.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-core/6.5.6/spring-security-core-6.5.6.jar!/org/springframework/security/core/Authentication.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-core/6.5.6/spring-security-core-6.5.6.jar!/org/springframework/security/core/userdetails/UserDetailsService.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MavenImportPreferences">
@@ -71,24 +89,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.Main.executor": "Run",
-    "Application.SpringSecurityApplication.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "Minh",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.SpringSecurityApplication.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Minh&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example.spring_security" />
