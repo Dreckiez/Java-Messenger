@@ -4,6 +4,7 @@ import com.example.spring_security.dto.request.ManageUserRequest;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.services.admin.ManagementUserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -43,7 +44,7 @@ public class UserManagementController {
     }
 
     @PostMapping("/create-user")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody ManageUserRequest createUserRequest) {
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody @Valid ManageUserRequest createUserRequest) {
         return ResponseEntity.ok(managementUserService.createUser(createUserRequest));
     }
 
