@@ -1,10 +1,8 @@
 package com.example.spring_security.config;
 
-import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.services.third.JWTService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;

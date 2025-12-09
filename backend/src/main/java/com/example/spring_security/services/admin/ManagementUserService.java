@@ -1,9 +1,8 @@
 package com.example.spring_security.services.admin;
 
 import com.example.spring_security.dto.request.ManageUserRequest;
-import com.example.spring_security.dto.response.ListReportResponse;
-import com.example.spring_security.dto.response.ListUserFriendResponse;
-import com.example.spring_security.dto.response.ResetPasswordResponse;
+import com.example.spring_security.dto.response.*;
+import com.example.spring_security.entities.GroupConversation;
 import com.example.spring_security.entities.RecordSignIn;
 import com.example.spring_security.entities.User;
 
@@ -30,4 +29,12 @@ public interface ManagementUserService {
     ListUserFriendResponse getFriends(Long userId, String keyword, String sortBy);
 
     ListReportResponse getReports(String sortBy, String username, String email, LocalDate startDate, LocalDate endDate);
+
+    List<GroupConversationItemListResponse> getGroupList(String keyword, String sort);
+
+    List<GroupMemberResponse> getMemberList(Long groupConversationId);
+
+    List<GroupMemberResponse> getAdminList(Long groupConversationId);
+
+    List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort);
 }
