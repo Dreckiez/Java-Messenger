@@ -51,6 +51,7 @@ public class ManagementUserServiceImpl implements ManagementUserService {
     public List<User> getUserDetailList(String keyword, String username, String fullName, String email, Boolean isActive, Boolean isAccepted,
                                         Integer greaterThan, Integer smallerThan,
                                         String sort, Integer days) {
+        System.out.println(username);
         List<User> listUserDetail = userRepository.managementUser(keyword, username, fullName, email, isActive, isAccepted, greaterThan, smallerThan, sort, days);
         return listUserDetail;
     }

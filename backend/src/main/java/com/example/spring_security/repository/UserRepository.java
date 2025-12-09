@@ -87,21 +87,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
         (
             ( :keyword IS NULL 
               OR :keyword = ''
-              OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%')
+              OR CONCAT(u.first_name, ' ', u.last_name) ILIKE CONCAT('%', :keyword, '%')
               OR u.username ILIKE CONCAT('%', :keyword, '%')
               OR u.email ILIKE CONCAT('%', :keyword, '%')
             )
-            OR 
+            AND
             ( :username IS NULL 
               OR  :username = ''
               OR u.username ILIKE CONCAT('%', :username, '%')
             )
-            OR 
+            AND
             ( :fullName IS NULL 
               OR  :fullName = ''
               OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :fullName, '%')
             )
-            OR 
+            AND
             ( :email IS NULL 
               OR  :email = ''
               OR u.email ILIKE CONCAT('%', :email, '%')
@@ -109,8 +109,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
         )
         AND ( :isActive IS NULL OR u.is_active = :isActive )
         AND ( :isAccepted IS NULL OR u.is_accepted = :isAccepted )
-        AND ( :greaterThan IS NULL OR u.friend_count > :greaterThan)
-        AND ( :smallerThan IS NULL OR u.friend_count < :smallerThan)
+        AND ( :greaterThan IS NULL OR u.friend_count >= :greaterThan)
+        AND ( :smallerThan IS NULL OR u.friend_count <= :smallerThan)
         AND ( :days IS NULL OR u.joined_at  >= NOW() - (:days * INTERVAL '1 day'))
     ORDER BY
         CASE 
@@ -120,10 +120,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             WHEN :sort = '-email' THEN u.email
         END DESC,
         CASE 
-            WHEN :sort = 'fullName' THEN LOWER(CONCAT(u.last_name, ' ', u.first_name))
+            WHEN :sort = 'fullName' THEN LOWER(CONCAT(u.first_name, ' ', u.last_name))
         END ASC,
         CASE 
-            WHEN :sort = '-fullName' THEN LOWER(CONCAT(u.last_name, ' ', u.first_name))
+            WHEN :sort = '-fullName' THEN LOWER(CONCAT(u.first_name, ' ', u.last_name))
         END DESC,
         CASE 
             WHEN :sort = 'joinedAt' THEN u.joined_at

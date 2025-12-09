@@ -1,417 +1,497 @@
 package components;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Window;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
+import java.util.List;
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import java.awt.geom.RoundRectangle2D;
+import javax.swing.border.AbstractBorder; 
 
-import models.User;
+import javax.swing.border.CompoundBorder;
+import models.UserManagementItemList;
 import screens.DashboardScreen;
+import services.UserAdminService;
 import utils.StatusCellRenderer;
+import utils.UserSession;
 
 public class UserManage extends JPanel {
     private JTable userTable;
     private DefaultTableModel tableModel;
-    private JTextField nameFilter;
-    private JComboBox<String> statusFilter;
+
+    // Components
+    private JComboBox<String> filterTypeBox;
+    private JTextField filterTextField;
     private JComboBox<String> sortByBox;
-    private JSpinner friendCountFilter, activityCountFilter;
-    private DashboardScreen screen;
+    private JComboBox<String> statusFilter;
+    private JComboBox<String> friendCountOperator;
+    private JSpinner friendCountValue;
     private JTextField dateFilter;
 
+    private DashboardScreen screen;
+    private UserAdminService userService;
+    
+    // Màu sắc
+    private final Color PRIMARY_COLOR = new Color(37, 99, 235);
+    private final Color BG_COLOR = new Color(241, 245, 249);
+    private final Color TABLE_HEADER_COLOR = new Color(248, 250, 252);
+    private final Color TEXT_COLOR = new Color(51, 65, 85);
+
+    // Index của cột ẩn chứa Object User (Cột thứ 8 - tính từ 0 là index 7)
+    private final int HIDDEN_DATA_COLUMN_INDEX = 7;
+
     public UserManage(DashboardScreen dashboard) {
+        this.userService = new UserAdminService();
         this.screen = dashboard;
 
-        setLayout(new BorderLayout(10, 10));
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(20, 20));
+        setBackground(BG_COLOR);
+        setBorder(new EmptyBorder(25, 30, 25, 30));
 
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.WHITE);
+        // 1. HEADER
+        add(createHeaderPanel(), BorderLayout.NORTH);
 
-        // Title
+        // 2. CENTER
+        JPanel contentContainer = new JPanel();
+        contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.Y_AXIS));
+        contentContainer.setBackground(BG_COLOR);
+
+        contentContainer.add(createFiltersPanel());
+        contentContainer.add(Box.createVerticalStrut(20));
+        contentContainer.add(createTablePanel()); // <- Lưu ý logic tạo bảng ở đây
+
+        add(contentContainer, BorderLayout.CENTER);
+
+        // 3. BOTTOM
+        add(createBottomPanel(), BorderLayout.SOUTH);
+    }
+
+    // === 1. UI CREATION ===
+
+    private JPanel createHeaderPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+
         JLabel titleLabel = new JLabel("User Management");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        topPanel.add(titleLabel, BorderLayout.WEST);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(15, 23, 42));
+        panel.add(titleLabel, BorderLayout.WEST);
 
-        JPanel actionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        actionButtonsPanel.setBackground(Color.WHITE);
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        buttonsPanel.setBackground(BG_COLOR);
 
-        JButton addBtn = createActionButton("Add", new Color(34, 197, 94));
-        JButton editBtn = createActionButton("Edit", new Color(59, 130, 246));
-        JButton deleteBtn = createActionButton("Delete", new Color(239, 68, 68));
-
+        JButton addBtn = new ModernButton("Add User", new Color(34, 197, 94), Color.WHITE);
+        JButton editBtn = new ModernButton("Edit", new Color(59, 130, 246), Color.WHITE);
+        JButton deleteBtn = new ModernButton("Delete", new Color(239, 68, 68), Color.WHITE);
+        
         addBtn.addActionListener(e -> showAddUserDialog());
         editBtn.addActionListener(e -> showEditUserDialog());
         deleteBtn.addActionListener(e -> deleteSelectedUser());
 
-        actionButtonsPanel.add(addBtn);
-        actionButtonsPanel.add(editBtn);
-        actionButtonsPanel.add(deleteBtn);
+        buttonsPanel.add(addBtn);
+        buttonsPanel.add(editBtn);
+        buttonsPanel.add(deleteBtn);
 
-        topPanel.add(actionButtonsPanel, BorderLayout.EAST);
-        add(topPanel, BorderLayout.NORTH);
+        panel.add(buttonsPanel, BorderLayout.EAST);
+        return panel;
+    }
 
-        // === CENTER: Filters and Table ===
-        JPanel centerPanel = new JPanel(new BorderLayout(0, 10));
-        centerPanel.setBackground(Color.WHITE);
+    private JPanel createFiltersPanel() {
+        RoundedPanel mainPanel = new RoundedPanel(15, Color.WHITE);
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(new EmptyBorder(20, 25, 20, 25));
+        mainPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
 
-        // Filters Panel
-        JPanel filtersPanel = createFiltersPanel();
-        centerPanel.add(filtersPanel, BorderLayout.NORTH);
+        // Row 1
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        row1.setOpaque(false);
+        row1.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Table
-        String[] columns = { "ID", "Username", "Full Name", "Email", "Status", "Friends", "Date Joined" };
+        row1.add(createLabel("Search:"));
+        filterTypeBox = createComboBox(new String[] { "All", "Username", "Name", "Email" });
+        filterTextField = createTextField(15);
+        row1.add(filterTypeBox);
+        row1.add(filterTextField);
+
+        row1.add(createLabel("Sort:"));
+        sortByBox = createComboBox(new String[] { "Name (A-Z)", "Name (Z-A)", "Date (Latest)" });
+        row1.add(sortByBox);
+
+        row1.add(createLabel("Status:"));
+        statusFilter = createComboBox(new String[] { "All", "Active", "Locked" });
+        row1.add(statusFilter);
+        mainPanel.add(row1);
+
+        // Row 2
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
+        row2.setOpaque(false);
+        row2.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel friendLabel = createLabel("Friends:");
+        friendLabel.setForeground(PRIMARY_COLOR);
+        row2.add(friendLabel);
+        
+        friendCountOperator = createComboBox(new String[]{ "Greater (>)", "Smaller (<)" });
+        friendCountOperator.setPreferredSize(new Dimension(110, 35));
+        
+        friendCountValue = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1));
+        friendCountValue.setPreferredSize(new Dimension(80, 35));
+        friendCountValue.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
+        
+        row2.add(friendCountOperator);
+        row2.add(friendCountValue);
+
+        row2.add(Box.createHorizontalStrut(30));
+        JButton filterBtn = new ModernButton("Apply Filter", PRIMARY_COLOR, Color.WHITE);
+        JButton resetBtn = new ModernButton("Reset", new Color(226, 232, 240), TEXT_COLOR);
+
+        filterBtn.addActionListener(e -> applyFilters());
+        resetBtn.addActionListener(e -> resetFilters());
+
+        row2.add(filterBtn);
+        row2.add(resetBtn);
+        mainPanel.add(row2);
+
+        return mainPanel;
+    }
+
+    // 🔥 LOGIC TẠO BẢNG CÓ CỘT ẨN 🔥
+    private JPanel createTablePanel() {
+        RoundedPanel panel = new RoundedPanel(15, Color.WHITE);
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Thêm cột "HiddenData" vào cuối mảng
+        String[] columns = { "ID", "Username", "Full Name", "Email", "Status", "Friends", "Date Joined", "HiddenData" };
+        
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
-
+        
         userTable = new JTable(tableModel);
-        userTable.setFont(new Font("Arial", Font.PLAIN, 12));
-        userTable.setRowHeight(35);
-        userTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        userTable.getTableHeader().setBackground(new Color(241, 245, 249));
-        userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        styleTable(userTable);
         userTable.getColumnModel().getColumn(4).setCellRenderer(new StatusCellRenderer());
 
+        // Ẩn cột thứ 8 (index 7) đi - Cột chứa Object User
+        userTable.getColumnModel().removeColumn(userTable.getColumnModel().getColumn(HIDDEN_DATA_COLUMN_INDEX));
+
         JScrollPane scrollPane = new JScrollPane(userTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240)));
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        
+        panel.add(scrollPane, BorderLayout.CENTER);
+        return panel;
+    }
 
-        add(centerPanel, BorderLayout.CENTER);
-
-        // === BOTTOM: Row Actions ===
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        bottomPanel.setBackground(Color.WHITE);
-
-        JButton lockBtn = createActionButton("Lock", new Color(251, 146, 60));
-        JButton unlockBtn = createActionButton("Unlock", new Color(34, 197, 94));
-        JButton resetPwdBtn = createActionButton("Reset Password", new Color(168, 85, 247));
-        JButton loginHistoryBtn = createActionButton("Login History", new Color(59, 130, 246));
-        JButton friendListBtn = createActionButton("Friends List", new Color(20, 184, 166));
-
+    private JPanel createBottomPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        panel.setBackground(BG_COLOR);
+        
+        JButton lockBtn = new ModernButton("Lock Account", new Color(245, 158, 11), Color.WHITE);
+        JButton unlockBtn = new ModernButton("Unlock", new Color(16, 185, 129), Color.WHITE);
+        JButton resetPwdBtn = new ModernButton("Reset Password", new Color(139, 92, 246), Color.WHITE);
+        JButton loginHistoryBtn = new ModernButton("Login History", new Color(100, 116, 139), Color.WHITE);
+        JButton friendListBtn = new ModernButton("View Friends", new Color(14, 165, 233), Color.WHITE);
+        
         lockBtn.addActionListener(e -> lockSelectedUser());
         unlockBtn.addActionListener(e -> unlockSelectedUser());
         resetPwdBtn.addActionListener(e -> resetPasswordForSelectedUser());
         loginHistoryBtn.addActionListener(e -> showLoginHistory());
         friendListBtn.addActionListener(e -> showFriendList());
-
-        bottomPanel.add(lockBtn);
-        bottomPanel.add(unlockBtn);
-        bottomPanel.add(resetPwdBtn);
-        bottomPanel.add(loginHistoryBtn);
-        bottomPanel.add(friendListBtn);
-
-        add(bottomPanel, BorderLayout.SOUTH);
-
-        // Load sample data
-        loadUserData();
-    }
-
-    private JPanel createFiltersPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(248, 250, 252));
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240)),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-
-        // Row 1: Name, Email, Status
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Search:"), gbc);
-
-        // Create a sub-panel that holds JComboBox + JTextField
-        JPanel comboTextPanel = new JPanel(new BorderLayout(5, 0));
-
-        String[] options = { "All", "Username", "Name", "Email" };
-        JComboBox<String> filterType = new JComboBox<>(options);
-
-        JTextField filterText = new JTextField(15);
-
-        comboTextPanel.add(filterType, BorderLayout.WEST);
-        comboTextPanel.add(filterText, BorderLayout.CENTER);
-
-        // Place the combined panel into the main layout
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(comboTextPanel, gbc);
-
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Sort By:"), gbc);
-
-        gbc.gridx = 3;
-        gbc.weightx = 1;
-        sortByBox = new JComboBox<>(
-                new String[] { "Name (A-Z)", "Name (Z-A)", "Date Created (Latest)", "Date Created (Oldest)" });
-        sortByBox.addActionListener(e -> sortGroups());
-        panel.add(sortByBox, gbc);
-
-        gbc.gridx = 4;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Status:"), gbc);
-
-        gbc.gridx = 5;
-        gbc.weightx = 0.5;
-        statusFilter = new JComboBox<>(new String[] { "All", "Active", "Locked" });
-        panel.add(statusFilter, gbc);
-
-        // Row 2: Friend count, Activity count, Date
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Friends Count (from):"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        friendCountFilter = new JSpinner(new SpinnerNumberModel(0, 0, 10000, 1));
-        panel.add(friendCountFilter, gbc);
-
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Date Joined (from):"), gbc);
-
-        gbc.gridx = 3;
-        gbc.weightx = 0.5;
-        dateFilter = new JTextField("yyyy-MM-dd");
-        dateFilter.setForeground(Color.GRAY);
-        panel.add(dateFilter, gbc);
-
-        // Filter and Reset buttons
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 6;
-        gbc.anchor = GridBagConstraints.CENTER;
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        buttonPanel.setBackground(new Color(248, 250, 252));
-
-        JButton filterBtn = createActionButton("Filter", new Color(59, 130, 246));
-        JButton resetBtn = createActionButton("Reset", new Color(100, 116, 139));
-
-        filterBtn.addActionListener(e -> applyFilters());
-        resetBtn.addActionListener(e -> resetFilters());
-
-        buttonPanel.add(filterBtn);
-        buttonPanel.add(resetBtn);
-        panel.add(buttonPanel, gbc);
-
+        
+        panel.add(lockBtn);
+        panel.add(unlockBtn);
+        panel.add(resetPwdBtn);
+        panel.add(loginHistoryBtn);
+        panel.add(friendListBtn);
         return panel;
     }
 
-    private JButton createActionButton(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(bgColor);
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(150, 32));
+    // === 2. LOGIC LOAD DATA ===
 
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bgColor.darker());
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bgColor);
-            }
-        });
-
-        return btn;
-    }
-
-    private void loadUserData() {
-        Object[][] sampleData = {
-                { 1, "John Doe", "john_doe", "john@example.com", "Active", 45, "2024-01-15" },
-                { 2, "Jane Smith", "jane_smith", "jane@example.com", "Active", 78, "2024-02-20" },
-                { 3, "Admin User", "admin", "admin@example.com", "Active", 120, "2023-12-10" },
-                { 4, "Bob Wilson", "bob_wilson", "bob@example.com", "Locked", 23, "2024-03-05" },
-                { 5, "Alice Brown", "alice_brown", "alice@example.com", "Active", 92, "2024-01-28" }
-        };
-
-        for (Object[] row : sampleData) {
-            tableModel.addRow(row);
-        }
-    }
-
-    private void sortGroups() {
-        String sortOption = (String) sortByBox.getSelectedItem();
-        JOptionPane.showMessageDialog(this, "Sort By: " + sortOption);
-    }
+    public void loadData() { applyFilters(); }
 
     private void applyFilters() {
-        JOptionPane.showMessageDialog(this, "Filtering...");
+        if (UserSession.getUser() == null) return;
+
+        String token = UserSession.getUser().getToken();
+        String type = (String) filterTypeBox.getSelectedItem();
+        String keyword = filterTextField.getText().trim();
+        String sort = (String) sortByBox.getSelectedItem();
+        String status = (String) statusFilter.getSelectedItem();
+        
+        String operator = (String) friendCountOperator.getSelectedItem();
+        int friendVal = (Integer) friendCountValue.getValue();
+        Integer greaterThan = null;
+        Integer smallerThan = null;
+
+        if (friendVal > 0) {
+            if (operator.contains(">")) greaterThan = friendVal;
+            else smallerThan = friendVal;
+        }
+
+        userTable.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Integer finalGreater = greaterThan;
+        Integer finalSmaller = smallerThan;
+
+        new SwingWorker<List<UserManagementItemList>, Void>() {
+            @Override
+            protected List<UserManagementItemList> doInBackground() throws Exception {
+                return userService.getUsers(token, type, keyword, sort, status, finalGreater, finalSmaller);
+            }
+            @Override
+            protected void done() {
+                try {
+                    updateTableData(get());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    userTable.setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        }.execute();
     }
 
     private void resetFilters() {
-        nameFilter.setText("");
-        sortByBox.setSelectedIndex(0);
-        statusFilter.setSelectedIndex(0);
-        friendCountFilter.setValue(0);
-        activityCountFilter.setValue(0);
-        dateFilter.setText("yyyy-MM-dd");
-        dateFilter.setForeground(Color.GRAY);
+        filterTextField.setText("");
+        friendCountValue.setValue(0);
+        friendCountOperator.setSelectedIndex(0);
+        applyFilters();
     }
 
-    private void showAddUserDialog() {
-        Window parent = SwingUtilities.getWindowAncestor(this);
-        UserForm dialog = new UserForm(parent, "Add New User", null, false);
-        dialog.setVisible(true);
-
-        if (dialog.isConfirmed()) {
-            JOptionPane.showMessageDialog(this, "User created successfully!");
+    private void updateTableData(List<UserManagementItemList> users) {
+        tableModel.setRowCount(0);
+        for (UserManagementItemList u : users) {
+            tableModel.addRow(new Object[]{
+                u.getUserId(), 
+                u.getUsername(), 
+                u.getFullName(), 
+                u.getEmail(),
+                u.isActive() ? "Active" : "Locked",
+                u.getFriendCount(),
+                formatDate(u.getJoinedAt()),
+                u
+            });
         }
+        tableModel.fireTableDataChanged();
     }
+    
+    // === 3. ACTIONS LOGIC ===
 
     private void showEditUserDialog() {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a user!");
+            JOptionPane.showMessageDialog(this, "Please select a user to edit.");
             return;
         }
 
-        User test_User = new User("abc", "abc");
-        test_User.setUserInfo(1, "dreckiez", null, "USER", "", "HIDDEN", null, "abc@xyz.com", "Mike", "Hung");
-
+        // Lấy dữ liệu từ Model thông qua row index của View (cần convert nếu có sort)
+        int modelRow = userTable.convertRowIndexToModel(selectedRow);
+        
+        // 🔥 Lấy Object từ cột ẩn (HIDDEN_DATA_COLUMN_INDEX = 7)
+        UserManagementItemList user = (UserManagementItemList) tableModel.getValueAt(modelRow, HIDDEN_DATA_COLUMN_INDEX);
+        
         Window parent = SwingUtilities.getWindowAncestor(this);
-
-        UserForm dialog = new UserForm(parent, "Edit User", test_User, true);
+        
+        // Truyền object vào form (Class UserEditForm đã được sửa để nhận object)
+        UserEditForm dialog = new UserEditForm(parent, user);
         dialog.setVisible(true);
-
+        
         if (dialog.isConfirmed()) {
-            // test_User.(dialog.getUsername());
+            loadData();
         }
     }
 
-    private void deleteSelectedUser() {
-        int selectedRow = userTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a user!");
-            return;
-        }
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete this user?",
-                "Confirmation", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            tableModel.removeRow(selectedRow);
-        }
-    }
-
-    private void lockSelectedUser() {
-        updateUserStatus("Locked");
-    }
-
-    private void unlockSelectedUser() {
-        updateUserStatus("Active");
-    }
-
-    private void updateUserStatus(String status) {
-        int selectedRow = userTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a user!");
-            return;
-        }
-        tableModel.setValueAt(status, selectedRow, 4);
+    private void showAddUserDialog() {
+        Window parent = SwingUtilities.getWindowAncestor(this);
+        UserCreateForm dialog = new UserCreateForm(parent, "Create New User");
+        dialog.setVisible(true);
+        if (dialog.isConfirmed()) loadData();
     }
 
     private void resetPasswordForSelectedUser() {
         int selectedRow = userTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a user!");
-            return;
+        if (selectedRow == -1) return;
+
+        Long userId = (Long) userTable.getValueAt(selectedRow, 0);
+        String username = (String) userTable.getValueAt(selectedRow, 1);
+
+        int confirm = JOptionPane.showConfirmDialog(this, 
+                "Are you sure you want to RESET password for user: " + username + "?", 
+                "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            new SwingWorker<String, Void>() {
+                @Override
+                protected String doInBackground() throws Exception {
+                    String token = UserSession.getUser().getToken();
+                    return userService.resetPassword(token, userId);
+                }
+                @Override
+                protected void done() {
+                    try {
+                        String newPass = get();
+                        if (newPass != null) {
+                            JTextArea ta = new JTextArea("New Password: " + newPass);
+                            ta.setEditable(false);
+                            JOptionPane.showMessageDialog(UserManage.this, ta, "Success", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(UserManage.this, "Failed.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception e) { e.printStackTrace(); }
+                }
+            }.execute();
         }
-        JOptionPane.showMessageDialog(this, "Password has been reset successfully!");
     }
 
-    private void showLoginHistory() {
+    // Các hàm khác giữ nguyên
+    private void lockSelectedUser() { processUserStatusChange(false); }
+    private void unlockSelectedUser() { processUserStatusChange(true); }
+    
+    private void processUserStatusChange(boolean isActive) {
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow == -1) return;
+        Long userId = (Long) userTable.getValueAt(selectedRow, 0);
+        
+        // ... (Logic gọi API Lock/Unlock giữ nguyên) ...
+        int confirm = JOptionPane.showConfirmDialog(this, "Confirm change status?", "Confirm", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+             new SwingWorker<Boolean, Void>() {
+                protected Boolean doInBackground() throws Exception {
+                    return userService.updateUserStatus(UserSession.getUser().getToken(), userId, isActive);
+                }
+                protected void done() {
+                    try { if(get()) loadData(); } catch(Exception e) {}
+                }
+             }.execute();
+        }
+    }
+
+    private void deleteSelectedUser() {
+        // 1. Kiểm tra chọn dòng
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a user!");
+            JOptionPane.showMessageDialog(this, "Please select a user to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        screen.showDashboard("history");
-    }
 
+        // 2. Lấy thông tin từ bảng
+        Long userId = (Long) userTable.getValueAt(selectedRow, 0); // Cột ID
+        String username = (String) userTable.getValueAt(selectedRow, 1); // Cột Username
+
+        // 3. Hỏi xác nhận (Rất quan trọng)
+        int confirm = JOptionPane.showConfirmDialog(this, 
+                "Are you sure you want to PERMANENTLY DELETE user: " + username + "?\nThis action cannot be undone!", 
+                "Confirm Delete", 
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.ERROR_MESSAGE); // Icon đỏ cảnh báo
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Hiện loading
+            userTable.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+            // 4. Gọi API ngầm
+            new SwingWorker<Boolean, Void>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    String token = UserSession.getUser().getToken();
+                    return userService.deleteUser(token, userId);
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        boolean success = get();
+                        if (success) {
+                            // Xóa thành công -> Load lại dữ liệu
+                            JOptionPane.showMessageDialog(UserManage.this, "User deleted successfully.");
+                            loadData();
+                        } else {
+                            JOptionPane.showMessageDialog(UserManage.this, "Failed to delete user.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(UserManage.this, "Error: " + e.getMessage());
+                    } finally {
+                        userTable.setCursor(Cursor.getDefaultCursor());
+                    }
+                }
+            }.execute();
+        }
+    }
+    
+    private void showLoginHistory() { 
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow == -1) return;
+        Long userId = (Long) userTable.getValueAt(selectedRow, 0);
+        String username = (String) userTable.getValueAt(selectedRow, 1);
+        Window parent = SwingUtilities.getWindowAncestor(this);
+        LoginHistoryDialog d = new LoginHistoryDialog(parent, userId, username);
+        d.setVisible(true);
+    }
+    
     private void showFriendList() {
         int selectedRow = userTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a user!");
-            return;
-        }
-        String username = (String) userTable.getValueAt(selectedRow, 2);
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
-                "Friends List - " + username, true);
-        dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(600, 400);
-        dialog.setLocationRelativeTo(this);
+        if (selectedRow == -1) return;
+        Long userId = (Long) userTable.getValueAt(selectedRow, 0);
+        String username = (String) userTable.getValueAt(selectedRow, 1);
+        Window parent = SwingUtilities.getWindowAncestor(this);
+        FriendListDialog d = new FriendListDialog(parent, userId, username);
+        d.setVisible(true);
+    }
 
-        // Members table
-        String[] columns = { "ID", "Username", "Name", "Email", "Role", "Friend Since" };
-        DefaultTableModel membersModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable membersTable = new JTable(membersModel);
-        membersTable.setFont(new Font("Arial", Font.PLAIN, 12));
-        membersTable.setRowHeight(30);
-
-        // Sample members data
-        Object[][] sampleMembers = {
-                { 1, "john_doe", "John Doe", "john@example.com", "Member", "2024-01-20" },
-                { 2, "jane_smith", "Jane Smith", "jane@example.com", "Admin", "2024-01-15" },
-                { 3, "alice_brown", "Alice Brown", "alice@example.com", "Member", "2024-02-10" }
-        };
-
-        for (Object[] row : sampleMembers) {
-            membersModel.addRow(row);
-        }
-
-        JScrollPane scrollPane = new JScrollPane(membersTable);
-        dialog.add(scrollPane, BorderLayout.CENTER);
-
-        JButton closeBtn = new JButton("Close");
-        closeBtn.addActionListener(e -> dialog.dispose());
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(closeBtn);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-        dialog.setVisible(true);
+    // === UI HELPERS & CUSTOM CLASSES ===
+    // (Giữ nguyên các class ModernButton, RoundedPanel, styleTable...)
+    // Copy lại các hàm helper UI từ các version trước để file chạy được
+    
+    private String formatDate(String rawDate) {
+        if(rawDate == null) return "";
+        try { return rawDate.replace("T", " ").substring(0, 16); } catch(Exception e) { return rawDate; }
+    }
+    private void styleTable(JTable table) {
+        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        table.setRowHeight(50);
+        table.setSelectionBackground(new Color(239, 246, 255));
+        table.setSelectionForeground(Color.BLACK);
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(new Color(241, 245, 249));
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        table.getTableHeader().setBackground(TABLE_HEADER_COLOR);
+        table.getTableHeader().setForeground(new Color(100, 116, 139));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 45));
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer); 
+        table.getColumnModel().getColumn(5).setCellRenderer(centerRenderer); 
+    }
+    private JLabel createLabel(String text) {
+        JLabel l = new JLabel(text); l.setFont(new Font("SansSerif", Font.BOLD, 13)); l.setForeground(TEXT_COLOR); return l;
+    }
+    private JTextField createTextField(int c) {
+        JTextField t = new JTextField(c); t.setPreferredSize(new Dimension(100, 35));
+        t.setBorder(BorderFactory.createCompoundBorder(new RoundedBorder(8, new Color(203, 213, 225)), new EmptyBorder(0, 10, 0, 10))); return t;
+    }
+    private JComboBox<String> createComboBox(String[] i) {
+        JComboBox<String> c = new JComboBox<>(i); c.setPreferredSize(new Dimension(100, 35)); c.setBackground(Color.WHITE); return c;
+    }
+    class ModernButton extends JButton {
+        private Color normalColor, hoverColor; boolean isHovered=false;
+        public ModernButton(String t, Color b, Color f) { super(t); normalColor=b; hoverColor=b.darker(); setContentAreaFilled(false); setFocusPainted(false); setBorderPainted(false); setOpaque(false); setForeground(f); setFont(new Font("SansSerif", Font.BOLD, 13)); setCursor(new Cursor(Cursor.HAND_CURSOR)); setPreferredSize(new Dimension(140, 38)); addMouseListener(new java.awt.event.MouseAdapter() { public void mouseEntered(java.awt.event.MouseEvent e) { isHovered=true; repaint(); } public void mouseExited(java.awt.event.MouseEvent e) { isHovered=false; repaint(); } }); }
+        protected void paintComponent(Graphics g) { Graphics2D g2=(Graphics2D)g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); g2.setColor(isHovered?hoverColor:normalColor); g2.fillRoundRect(0,0,getWidth(),getHeight(),10,10); g2.dispose(); super.paintComponent(g); }
+    }
+    class RoundedPanel extends JPanel {
+        private int r; private Color c;
+        public RoundedPanel(int r, Color c) { this.r=r; this.c=c; setOpaque(false); }
+        protected void paintComponent(Graphics g) { Graphics2D g2=(Graphics2D)g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); g2.setColor(c); g2.fillRoundRect(0,0,getWidth(),getHeight(),r,r); g2.setColor(new Color(226,232,240)); g2.drawRoundRect(0,0,getWidth()-1,getHeight()-1,r,r); g2.dispose(); super.paintComponent(g); }
+    }
+    class RoundedBorder extends AbstractBorder {
+        private int r; private Color c;
+        public RoundedBorder(int r, Color c) { this.r=r; this.c=c; }
+        public void paintBorder(Component cmp, Graphics g, int x, int y, int w, int h) { Graphics2D g2=(Graphics2D)g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); g2.setColor(c); g2.drawRoundRect(x,y,w-1,h-1,r,r); g2.dispose(); }
+        public Insets getBorderInsets(Component c) { return new Insets(r+1,r+1,r+2,r); }
     }
 }

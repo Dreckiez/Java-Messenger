@@ -318,7 +318,7 @@ public class RegisterScreen extends JPanel {
                 @Override
                 protected void done() {
                     try {
-                        JSONObject res = get(); // get() returns result of doInBackground()
+                        JSONObject res = get(); 
 
                         int status = res.optInt("httpStatus", 0);
                         if (status == 200) {

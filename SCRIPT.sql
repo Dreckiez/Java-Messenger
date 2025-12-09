@@ -64,7 +64,7 @@ CREATE TABLE record_online_user (
 
 -- record_signin
 CREATE TABLE record_signin (
-    record_signin_id BIGSERIAL PRIMARY KEY,
+    record_signin_id VARCHAR(100) PRIMARY KEY,
     user_id BIGINT REFERENCES user_info(user_id) ON DELETE SET NULL,
     signed_in_at TIMESTAMP NOT NULL,
     is_successful BOOLEAN
@@ -255,6 +255,16 @@ CREATE TABLE encryption_group (
     PRIMARY KEY (user_id, group_conversation_id, device_id)
 );
 
+--Full text search
+ALTER TABLE private_conversation_message
+ADD COLUMN content_tsv tsvector 
+GENERATED ALWAYS AS (to_tsvector('simple', content)) STORED;
+
+ALTER TABLE group_conversation_message
+ADD COLUMN content_tsv tsvector 
+GENERATED ALWAYS AS (to_tsvector('simple', content)) STORED;
+
+
 -- Indexes
 CREATE INDEX idx_userinfo_email ON user_info(email);
 CREATE INDEX idx_private_conv_user1 ON private_conversation(user1_id);
@@ -268,6 +278,10 @@ CREATE UNIQUE INDEX idx_delete_private_conversation_user
 ON delete_private_conversation (user_id, private_conversation_id);
 CREATE INDEX idx_delete_msg_user_deletedat
 ON delete_private_conversation_message (user_id, deleted_at DESC);
+CREATE INDEX idx_private_msg_fts 
+ON private_conversation_message USING GIN (content_tsv);
+CREATE INDEX idx_group_msg_fts 
+ON group_conversation_message USING GIN (content_tsv);
 
 
 -- Triggers
@@ -298,3 +312,21 @@ CREATE TRIGGER trg_group_msg_updated_at
 BEFORE UPDATE ON group_conversation_message
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamptz_updated_at();
+
+CREATE OR REPLACE FUNCTION update_tsv_content()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.content_tsv := to_tsvector('simple', NEW.content);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_private_msg_tsv
+BEFORE INSERT OR UPDATE ON private_conversation_message
+FOR EACH ROW 
+EXECUTE PROCEDURE update_tsv_content();
+
+CREATE TRIGGER trg_group_msg_tsv
+BEFORE INSERT OR UPDATE ON group_conversation_message
+FOR EACH ROW 
+EXECUTE PROCEDURE update_tsv_content();
