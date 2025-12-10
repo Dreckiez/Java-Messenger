@@ -1,6 +1,6 @@
 package com.example.spring_security.repository;
 
-import com.example.spring_security.dto.response.BaseUserResponse;
+
 import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.UserSearchResponse;
 import com.example.spring_security.entities.Enum.Role;

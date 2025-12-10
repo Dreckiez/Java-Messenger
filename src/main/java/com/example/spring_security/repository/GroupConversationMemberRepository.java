@@ -83,4 +83,23 @@ public interface GroupConversationMemberRepository
             )
             """, nativeQuery = true)
     Optional<GroupConversationMember> findJoinedEarliest(@Param("groupConversationId") Long groupConversationId);
+
+
+    @Query(value = """
+    SELECT COUNT(*) 
+    FROM group_conversation_member
+    WHERE group_conversation_id = :groupId
+    """, nativeQuery = true)
+    Long countMembers(Long groupId);
+
+    @Query(value = """
+    SELECT COUNT(*) 
+    FROM group_conversation_member
+    WHERE group_conversation_id = :groupId
+      AND group_role = 1
+    """, nativeQuery = true)
+    Long countAdmins(Long groupId);
+
+
+
 }
