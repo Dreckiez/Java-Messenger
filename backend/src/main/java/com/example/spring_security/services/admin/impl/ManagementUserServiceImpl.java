@@ -1,9 +1,11 @@
 package com.example.spring_security.services.admin.impl;
 
 import com.example.spring_security.dto.request.ManageUserRequest;
+import com.example.spring_security.dto.request.UpdateStatusReportRequest;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.entities.Enum.Gender;
+import com.example.spring_security.entities.Enum.ReportStatus;
 import com.example.spring_security.entities.Enum.Role;
 import com.example.spring_security.entities.Token.RequestPasswordReset;
 import com.example.spring_security.exception.CustomException;
@@ -234,10 +236,28 @@ public class ManagementUserServiceImpl implements ManagementUserService {
         return resetPasswordResponse;
     };
 
-    public List<RecordSignIn> getRecordSignIn(Boolean isSuccessful, boolean sort, Long userId) {
-        Sort order = Sort.by("signedInAt");
-        order = sort ? order.ascending() : order.descending();
-        return recordSignInRepository.findAll(isSuccessful, userId, order);
+    public ListRecordSignInResponse getRecordSignIn(Boolean isSuccessful, Long userId, String username, LocalDate startDate, LocalDate endDate) {
+
+        ListRecordSignInResponse listRecordSignInResponse = new ListRecordSignInResponse();
+
+        List<RecordSignInResponse> recordSignInResponseList = recordSignInRepository.findAll(isSuccessful, userId, username);
+
+        List<RecordSignInResponse> filtered = recordSignInResponseList.stream().filter(
+                r -> (startDate == null || r.getSignedInAt().isAfter(startDate.atStartOfDay()))
+                        && (endDate == null || r.getSignedInAt().isBefore(endDate.atTime(LocalTime.MAX)))
+        ).collect(Collectors.toList());
+
+        Long countTotal = filtered.stream().count();
+
+        Long countSuccess = filtered.stream().filter(f -> f.getIsSuccessful()).count();
+
+        Long countFailed = filtered.stream().filter(f -> !f.getIsSuccessful()).count();
+
+        listRecordSignInResponse.setRecordSignInResponseList(filtered);
+        listRecordSignInResponse.setTotal(countTotal);
+        listRecordSignInResponse.setCountFailed(countFailed);
+        listRecordSignInResponse.setCountSuccess(countSuccess);
+        return listRecordSignInResponse;
     }
 
     public ListUserFriendResponse getFriends(Long userId, String keyword, String sortBy) {
@@ -259,7 +279,7 @@ public class ManagementUserServiceImpl implements ManagementUserService {
 
     public ListReportResponse getReports(String sortBy, String username, String email, LocalDate startDate, LocalDate endDate) {
 
-        List<Report>reportList = reportRepository .findReportsWithFilterAndOrderBy(sortBy, username, email);
+        List<Report>reportList = reportRepository.findReportsWithFilterAndOrderBy(sortBy, username, email);
 
         List<Report> reportListFilter = reportList.stream().filter(
           r -> (startDate == null || r.getId().getReportedAt().isAfter(startDate.atStartOfDay()))
@@ -271,8 +291,8 @@ public class ManagementUserServiceImpl implements ManagementUserService {
                 .reportedUserId(r.getId().getReportedUserId())
                 .reporterUsername(r.getReporter().getUsername())
                 .reportedUserUsername(r.getReportedUser().getUsername())
-                .reporterFullName(r.getReporter().getLastName() + " " + r.getReporter().getFirstName())
-                .reportedUserFullName(r.getReportedUser().getLastName() + " " + r.getReportedUser().getFirstName())
+                .reporterFullName(r.getReporter().getFirstName() + " " + r.getReporter().getLastName())
+                .reportedUserFullName(r.getReportedUser().getFirstName() + " " + r.getReportedUser().getLastName())
                 .reporterAvtUrl(r.getReporter().getAvatarUrl()) .reportedUserAvtUrl(r.getReportedUser().getAvatarUrl())
                 .reason(r.getReason())
                 .status(r.getStatus())
@@ -282,10 +302,12 @@ public class ManagementUserServiceImpl implements ManagementUserService {
                 .reportResponseList(reportResponseList)
                 .count(reportResponseList.size())
                 .build();
+
         return listReportResponse;
     }
 
     public List<GroupConversationItemListResponse> getGroupList(String keyword, String sort) {
+
         return groupConversationRepository.managementList(keyword, sort);
     }
 
@@ -300,5 +322,41 @@ public class ManagementUserServiceImpl implements ManagementUserService {
     public List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort) {
         return recordOnlineUserRepository.managementRecordList(keyword, sort);
     }
+
+    public Map<String, String> updateReports(UpdateStatusReportRequest updateStatusReportRequest) {
+        ReportId reportId = ReportId.builder()
+                .reporterId(updateStatusReportRequest.getReporterId())
+                .reportedUserId(updateStatusReportRequest.getReportedUserId())
+                .reportedAt(updateStatusReportRequest.getReportedAt())
+                .build();
+        Report report = reportRepository.findById(reportId).orElseThrow(
+                () -> new CustomException(HttpStatus.NOT_FOUND, "This report not found.")
+        );
+
+        report.setStatus(updateStatusReportRequest.getStatus());
+
+        System.out.println("Before");
+
+        reportRepository.save(report);
+
+        System.out.println("After");
+
+        if (updateStatusReportRequest.getStatus() == ReportStatus.LOCKED) {
+            User user = userRepository.findById(reportId.getReportedUserId()).orElseThrow(
+                    () -> new CustomException(HttpStatus.NOT_FOUND, "User not found.")
+            );
+            user.setIsActive(false);
+            userRepository.save(user);
+        }
+
+        Map<String, String> msg = new HashMap<>();
+
+        msg.put("message", "Updated successfully.");
+
+        return msg;
+
+    }
+
+
 
 }

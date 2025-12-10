@@ -1,7 +1,11 @@
 package services;
 
 import models.FriendModel;
+import models.GroupChatModel;
+import models.GroupMemberModel;
+import models.LoginHistoryResponse;
 import models.LoginRecord;
+import models.ReportModel;
 import models.UserManagementItemList; 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -152,11 +156,22 @@ public class UserAdminService {
         }
     }
 
-    public List<LoginRecord> getLoginHistory(String token, Long userId) {
-        List<LoginRecord> historyList = new ArrayList<>();
+    /**
+     * Lấy lịch sử đăng nhập (Full data + Stats)
+     */
+    public LoginHistoryResponse getLoginHistory(String token, Long userId, String username, String startDate, String endDate) {
         try {
-  
-            String url = ApiUrl.BASE + "chat/admin/get-record-signin?userId=" + userId;
+            StringBuilder urlBuilder = new StringBuilder(ApiUrl.BASE + "chat/admin/get-record-signin?");
+            
+            // Build Query Params
+            if (userId != null) urlBuilder.append("userId=").append(userId).append("&");
+            if (username != null && !username.isEmpty()) urlBuilder.append("username=").append(username).append("&");
+            if (startDate != null && !startDate.isEmpty()) urlBuilder.append("startDate=").append(startDate).append("&");
+            if (endDate != null && !endDate.isEmpty()) urlBuilder.append("endDate=").append(endDate).append("&");
+
+            // Xóa dấu & thừa ở cuối nếu có
+            String url = urlBuilder.toString();
+            if (url.endsWith("&") || url.endsWith("?")) url = url.substring(0, url.length() - 1);
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -169,18 +184,12 @@ public class UserAdminService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                // Parse mảng JSON
-                JSONArray jsonArray = new JSONArray(response.body());
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    historyList.add(LoginRecord.fromJson(jsonArray.getJSONObject(i)));
-                }
-            } else {
-                System.err.println("Fetch History Failed: " + response.statusCode());
+                return LoginHistoryResponse.fromJson(new JSONObject(response.body()));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return historyList;
+        return new LoginHistoryResponse();
     }
 
 
@@ -291,6 +300,212 @@ public class UserAdminService {
                 return true;
             } else {
                 System.err.println("Delete Failed: " + response.statusCode() + " - " + response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<GroupChatModel> getGroupChats(String token, String keyword, String sort) {
+        List<GroupChatModel> list = new ArrayList<>();
+        try {
+            // URL: /api/chat/admin/get-group?keyword=...&sort=...
+            StringBuilder urlBuilder = new StringBuilder(ApiUrl.BASE + "chat/admin/get-group?");
+            
+            if (keyword != null && !keyword.isEmpty()) {
+                urlBuilder.append("keyword=").append(URLEncoder.encode(keyword, StandardCharsets.UTF_8)).append("&");
+            }
+            if (sort != null) {
+                // Map lại giá trị sort từ UI sang Backend
+                String backendSort = mapSortValue(sort);
+                urlBuilder.append("sort=").append(backendSort);
+            }
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlBuilder.toString()))
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONArray jsonArray = new JSONArray(response.body());
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    list.add(GroupChatModel.fromJson(jsonArray.getJSONObject(i)));
+                }
+            } else {
+                System.err.println("Fetch Groups Failed: " + response.statusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Helper map giá trị sort
+    private String mapSortValue(String uiSort) {
+        switch (uiSort) {
+            case "Name (A-Z)": return "group_name";
+            case "Name (Z-A)": return "-group_name";
+            case "Date Created (Latest)": return "-created_at";
+            case "Date Created (Oldest)": return "created_at";
+            default: return "created_at";
+        }
+    }
+
+    /**
+     * Lấy danh sách thành viên của một Group Chat
+     */
+    public List<GroupMemberModel> getGroupMembers(String token, Long groupId) {
+        List<GroupMemberModel> list = new ArrayList<>();
+        try {
+            // URL: /api/chat/admin/get-group/{id}/member
+            String url = ApiUrl.BASE + "chat/admin/get-group/" + groupId + "/member";
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONArray jsonArray = new JSONArray(response.body());
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    list.add(GroupMemberModel.fromJson(jsonArray.getJSONObject(i)));
+                }
+            } else {
+                System.err.println("Fetch Group Members Failed: " + response.statusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Lấy danh sách Admin của một Group Chat
+     */
+    public List<GroupMemberModel> getGroupAdmins(String token, Long groupId) {
+        List<GroupMemberModel> list = new ArrayList<>();
+        try {
+            // URL: /api/chat/admin/get-group/{id}/admin
+            String url = ApiUrl.BASE + "chat/admin/get-group/" + groupId + "/admin";
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONArray jsonArray = new JSONArray(response.body());
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    list.add(GroupMemberModel.fromJson(jsonArray.getJSONObject(i)));
+                }
+            } else {
+                System.err.println("Fetch Group Admins Failed: " + response.statusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Lấy danh sách Spam Reports
+     */
+    /**
+     * Lấy danh sách Spam Reports có sắp xếp
+     */
+    public List<ReportModel> getReports(String token, String searchType, String keyword, String startDate, String endDate, String sortBy) {
+        List<ReportModel> list = new ArrayList<>();
+        try {
+            StringBuilder urlBuilder = new StringBuilder(ApiUrl.BASE + "chat/admin/get-report?");
+            
+            // 1. Filter Params
+            if (keyword != null && !keyword.isEmpty()) {
+                if ("Username".equals(searchType)) {
+                    urlBuilder.append("username=").append(URLEncoder.encode(keyword, StandardCharsets.UTF_8)).append("&");
+                } else if ("Email".equals(searchType)) {
+                    urlBuilder.append("email=").append(URLEncoder.encode(keyword, StandardCharsets.UTF_8)).append("&");
+                }
+            }
+            if (startDate != null && !startDate.isEmpty()) urlBuilder.append("startDate=").append(startDate).append("&");
+            if (endDate != null && !endDate.isEmpty()) urlBuilder.append("endDate=").append(endDate).append("&");
+
+            // 2. Sort Param (MỚI THÊM)
+            if (sortBy != null && !sortBy.isEmpty()) {
+                urlBuilder.append("sortBy=").append(sortBy).append("&");
+            }
+
+            // Clean URL
+            String url = urlBuilder.toString();
+            if (url.endsWith("&") || url.endsWith("?")) url = url.substring(0, url.length() - 1);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONObject resObj = new JSONObject(response.body());
+                if (resObj.has("reportResponseList")) {
+                    JSONArray arr = resObj.getJSONArray("reportResponseList");
+                    for (int i = 0; i < arr.length(); i++) {
+                        list.add(ReportModel.fromJson(arr.getJSONObject(i)));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateReportStatus(String token, Long reporterId, Long reportedUserId, String reportedAt, int statusValue) {
+        try {
+            String url = ApiUrl.BASE + "chat/admin/update-report";
+
+            // Chuẩn bị Body JSON
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("reporterId", reporterId);
+            jsonBody.put("reportedUserId", reportedUserId);
+            jsonBody.put("reportedAt", reportedAt);
+            jsonBody.put("status", statusValue);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", "Bearer " + token)
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody.toString()))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                // Có thể kiểm tra message trong body nếu cần
+                return true;
+            } else {
+                System.err.println("Update Report Status Failed: " + response.statusCode() + " - " + response.body());
                 return false;
             }
         } catch (Exception e) {
