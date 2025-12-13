@@ -6,6 +6,7 @@ import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.GroupConversation;
 import com.example.spring_security.entities.RecordSignIn;
 import com.example.spring_security.entities.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,8 +40,7 @@ public interface ManagementUserService {
 
     List<GroupMemberResponse> getAdminList(Long groupConversationId);
 
-    List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort);
+    List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort, Long greaterThan, Long smallerThan);
 
-
-
+    DashboardStatsResponse getDashboardStats(int year) throws JsonProcessingException;
 }

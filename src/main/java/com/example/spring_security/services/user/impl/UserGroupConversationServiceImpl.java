@@ -289,6 +289,10 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
         webSocketGroupMessageService.sendDeleteGroupMessage(groupConversationId, deleteGroupMessageWsResponse);
 
+        groupConversation.setPreviewMessage(null);
+
+        groupConversationRepository.save(groupConversation);
+
         Map<String, String> msg = new HashMap<>();
 
         msg.put("message", "Removed successfully.");

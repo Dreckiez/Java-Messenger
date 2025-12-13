@@ -64,11 +64,6 @@ public interface PrivateConversationRepository extends JpaRepository<PrivateConv
                 SELECT *,
                     COALESCE(previewTime, conv_created_at) AS effectiveTime
                 FROM pc
-                WHERE NOT (
-                    deletedAt IS NOT NULL
-                    AND previewTime IS NOT NULL
-                    AND previewTime <= deletedAt
-                )
             ),
             
             
@@ -99,11 +94,6 @@ public interface PrivateConversationRepository extends JpaRepository<PrivateConv
                 SELECT *,
                     COALESCE(previewTime, conv_created_at) AS effectiveTime
                 FROM gc
-                WHERE NOT (
-                    deletedAt IS NOT NULL
-                    AND previewTime IS NOT NULL
-                    AND previewTime <= deletedAt
-                )
             )
             
             SELECT

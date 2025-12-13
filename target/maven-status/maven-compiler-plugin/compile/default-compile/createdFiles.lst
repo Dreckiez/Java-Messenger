@@ -47,9 +47,11 @@ com\example\spring_security\dto\response\ListUserFriendResponse.class
 com\example\spring_security\dto\response\ListUserFriendResponse$ListUserFriendResponseBuilder.class
 com\example\spring_security\dto\response\ResetPasswordResponse.class
 com\example\spring_security\entities\ReadGroupConversationMessage.class
+com\example\spring_security\dto\response\DashboardStatsResponse.class
 com\example\spring_security\dto\request\ChangePasswordRequest$ChangePasswordRequestBuilder.class
 com\example\spring_security\entities\ReadGroupConversationMessageId$ReadGroupConversationMessageIdBuilder.class
 com\example\spring_security\services\user\UserReportService.class
+com\example\spring_security\dto\response\RegistrationInfo.class
 com\example\spring_security\services\third\impl\EmailServiceImpl.class
 com\example\spring_security\controller\user\UserSearchController.class
 com\example\spring_security\dto\response\UserProfileResponse$UserProfileResponseBuilder.class
@@ -71,6 +73,7 @@ com\example\spring_security\controller\third\AuthenticationController.class
 com\example\spring_security\repository\BlockRepository.class
 com\example\spring_security\dto\request\VerificationRequest$VerificationRequestBuilder.class
 com\example\spring_security\entities\Enum\RealTimeAction.class
+com\example\spring_security\dto\response\RegistrationStats.class
 com\example\spring_security\entities\DeleteGroupConversationId$DeleteGroupConversationIdBuilder.class
 com\example\spring_security\entities\FriendRequest.class
 com\example\spring_security\entities\PrivateConversation.class
@@ -89,6 +92,7 @@ com\example\spring_security\dto\response\GroupMessageWsResponse$GroupMessageWsRe
 com\example\spring_security\repository\FriendRepository.class
 com\example\spring_security\controller\user\UserBlockController.class
 com\example\spring_security\dto\response\FriendRequestResponse$FriendRequestResponseBuilderImpl.class
+com\example\spring_security\dto\response\ActiveUsersInfo.class
 com\example\spring_security\entities\RecordOnlineUser.class
 com\example\spring_security\entities\Enum\Role$Converter.class
 com\example\spring_security\services\user\UserService.class
@@ -115,6 +119,7 @@ com\example\spring_security\entities\DeletePrivateConversationMessage$DeletePriv
 com\example\spring_security\entities\Block$BlockBuilder.class
 com\example\spring_security\entities\ReadPrivateConversationMessage.class
 com\example\spring_security\dto\response\DeleteGroupMessageWsResponse$DeleteGroupMessageWsResponseBuilderImpl.class
+com\example\spring_security\dto\response\RecordSignInResponse.class
 com\example\spring_security\repository\GroupConversationMemberRepository.class
 com\example\spring_security\services\user\UserFriendService.class
 com\example\spring_security\entities\DeletePrivateConversationId$DeletePrivateConversationIdBuilder.class
@@ -129,6 +134,7 @@ com\example\spring_security\entities\ReadGroupConversationMessage$ReadGroupConve
 com\example\spring_security\dto\request\SignUpRequest$SignUpRequestBuilder.class
 com\example\spring_security\dto\response\JwtAuthenticationResponse.class
 com\example\spring_security\entities\Enum\MessageType.class
+com\example\spring_security\dto\request\UpdateStatusReportRequest.class
 com\example\spring_security\dto\response\DeletePrivateMessageWsResponse$DeletePrivateMessageWsResponseBuilderImpl.class
 com\example\spring_security\repository\DeleteGroupConversationRepository.class
 com\example\spring_security\services\third\CloudService.class
@@ -151,6 +157,7 @@ com\example\spring_security\exception\CustomException.class
 com\example\spring_security\services\user\UserGroupConversationService$WebSocketSenderService.class
 com\example\spring_security\entities\Enum\GroupRole.class
 com\example\spring_security\controller\user\UserPrivateConversationController.class
+com\example\spring_security\dto\response\ListRecordSignInResponse.class
 com\example\spring_security\services\admin\ManagementUserService.class
 com\example\spring_security\entities\Block.class
 com\example\spring_security\controller\user\ChatAssistantController.class
@@ -212,13 +219,16 @@ com\example\spring_security\dto\request\UpdateProfileRequest$UpdateProfileReques
 com\example\spring_security\dto\request\UpdateProfileRequest.class
 com\example\spring_security\services\user\impl\UserGroupConversationServiceImpl.class
 com\example\spring_security\entities\PrivateConversationMessage.class
+com\example\spring_security\repository\StatsRepository.class
 com\example\spring_security\dto\response\PrivateMessageWsResponse$PrivateMessageWsResponseBuilder.class
 com\example\spring_security\dto\response\PrivateConversationMessageResponse.class
 com\example\spring_security\entities\DeleteGroupConversationMessage.class
 com\example\spring_security\dto\response\UserProfileResponse.class
 com\example\spring_security\services\user\impl\UserServiceImpl$1.class
 com\example\spring_security\services\user\impl\UserProfileServiceImpl.class
+com\example\spring_security\dto\response\ListGroupConversationItemResponse.class
 com\example\spring_security\repository\GroupConversationMessageRepository.class
+com\example\spring_security\dto\response\ActiveUsersStats.class
 com\example\spring_security\dto\response\UserProfileResponse$UserProfileResponseBuilderImpl.class
 com\example\spring_security\entities\DeletePrivateConversationMessageId.class
 com\example\spring_security\entities\GroupConversation$GroupConversationBuilder.class

@@ -13,6 +13,8 @@ import com.example.spring_security.repository.*;
 import com.example.spring_security.repository.TokenRepo.RequestPasswordResetRepository;
 import com.example.spring_security.services.admin.ManagementUserService;
 import com.example.spring_security.services.third.EmailService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,8 @@ public class ManagementUserServiceImpl implements ManagementUserService {
     private final GroupConversationMemberRepository groupConversationMemberRepository;
 
     private final RecordOnlineUserRepository recordOnlineUserRepository;
+
+    private final StatsRepository statsRepository;
 
     public List<User> getUserDetailList(String keyword, String username, String fullName, String email, Boolean isActive, Boolean isAccepted,
                                         Integer greaterThan, Integer smallerThan,
@@ -319,8 +323,8 @@ public class ManagementUserServiceImpl implements ManagementUserService {
         return groupConversationMemberRepository.findAdminsByGroupConversationId(groupConversationId);
     }
 
-    public List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort) {
-        return recordOnlineUserRepository.managementRecordList(keyword, sort);
+    public List<UserRecordOnlineResponse> getRecordOnline(String keyword, String sort, Long greaterThan, Long smallerThan) {
+        return recordOnlineUserRepository.managementRecordList(keyword, sort, greaterThan, smallerThan);
     }
 
     public Map<String, String> updateReports(UpdateStatusReportRequest updateStatusReportRequest) {
@@ -359,4 +363,13 @@ public class ManagementUserServiceImpl implements ManagementUserService {
 
 
 
+    public DashboardStatsResponse getDashboardStats(int year) throws JsonProcessingException {
+        String json = statsRepository.getDashboardStats(year);
+
+        ObjectMapper mapper = new ObjectMapper();
+        DashboardStatsResponse dto =
+                mapper.readValue(json, DashboardStatsResponse.class);
+
+        return dto;
+    }
 }

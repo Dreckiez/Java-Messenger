@@ -28,7 +28,7 @@ public class UserProfileController {
     }
 
     @PatchMapping("/update-profile")
-    public ResponseEntity<UserProfileResponse> updateProfile(
+    public ResponseEntity<?> updateProfile(
             @Valid @RequestBody UpdateProfileRequest updateProfileRequest,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userProfileService.updateProfile(updateProfileRequest, user));
@@ -38,6 +38,11 @@ public class UserProfileController {
     public ResponseEntity<?> updateAvatar(@AuthenticationPrincipal User user,
             @RequestParam("avatar") MultipartFile avatar) {
         return ResponseEntity.ok(Map.of("avatarUrl", userProfileService.updateAvatar(user, avatar)));
+    }
+
+    @DeleteMapping("/remove-avatar")
+    public ResponseEntity<?> removeAvatar(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userProfileService.removeAvatar(user));
     }
 
     @PostMapping("/change-password")
