@@ -18,7 +18,7 @@ public interface RecordSignInRepository extends JpaRepository<RecordSignIn, Long
         r.record_signin_id AS recordSignInId, 
         r.is_successful AS isSuccessful,
         r.signed_in_at AS signedInAt,
-        r.user_id,
+        r.user_id AS userId,
         u.username AS username,
         CONCAT(u.first_name, ' ', u.last_name) AS fullName
     FROM record_signin r

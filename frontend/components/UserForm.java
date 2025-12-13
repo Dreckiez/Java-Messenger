@@ -106,7 +106,7 @@ public class UserForm extends JDialog {
                         gender.substring(0, 1).toUpperCase() + gender.substring(1).toLowerCase());
             }
 
-            String birthday = existingUser.getBDAY();
+            String birthday = existingUser.getBirthDay();
 
             if (birthday != null && !birthday.isEmpty()) {
                 try {
@@ -145,7 +145,7 @@ public class UserForm extends JDialog {
         // Load existing user info (edit mode)
         if (existingUser != null) {
             usernameField.setText(existingUser.getUsername());
-            nameField.setText(existingUser.getFName() + existingUser.getLName());
+            nameField.setText(existingUser.getFirstName() + existingUser.getLastName());
             emailField.setText(existingUser.getEmail());
             statusBox.setSelectedItem("Active");
 

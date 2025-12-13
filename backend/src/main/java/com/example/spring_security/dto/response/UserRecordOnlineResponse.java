@@ -12,6 +12,8 @@ public class UserRecordOnlineResponse extends BaseUserResponse {
 
     private Boolean isOnline;
 
+    private LocalDateTime joinedAt;
+
     private Long activityCount;
 
     private LocalDateTime lastOnlineAt;
@@ -19,12 +21,14 @@ public class UserRecordOnlineResponse extends BaseUserResponse {
     private Long totalOnlineSeconds;
 
     public UserRecordOnlineResponse(Long userId, String username, String firstName,
-                                    String lastName, String avatarUrl, Boolean isOnline, Long activityCount,
+                                    String lastName, String avatarUrl, Boolean isOnline, java.sql.Timestamp joinedAt, Long activityCount,
                                     java.sql.Timestamp lastOnlineAt, Long totalOnlineSeconds) {
 
         super(userId, username, firstName, lastName, avatarUrl);
 
         this.isOnline = isOnline;
+
+        this.joinedAt = joinedAt != null ? joinedAt.toLocalDateTime() : null;
 
         this.activityCount = activityCount;
 

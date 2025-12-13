@@ -2,7 +2,6 @@ package components;
 
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
@@ -88,16 +87,18 @@ public class LoginHistory extends JPanel {
 
         mainPanel.add(Box.createHorizontalStrut(15));
         mainPanel.add(createLabel("From:"));
+        
+        // --- SỬA ĐOẠN NÀY ---
         dateFromFilter = createTextField(10);
-        dateFromFilter.setText("yyyy-MM-dd");
-        dateFromFilter.setForeground(Color.GRAY);
+        addPlaceholder(dateFromFilter, "yyyy-MM-dd"); // <--- Dùng Placeholder xịn
         mainPanel.add(dateFromFilter);
 
         mainPanel.add(Box.createHorizontalStrut(15));
         mainPanel.add(createLabel("To:"));
+        
+        // --- SỬA ĐOẠN NÀY ---
         dateToFilter = createTextField(10);
-        dateToFilter.setText("yyyy-MM-dd");
-        dateToFilter.setForeground(Color.GRAY);
+        addPlaceholder(dateToFilter, "yyyy-MM-dd"); // <--- Dùng Placeholder xịn
         mainPanel.add(dateToFilter);
 
         mainPanel.add(Box.createHorizontalStrut(30));
@@ -176,9 +177,11 @@ public class LoginHistory extends JPanel {
         String username = userFilter.getText().trim();
         
         String fromDate = dateFromFilter.getText().trim();
+        // Nếu text là placeholder "yyyy-MM-dd" thì coi như là rỗng
         if ("yyyy-MM-dd".equals(fromDate)) fromDate = "";
         
         String toDate = dateToFilter.getText().trim();
+        // Tương tự với toDate
         if ("yyyy-MM-dd".equals(toDate)) toDate = "";
 
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -203,7 +206,8 @@ public class LoginHistory extends JPanel {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    JOptionPane.showMessageDialog(LoginHistory.this, "Error: " + e.getMessage());
+                    // Có thể bỏ dòng thông báo lỗi này nếu muốn UI sạch hơn khi chưa có dữ liệu
+                    // JOptionPane.showMessageDialog(LoginHistory.this, "Error: " + e.getMessage());
                 } finally {
                     setCursor(Cursor.getDefaultCursor());
                 }
@@ -237,10 +241,15 @@ public class LoginHistory extends JPanel {
 
     private void resetFilters() {
         userFilter.setText("");
+        
+        // Reset Date From về placeholder
         dateFromFilter.setText("yyyy-MM-dd");
         dateFromFilter.setForeground(Color.GRAY);
+        
+        // Reset Date To về placeholder
         dateToFilter.setText("yyyy-MM-dd");
         dateToFilter.setForeground(Color.GRAY);
+        
         loadLoginData();
     }
 
@@ -302,5 +311,30 @@ public class LoginHistory extends JPanel {
         public RoundedBorder(int r, Color c) { this.r=r; this.c=c; }
         public void paintBorder(Component cmp, Graphics g, int x, int y, int w, int h) { Graphics2D g2=(Graphics2D)g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); g2.setColor(c); g2.drawRoundRect(x,y,w-1,h-1,r,r); g2.dispose(); }
         public Insets getBorderInsets(Component c) { return new Insets(r+1,r+1,r+2,r); }
+    }
+
+    // Hàm hỗ trợ tạo Placeholder (Tự động ẩn/hiện text hướng dẫn)
+    private void addPlaceholder(JTextField field, String placeholderText) {
+        // Set trạng thái ban đầu
+        field.setText(placeholderText);
+        field.setForeground(Color.GRAY);
+
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (field.getText().equals(placeholderText)) {
+                    field.setText("");
+                    field.setForeground(TEXT_COLOR); // Đổi về màu chữ chính khi gõ
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (field.getText().isEmpty()) {
+                    field.setText(placeholderText);
+                    field.setForeground(Color.GRAY); // Đổi về màu xám nếu bỏ trống
+                }
+            }
+        });
     }
 }

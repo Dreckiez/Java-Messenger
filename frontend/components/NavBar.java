@@ -6,6 +6,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.event.ActionListener; // Import ActionListener
+import java.awt.image.BufferedImage;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -38,11 +40,11 @@ public class NavBar extends JPanel implements UserListener {
 
         refreshAvatar(UserSession.getUser());
 
-        avatarBtn.setFocusable(true); // Allow keyboard navigation
+        avatarBtn.setFocusable(true); 
         avatarBtn.setBorderPainted(false);
         avatarBtn.setContentAreaFilled(false);
-        avatarBtn.setFocusPainted(false); // Or keep true for accessibility
-        avatarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Shows it's clickable
+        avatarBtn.setFocusPainted(false);
+        avatarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); 
 
         avatarBtn.addActionListener(e -> {
             center.showSettings();
@@ -53,21 +55,34 @@ public class NavBar extends JPanel implements UserListener {
         centerWrapper.setLayout(new BoxLayout(centerWrapper, BoxLayout.Y_AXIS));
         centerWrapper.setOpaque(false);
 
-        JPanel centerButtons = new JPanel(new GridLayout(4, 1, 0, 0));
+        // 🔥 Thay đổi GridLayout từ 4 thành 5 để chứa nút Blocked Users mới
+        JPanel centerButtons = new JPanel(new GridLayout(5, 1, 0, 0));
         centerButtons.setOpaque(false);
-        centerButtons.setMaximumSize(new Dimension(70, 240)); // 50+50+10 for gap
-        centerButtons.setPreferredSize(new Dimension(70, 240)); // 50+50+10 for gap
+        centerButtons.setMaximumSize(new Dimension(70, 300)); // 5 * 50 = 250 (Adjusted max size)
+        centerButtons.setPreferredSize(new Dimension(70, 300)); 
 
         JButton chatBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/chat.png")));
         JButton searchBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/search.png")));
         JButton friendBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/friend.png")));
         JButton requestBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/request.png")));
+        
+        // 🔥 TẠO NÚT MỚI CHO BLOCKED USERS
+        // Sử dụng icon khóa/chặn
+        ImageIcon blockedIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/block.png")); // Giả định bạn có icon này
+        if (blockedIcon.getImage() == null) {
+            // 🔥🔥 ĐÃ SỬA: XÓA BỎ .getImage() 🔥🔥
+            BufferedImage initialAvatar = editor.createInitialAvatar("B", Color.BLACK, 32);
+            blockedIcon = new ImageIcon(editor.scaleImage(initialAvatar, 36));
+        }
+        JButton blockedBtn = new JButton(blockedIcon);
+
 
         StyleButton st = new StyleButton();
         st.styleButton(chatBtn);
         st.styleButton(searchBtn);
         st.styleButton(requestBtn);
         st.styleButton(friendBtn);
+        st.styleButton(blockedBtn); // Áp dụng style cho nút mới
 
         chatBtn.addActionListener(e -> {
             navPanel.showPanel("chatlist");
@@ -86,11 +101,18 @@ public class NavBar extends JPanel implements UserListener {
         requestBtn.addActionListener(e -> {
             navPanel.showPanel("request");
         });
+        
+        // 🔥 GÁN ACTION CHO NÚT BLOCKED USERS
+        blockedBtn.addActionListener(e -> {
+            navPanel.showPanel("blockedusers");
+        });
+
 
         centerButtons.add(chatBtn);
         centerButtons.add(searchBtn);
         centerButtons.add(requestBtn);
         centerButtons.add(friendBtn);
+        centerButtons.add(blockedBtn); // 🔥 THÊM NÚT MỚI VÀO LAYOUT
 
         // Add glue to push buttons to center
         centerWrapper.add(centerButtons);
@@ -112,7 +134,8 @@ public class NavBar extends JPanel implements UserListener {
         add(centerWrapper, BorderLayout.CENTER);
         add(logoutBtn, BorderLayout.SOUTH);
     }
-
+    
+    // ... (onUserUpdated và refreshAvatar giữ nguyên) ...
     @Override
     public void onUserUpdated(User user) {
         refreshAvatar(user);

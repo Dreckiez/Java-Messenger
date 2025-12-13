@@ -10,7 +10,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.border.AbstractBorder; 
-
 import javax.swing.border.CompoundBorder;
 import models.UserManagementItemList;
 import screens.DashboardScreen;

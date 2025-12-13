@@ -94,7 +94,7 @@ public class SpamReport extends JPanel {
         mainPanel.add(searchTypeCombo, gbc);
 
         // Cột 1: Keyword Field
-        gbc.gridx = 1; gbc.weightx = 1.0; // Cho phép ô này co giãn nhiều nhất
+        gbc.gridx = 1; gbc.weightx = 1.0; 
         keywordField = createTextField(15);
         mainPanel.add(keywordField, gbc);
 
@@ -117,50 +117,46 @@ public class SpamReport extends JPanel {
         gbc.gridx = 4; gbc.weightx = 0;
         mainPanel.add(createLabel("From:"), gbc);
         
-        // Cột 5: Date From Input
+        // Cột 5: Date From Input (Đã sửa)
         gbc.gridx = 5; gbc.weightx = 0.5;
         dateFromFilter = createTextField(8);
-        dateFromFilter.setText("yyyy-MM-dd");
-        dateFromFilter.setForeground(Color.GRAY);
+        addPlaceholder(dateFromFilter, "yyyy-MM-dd"); // <--- GỌI HÀM PLACEHOLDER
         mainPanel.add(dateFromFilter, gbc);
 
         // Cột 6: Date Range (To Label)
         gbc.gridx = 6; gbc.weightx = 0;
         mainPanel.add(createLabel("To:"), gbc);
 
-        // Cột 7: Date To Input
+        // Cột 7: Date To Input (Đã sửa)
         gbc.gridx = 7; gbc.weightx = 0.5;
         dateToFilter = createTextField(8);
-        dateToFilter.setText("yyyy-MM-dd");
-        dateToFilter.setForeground(Color.GRAY);
+        addPlaceholder(dateToFilter, "yyyy-MM-dd"); // <--- GỌI HÀM PLACEHOLDER
         mainPanel.add(dateToFilter, gbc);
 
 
         // --- Hàng 2: Buttons (Filter và Reset) ---
         
-        // Dùng 2 ô Grid cuối cùng để chứa 2 nút bấm
-        
-        // Cột 6 (Hàng 2): Nút Filter (Căn phải trong ô)
+        // Cột 6 (Hàng 2): Nút Filter
         gbc.gridx = 6;
-        gbc.gridy = 1; // Xuống hàng 2
-        gbc.gridwidth = 1; // Chỉ 1 cột
+        gbc.gridy = 1; 
+        gbc.gridwidth = 1; 
         gbc.weightx = 0;
         gbc.insets = new Insets(15, 5, 0, 5); 
         gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST; // Căn phải
+        gbc.anchor = GridBagConstraints.EAST; 
 
         JButton filterBtn = new ModernButton("Filter", PRIMARY_COLOR, Color.WHITE);
-        filterBtn.setPreferredSize(new Dimension(100, 38)); // Giảm kích thước nút để vừa
+        filterBtn.setPreferredSize(new Dimension(100, 38)); 
         filterBtn.addActionListener(e -> applyFilters());
         mainPanel.add(filterBtn, gbc);
         
-        // Cột 7 (Hàng 2): Nút Reset (Căn phải trong ô)
+        // Cột 7 (Hàng 2): Nút Reset
         gbc.gridx = 7;
         gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.EAST; // Căn phải
+        gbc.anchor = GridBagConstraints.EAST; 
 
         JButton resetBtn = new ModernButton("Reset", new Color(226, 232, 240), TEXT_COLOR);
-        resetBtn.setPreferredSize(new Dimension(100, 38)); // Giảm kích thước nút
+        resetBtn.setPreferredSize(new Dimension(100, 38)); 
         resetBtn.addActionListener(e -> resetFilters());
         mainPanel.add(resetBtn, gbc);
         
@@ -233,9 +229,11 @@ public class SpamReport extends JPanel {
         String keyword = keywordField.getText().trim();
         
         String fromDate = dateFromFilter.getText().trim();
+        // Nếu text là placeholder thì coi như rỗng
         if ("yyyy-MM-dd".equals(fromDate)) fromDate = "";
         
         String toDate = dateToFilter.getText().trim();
+        // Nếu text là placeholder thì coi như rỗng
         if ("yyyy-MM-dd".equals(toDate)) toDate = "";
 
         // 🔥 Xử lý Sort
@@ -250,7 +248,6 @@ public class SpamReport extends JPanel {
         new SwingWorker<List<ReportModel>, Void>() {
             @Override
             protected List<ReportModel> doInBackground() throws Exception {
-                // Truyền thêm backendSort vào service
                 return userService.getReports(token, type, keyword, finalFrom, finalTo, backendSort);
             }
 
@@ -303,13 +300,18 @@ public class SpamReport extends JPanel {
     private void resetFilters() {
         keywordField.setText("");
         searchTypeCombo.setSelectedIndex(0);
-        sortCombo.setSelectedIndex(0); // Reset sort về mặc định
+        sortCombo.setSelectedIndex(0);
+
+        // Reset Date From về placeholder
         dateFromFilter.setText("yyyy-MM-dd");
         dateFromFilter.setForeground(Color.GRAY);
+
+        // Reset Date To về placeholder
         dateToFilter.setText("yyyy-MM-dd");
         dateToFilter.setForeground(Color.GRAY);
+
         loadReportData();
-    }
+        }
 
     // ================= ACTIONS =================
 
@@ -469,4 +471,29 @@ public class SpamReport extends JPanel {
         public void paintBorder(Component cmp, Graphics g, int x, int y, int w, int h) { Graphics2D g2=(Graphics2D)g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); g2.setColor(c); g2.drawRoundRect(x,y,w-1,h-1,r,r); g2.dispose(); }
         public Insets getBorderInsets(Component c) { return new Insets(r+1,r+1,r+2,r); }
     }
+
+    // Hàm hỗ trợ tạo Placeholder
+private void addPlaceholder(JTextField field, String placeholderText) {
+    // Set trạng thái ban đầu
+    field.setText(placeholderText);
+    field.setForeground(Color.GRAY);
+
+    field.addFocusListener(new java.awt.event.FocusAdapter() {
+        @Override
+        public void focusGained(java.awt.event.FocusEvent e) {
+            if (field.getText().equals(placeholderText)) {
+                field.setText("");
+                field.setForeground(TEXT_COLOR); // Đổi màu chữ về màu chính
+            }
+        }
+
+        @Override
+        public void focusLost(java.awt.event.FocusEvent e) {
+            if (field.getText().isEmpty()) {
+                field.setText(placeholderText);
+                field.setForeground(Color.GRAY); // Đổi màu chữ về màu mờ
+            }
+        }
+    });
+}
 }

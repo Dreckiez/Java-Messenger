@@ -1,18 +1,18 @@
 package components;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import models.Contact;
 import utils.ApiClient;
 import utils.ApiUrl;
 import utils.UserSession;
-
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,106 +20,112 @@ public class SearchFriend extends JPanel {
 
     private JTextField searchField;
     private JPanel contactsPanel;
+    private JPanel centerContainer;
 
     private final List<ContactItem> displayed;
-
-    private ContactItem selected;
-
+    private ContactItem selected; // Lưu item đang được chọn
     private SwingWorker<List<Contact>, Void> worker;
 
-    public SearchFriend(NavPanel parent) {
+    // --- MÀU SẮC ---
+    private final Color ME_BG_COLOR = new Color(236, 253, 245);
+    private final Color BG_COLOR = new Color(248, 250, 252);     
+    private final Color ITEM_BG = Color.WHITE;                   
+    private final Color HOVER_BG = new Color(241, 245, 249);     
+    private final Color SELECTED_BG = new Color(219, 234, 254);  
+    
+    private final Color TEXT_PRIMARY = new Color(30, 41, 59);
+    private final Color TEXT_HINT = new Color(148, 163, 184);
 
+    public SearchFriend(NavPanel parent) {
         displayed = new ArrayList<>();
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(BG_COLOR);
 
         add(createHeader(), BorderLayout.NORTH);
-        add(createScrollArea(), BorderLayout.CENTER);
+        add(createBody(), BorderLayout.CENTER);
 
-        clearList(); // Start with empty list
+        showEmptyState("Type a name to search..."); 
     }
 
     private JPanel createHeader() {
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-        header.setBorder(BorderFactory.createEmptyBorder(15, 20, 10, 20));
+        // Giữ padding 15x2 cho Header (30px)
+        header.setBorder(new EmptyBorder(20, 15, 10, 15)); 
         header.setBackground(Color.WHITE);
 
-        JLabel title = new JLabel("Search Friends");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        JLabel title = new JLabel("Find Friends");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 22)); 
+        title.setForeground(TEXT_PRIMARY);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
         header.add(title);
-        header.add(Box.createVerticalStrut(10));
+        header.add(Box.createVerticalStrut(15));
 
-        searchField = new JTextField("Search for friends...");
-        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        searchField.setForeground(new Color(150, 150, 150));
-        searchField.setBackground(new Color(240, 242, 245));
-        searchField.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        // --- SEARCH BAR (SYNCED STYLE) ---
+        RoundedPanel searchContainer = new RoundedPanel(20, new Color(243, 244, 246));
+        searchContainer.setLayout(new BorderLayout());
+        searchContainer.setBorder(new EmptyBorder(8, 15, 8, 15)); 
+        searchContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
+        searchContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Placeholder logic
-        searchField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (searchField.getText().equals("Search for friends...")) {
-                    searchField.setText("");
-                    searchField.setForeground(new Color(50, 50, 50));
-                }
-            }
+        searchField = new JTextField();
+        searchField.setBorder(null);
+        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14)); 
+        searchField.setBackground(new Color(243, 244, 246)); 
+        
+        setupPlaceholder(searchField, "Search by name..."); 
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (searchField.getText().isEmpty()) {
-                    searchField.setText("Search for friends...");
-                    searchField.setForeground(new Color(150, 150, 150));
-                }
-            }
-        });
-
-        // Trigger backend search
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 String text = searchField.getText().trim();
-                if (text.isEmpty()) {
+                if (text.isEmpty() || text.equals("Search by name...")) {
                     clearList();
+                    showEmptyState("Type a name to search...");
                 } else {
                     searchBackend(text);
                 }
             }
         });
 
-        header.add(searchField);
+        searchContainer.add(searchField, BorderLayout.CENTER);
+        header.add(searchContainer);
+
         return header;
     }
 
-    private JScrollPane createScrollArea() {
+    private JScrollPane createBody() {
         contactsPanel = new JPanel();
         contactsPanel.setLayout(new BoxLayout(contactsPanel, BoxLayout.Y_AXIS));
-        contactsPanel.setBackground(Color.WHITE);
+        contactsPanel.setBackground(BG_COLOR);
+        
+        // 🔥 THÊM PADDING NGANG CHO CONTACTS PANEL (15px)
+        contactsPanel.setBorder(new EmptyBorder(0, 15, 0, 15));
+        
+        centerContainer = new JPanel(new BorderLayout());
+        centerContainer.setBackground(BG_COLOR);
+        
+        centerContainer.add(contactsPanel, BorderLayout.NORTH);
 
-        JScrollPane scroll = new JScrollPane(contactsPanel);
+        JScrollPane scroll = new JScrollPane(centerContainer);
         scroll.setBorder(null);
-        scroll.getViewport().setBackground(Color.WHITE);
-
+        scroll.getViewport().setBackground(BG_COLOR);
+        
+        // 🔥 ĐẢM BẢO THANH CUỘN NGANG TẮT HOÀN TOÀN
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
             protected void configureScrollBarColors() {
-                this.thumbColor = new Color(180, 180, 180);
-                this.trackColor = new Color(240, 240, 240);
+                this.thumbColor = new Color(203, 213, 225);
+                this.trackColor = BG_COLOR;
             }
-
-            @Override
-            protected JButton createDecreaseButton(int orientation) {
-                return zero();
-            }
-
-            @Override
-            protected JButton createIncreaseButton(int orientation) {
-                return zero();
-            }
-
-            private JButton zero() {
+            @Override protected JButton createDecreaseButton(int orientation) { return createZeroButton(); }
+            @Override protected JButton createIncreaseButton(int orientation) { return createZeroButton(); }
+            private JButton createZeroButton() {
                 JButton b = new JButton();
                 b.setPreferredSize(new Dimension(0, 0));
                 return b;
@@ -129,92 +135,176 @@ public class SearchFriend extends JPanel {
         return scroll;
     }
 
-    public void clearList() {
-        contactsPanel.removeAll();
-        displayed.clear();
-        contactsPanel.revalidate();
-        contactsPanel.repaint();
+    // --- LOGIC HIỂN THỊ & XỬ LÝ KHOẢNG CÁCH ---
+
+    private void setupItemEvent(ContactItem item, boolean isMe) {
+        // ... (Logic giữ nguyên) ...
+        if (isMe) {
+            item.setBackground(ME_BG_COLOR);
+            return; 
+        }
+
+        item.setBackground(ITEM_BG);
+
+        item.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (item != selected) {
+                    item.setBackground(HOVER_BG);
+                    item.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (item != selected) {
+                    item.setBackground(ITEM_BG);
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (selected != null && selected != item) {
+                    selected.setBackground(ITEM_BG);
+                    // selected.deselect(); 
+                }
+                selected = item;
+                selected.setBackground(SELECTED_BG);
+                // selected.select(); 
+            }
+        });
     }
 
     private void displayResults(List<Contact> contacts) {
         clearList();
 
+        if (contacts.isEmpty()) {
+            showEmptyState("No results found.");
+            return;
+        }
+
+        int myId = UserSession.getUser().getId(); 
+
         for (Contact c : contacts) {
+            boolean isMe = (c.getUserId() == myId);
+
+            if (isMe) {
+                c.setName(c.getName() + " (You)");
+                c.setIsFriend("");
+            }
+            
+
             ContactItem item = new ContactItem(c);
-            setupItemClick(item);
-            displayed.add(item);
+            
             contactsPanel.add(item);
+            contactsPanel.add(Box.createVerticalStrut(10)); // Giảm khoảng cách cho đẹp hơn
+            
+            setupItemEvent(item, isMe);
+            displayed.add(item);
         }
 
         contactsPanel.revalidate();
         contactsPanel.repaint();
     }
 
-    private void setupItemClick(ContactItem item) {
-        item.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (selected != null)
-                    selected.deselect();
-                selected = item;
-                item.select();
-            }
-        });
+    // --- BACKEND & HELPER (Giữ nguyên) ---
+
+    private void showEmptyState(String message) {
+        clearList();
+        JLabel msgLabel = new JLabel(message);
+        msgLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        msgLabel.setForeground(TEXT_HINT);
+        msgLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contactsPanel.add(Box.createVerticalStrut(50));
+        contactsPanel.add(msgLabel);
+        contactsPanel.revalidate();
+        contactsPanel.repaint();
     }
 
     private void searchBackend(String keyword) {
-
-        // Cancel previous search if still running
-        if (worker != null && !worker.isDone()) {
-            worker.cancel(true);
-        }
-
+        if (worker != null && !worker.isDone()) worker.cancel(true);
+        // ... (Logic SwingWorker giữ nguyên) ...
         worker = new SwingWorker<List<Contact>, Void>() {
-            @Override
-            protected List<Contact> doInBackground() throws Exception {
+            @Override protected List<Contact> doInBackground() throws Exception {
                 List<Contact> list = new ArrayList<>();
-
-                String url = ApiUrl.SEARCH + "?keyword=" + keyword;
-
-                // Call backend → JSON array text
+                String url = ApiUrl.SEARCH;
+                if (!keyword.isEmpty()) {
+                    String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
+                    url += "?keyword=" + encodedKeyword;
+                }
                 JSONObject json = ApiClient.getJSON(url, UserSession.getUser().getToken());
-
                 JSONArray arr = json.getJSONArray("array");
-
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
-
                     int id = o.getInt("userId");
                     String name = o.optString("username", "");
                     String avatar = o.optString("avatarUrl", "");
                     String isFriend = o.getString("status");
-
-                    list.add(new Contact(id, name, avatar, isFriend));
+                    String sentAt = o.optString("sentAt", null);
+                    list.add(new Contact(id, name, avatar, isFriend, sentAt));
                 }
                 return list;
             }
-
-            @Override
-            protected void done() {
+            @Override protected void done() {
                 try {
-                    if (!isCancelled()) {
-                        List<Contact> results = get();
-                        displayResults(results);
-                    }
+                    if (!isCancelled()) displayResults(get());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    clearList();
+                    showEmptyState("Error searching.");
                 }
             }
         };
-
         worker.execute();
     }
 
-    // When user opens the Search tab again
     public void resetSearch() {
-        searchField.setText("Search for friends...");
-        searchField.setForeground(new Color(150, 150, 150));
-        clearList();
+        searchField.setText("Search by name...");
+        searchField.setForeground(TEXT_HINT);
+        showEmptyState("Type a name to search...");
+    }
+
+    private void setupPlaceholder(JTextField field, String text) {
+        field.setText(text);
+        field.setForeground(TEXT_HINT);
+        field.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                if (field.getText().equals(text)) {
+                    field.setText("");
+                    field.setForeground(TEXT_PRIMARY);
+                }
+            }
+            public void focusLost(FocusEvent e) {
+                if (field.getText().isEmpty()) {
+                    field.setText(text);
+                    field.setForeground(TEXT_HINT);
+                }
+            }
+        });
+    }
+
+    class RoundedPanel extends JPanel {
+        private int radius;
+        private Color bgColor;
+        public RoundedPanel(int radius, Color bgColor) {
+            this.radius = radius;
+            this.bgColor = bgColor;
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bgColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g2.setColor(new Color(226, 232, 240));
+            g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, radius, radius);
+            super.paintComponent(g);
+        }
+    }
+    public void clearList() { 
+        contactsPanel.removeAll(); 
+        displayed.clear(); 
+        selected = null; 
+        contactsPanel.revalidate(); contactsPanel.repaint(); 
     }
 }

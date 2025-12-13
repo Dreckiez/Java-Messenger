@@ -5,6 +5,7 @@ import com.example.spring_security.dto.request.UpdateStatusReportRequest;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.services.admin.ManagementUserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -118,8 +119,16 @@ public class UserManagementController {
     @GetMapping("/get-record-online")
     public ResponseEntity<List<UserRecordOnlineResponse>> getRecordOnline
             (@RequestParam(value = "keyword", required = false) String keyword,
-             @RequestParam(value = "sort", required = false) String sort) {
-        return ResponseEntity.ok(managementUserService.getRecordOnline(keyword, sort));
+             @RequestParam(value = "sort", required = false) String sort,
+             @RequestParam(value = "greaterThan", required = false) Long greaterThan,
+             @RequestParam(value = "smallerThan", required = false) Long smallerThan) {
+        return ResponseEntity.ok(managementUserService.getRecordOnline(keyword, sort, greaterThan, smallerThan));
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<DashboardStatsResponse> getDashboardStats
+            (@RequestParam(value = "year") int year) throws JsonProcessingException {
+        return ResponseEntity.ok(managementUserService.getDashboardStats(year));
     }
 
 }

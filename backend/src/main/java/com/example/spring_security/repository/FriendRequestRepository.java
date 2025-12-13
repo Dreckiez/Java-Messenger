@@ -27,7 +27,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Fr
       AND fr.is_active = TRUE
       AND (
           NULLIF(:keyword, '') IS NULL
-          OR LOWER(CONCAT(u.last_name, ' ', u.first_name))
+          OR LOWER(CONCAT(u.first_name, ' ', u.last_name))
              LIKE LOWER(CONCAT('%', :keyword, '%'))
       )
     """, nativeQuery = true)
@@ -47,7 +47,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Fr
       AND fr.is_active = TRUE
       AND (
           NULLIF(:keyword, '') IS NULL
-          OR LOWER(CONCAT(u.last_name, ' ', u.first_name))
+          OR LOWER(CONCAT(u.first_name, ' ', u.last_name))
              LIKE LOWER(CONCAT('%', :keyword, '%'))
       )
     """, nativeQuery = true)

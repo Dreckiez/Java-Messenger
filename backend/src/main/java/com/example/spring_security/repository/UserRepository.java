@@ -33,50 +33,68 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     @Query(value = """
-            SELECT 
-                u.user_id AS userId,
-                u.username AS username,
-                u.first_name AS firstName,
-                u.last_name AS lastName,
-                u.avatar_url AS avatarUrl,
-                CASE
-                    WHEN f.user_id1 IS NOT NULL THEN 'friend'
-                    WHEN fr.sender_id = :currentUserId THEN 'sent'
-                    WHEN fr.receiver_id = :currentUserId AND fr.status = 0 THEN 'received'
-                    ELSE 'none'
-                END AS status
-            FROM user_info u
-            
-            LEFT JOIN friend f ON (
-                                    f.user_id1 = :currentUserId AND f.user_id2 = u.user_id
-                                    OR 
-                                    f.user_id2 = :currentUserId AND f.user_id1 = u.user_id
-                                  )
-                                  
-                                  
-            LEFT JOIN friend_request fr ON (    fr.is_active = true
-                                                AND
-                                                (fr.sender_id = :currentUserId AND fr.receiver_id = u.user_id
-                                                OR 
-                                                fr.receiver_id = :currentUserId AND fr.sender_id = u.user_id)
-                                           )
-            
-            WHERE u.is_active = TRUE AND u.is_accepted = TRUE AND u.role = 0
-            AND (u.username ILIKE CONCAT('%', :keyword, '%')
+    SELECT 
+        u.user_id AS userId,
+        u.username AS username,
+        u.first_name AS firstName,
+        u.last_name AS lastName,
+        u.avatar_url AS avatarUrl,
+
+        CASE
+            WHEN f.user_id1 IS NOT NULL THEN 'friend'
+            WHEN fr.sender_id = :currentUserId THEN 'sent'
+            WHEN fr.receiver_id = :currentUserId AND fr.status = 0 THEN 'received'
+            ELSE 'none'
+        END AS status,
+
+        CASE
+            WHEN fr.sender_id = :currentUserId THEN fr.sent_at
+            WHEN fr.receiver_id = :currentUserId AND fr.status = 0 THEN fr.sent_at
+            ELSE NULL
+        END AS sentAt
+
+    FROM user_info u
+
+    LEFT JOIN friend f ON (
+        (f.user_id1 = :currentUserId AND f.user_id2 = u.user_id)
+        OR 
+        (f.user_id2 = :currentUserId AND f.user_id1 = u.user_id)
+    )
+
+    LEFT JOIN friend_request fr ON (
+        fr.is_active = TRUE
+        AND (
+            (fr.sender_id = :currentUserId AND fr.receiver_id = u.user_id)
             OR 
-            CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%'))
-            AND NOT EXISTS
-                (
-                SELECT 1 FROM Block B
-                WHERE ((B.blocker_id = :currentUserId AND B.blocked_user_id = u.user_id)
-                OR (B.blocker_id = u.user_id AND B.blocked_user_id = :currentUserId))
-                AND B.is_active = TRUE
-                )
-            ORDER BY 
-                     (u.user_id = :currentUserId) DESC
-            """, nativeQuery = true)
-    List<UserSearchResponse> searchUserByUsernameOrFullName(@Param("currentUserId") Long currentUserId,
-                                                            @Param("keyword") String keyword);
+            (fr.receiver_id = :currentUserId AND fr.sender_id = u.user_id)
+        )
+    )
+
+    WHERE u.is_active = TRUE 
+      AND u.is_accepted = TRUE 
+      AND u.role = 0
+      AND (
+            u.username ILIKE CONCAT('%', :keyword, '%')
+            OR CONCAT(u.first_name, ' ', u.last_name) ILIKE CONCAT('%', :keyword, '%')
+          )
+      AND NOT EXISTS (
+            SELECT 1 
+            FROM Block b
+            WHERE (
+                (b.blocker_id = :currentUserId AND b.blocked_user_id = u.user_id)
+                OR 
+                (b.blocker_id = u.user_id AND b.blocked_user_id = :currentUserId)
+            )
+            AND b.is_active = TRUE
+      )
+
+    ORDER BY (u.user_id = :currentUserId) DESC
+    """, nativeQuery = true)
+    List<UserSearchResponse> searchUserByUsernameOrFullName(
+            @Param("currentUserId") Long currentUserId,
+            @Param("keyword") String keyword
+    );
+
 
 
 
@@ -99,7 +117,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             AND
             ( :fullName IS NULL 
               OR  :fullName = ''
-              OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :fullName, '%')
+              OR CONCAT(u.first_name, ' ', u.last_name) ILIKE CONCAT('%', :fullName, '%')
             )
             AND
             ( :email IS NULL 

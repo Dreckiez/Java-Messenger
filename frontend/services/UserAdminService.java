@@ -1,12 +1,15 @@
 package services;
 
+import models.AnalyticsModel;
 import models.FriendModel;
 import models.GroupChatModel;
 import models.GroupMemberModel;
 import models.LoginHistoryResponse;
 import models.LoginRecord;
 import models.ReportModel;
-import models.UserManagementItemList; 
+import models.UserManagementItemList;
+import models.UserRecordOnlineModel;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import utils.ApiClient;
@@ -513,5 +516,95 @@ public class UserAdminService {
             return false;
         }
     }
+
+    /**
+     * Lấy dữ liệu Analytics theo năm
+     */
+    public AnalyticsModel getAnalytics(String token, int year) {
+        try {
+            // URL: /api/chat/admin/analytics?year=2025
+            String url = ApiUrl.BASE + "chat/admin/analytics?year=" + year;
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                return AnalyticsModel.fromJson(new JSONObject(response.body()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<UserRecordOnlineModel> getActiveUserRecords(String token, String keyword, String sort, Integer greaterThan, Integer smallerThan) {
+        List<UserRecordOnlineModel> list = new ArrayList<>();
+        try {
+            // URL Base
+            StringBuilder urlBuilder = new StringBuilder(ApiUrl.BASE + "chat/admin/get-record-online?");
+
+            // 1. Param: keyword (fullName)
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                urlBuilder.append("keyword=").append(URLEncoder.encode(keyword.trim(), StandardCharsets.UTF_8)).append("&");
+            }
+
+            // 2. Param: sort (fullName | -fullName | createdAt | -createdAt)
+            if (sort != null && !sort.isEmpty()) {
+                urlBuilder.append("sort=").append(sort).append("&");
+            }
+
+            // 3. Param: greaterThan (activityCount)
+            if (greaterThan != null && greaterThan > 0) {
+                urlBuilder.append("greaterThan=").append(greaterThan).append("&");
+            }
+
+            // 4. Param: smallerThan (activityCount)
+            if (smallerThan != null && smallerThan > 0) {
+                urlBuilder.append("smallerThan=").append(smallerThan).append("&");
+            }
+
+            // Xử lý chuỗi URL cuối cùng (bỏ dấu & thừa)
+            String url = urlBuilder.toString();
+            if (url.endsWith("&")) url = url.substring(0, url.length() - 1);
+
+            // Tạo Request
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+
+            // Gửi Request
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                // Parse kết quả trả về là JSONArray
+                JSONArray jsonArray = new JSONArray(response.body());
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject obj = jsonArray.getJSONObject(i);
+                    // Sử dụng hàm fromJson static vừa tạo trong Model
+                    list.add(UserRecordOnlineModel.fromJson(obj));
+                }
+            } else {
+                System.err.println("Fetch Active Users Failed: " + response.statusCode());
+                System.err.println("Body: " + response.body());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    
 
 }
