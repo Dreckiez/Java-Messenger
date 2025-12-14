@@ -9,10 +9,10 @@ import java.util.List;
 public interface UserSearchService {
     List<UserSearchResponse> search(Long currentUserId, String keyword);
 
-    List<MessageSearchResponse> searchPrivateMessage(Long privateConversationId, String keyword);
+    List<MessageSearchResponse> searchPrivateMessage(Long userId, Long privateConversationId, String keyword);
 
 
-    List<MessageSearchResponse> searchGroupMessages(Long groupConversationId, String keyword);
+    List<MessageSearchResponse> searchGroupMessages(Long userId, Long groupConversationId, String keyword);
 
     List<MessageSearchResponse> searchAllMessages(Long userId, String keyword);
 }

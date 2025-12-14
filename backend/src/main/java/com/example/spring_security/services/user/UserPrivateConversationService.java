@@ -12,4 +12,5 @@ public interface UserPrivateConversationService {
     ListPrivateConversationMessageResponse getMessages(Long userId, Long privateConversationId, Long cursorId);
     SendMessageResponse sendMessage(Long senderId, Long privateConversationId, SendMessageRequest sendMessageRequest);
     Map<String, String> removeMessage(Long userId, Long privateConversationId, Long privateConversationMessageId, boolean isAll);
+    Map<String, Long> getIdConv(Long userId, Long friendId);
 }
