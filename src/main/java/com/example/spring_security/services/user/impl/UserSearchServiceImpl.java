@@ -28,12 +28,12 @@ public class UserSearchServiceImpl implements UserSearchService {
         return listUser;
     }
 
-    public List<MessageSearchResponse> searchPrivateMessage(Long privateConversationId, String keyword) {
-        return userRepository.searchPrivateMessages(privateConversationId, keyword);
+    public List<MessageSearchResponse> searchPrivateMessage(Long userId, Long privateConversationId, String keyword) {
+        return userRepository.searchPrivateMessages(privateConversationId, userId, keyword);
     }
 
-    public List<MessageSearchResponse> searchGroupMessages(Long groupConversationId, String keyword) {
-        return userRepository.searchGroupMessages(groupConversationId, keyword);
+    public List<MessageSearchResponse> searchGroupMessages(Long userId, Long groupConversationId, String keyword) {
+        return userRepository.searchGroupMessages(groupConversationId, userId, keyword);
     }
 
     public List<MessageSearchResponse> searchAllMessages(Long userId, String keyword) {

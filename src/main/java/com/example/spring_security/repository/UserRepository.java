@@ -175,21 +175,39 @@ public interface UserRepository extends JpaRepository<User, Long> {
         m.sent_at AS sentAt,
         m.updated_at AS updatedAt,
         m.type AS messageType,
-        CAST(0 AS SMALLINT) AS conversationType
+        CAST(0 AS SMALLINT) AS conversationType,
+        '' AS conversationName
     FROM private_conversation_message m
     JOIN private_conversation pc 
         ON pc.private_conversation_id = m.private_conversation_id
     JOIN user_info u
         ON u.user_id = m.sender_id
+    
+    LEFT JOIN delete_private_conversation dc
+        ON dc.private_conversation_id = pc.private_conversation_id
+        AND dc.user_id = :userId
+    
     WHERE m.private_conversation_id = :conversationId
-      AND ( :keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%') )
+    
+    AND (dc.deleted_at IS NULL OR m.sent_at > dc.deleted_at)
+    
+    AND NOT EXISTS (
+        SELECT 1
+        FROM delete_private_conversation_message dm
+        WHERE dm.private_conversation_message_id = m.private_conversation_message_id
+          AND (dm.is_all = true OR dm.user_id = :userId)
+    )
+    
+    AND (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+    
     ORDER BY m.sent_at DESC
-    """,
-            nativeQuery = true)
+""", nativeQuery = true)
     List<MessageSearchResponse> searchPrivateMessages(
             @Param("conversationId") Long conversationId,
+            @Param("userId") Long userId,
             @Param("keyword") String keyword
     );
+
 
     @Query(value = """
     SELECT 
@@ -201,25 +219,46 @@ public interface UserRepository extends JpaRepository<User, Long> {
         m.sent_at AS sentAt,
         m.updated_at AS updatedAt,
         m.type AS messageType,
-        CAST(1 AS SMALLINT) AS conversationType
+        CAST(1 AS SMALLINT) AS conversationType,
+        gc.group_name AS conversationName
     FROM group_conversation_message m
     JOIN group_conversation gc
         ON gc.group_conversation_id = m.group_conversation_id
     JOIN user_info u
         ON u.user_id = m.sender_id
+    JOIN group_conversation_member gcm
+        ON gcm.group_conversation_id = gc.group_conversation_id
+        AND gcm.member_id = :userId
+    
+    LEFT JOIN delete_group_conversation dc
+        ON dc.group_conversation_id = gc.group_conversation_id
+        AND dc.member_id = :userId
+    
     WHERE m.group_conversation_id = :groupId
-      AND ( :keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%') )
+    
+    AND (dc.deleted_at IS NULL OR m.sent_at > dc.deleted_at)
+    
+    AND NOT EXISTS (
+        SELECT 1
+        FROM delete_group_conversation_message dm
+        WHERE dm.group_conversation_message_id = m.group_conversation_message_id
+          AND (dm.is_all = true OR dm.member_id = :userId)
+    )
+    
+    AND (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+    
     ORDER BY m.sent_at DESC
-    """,
-            nativeQuery = true)
+""", nativeQuery = true)
     List<MessageSearchResponse> searchGroupMessages(
             @Param("groupId") Long groupId,
+            @Param("userId") Long userId,
             @Param("keyword") String keyword
     );
 
+
     @Query(value = """
     (
-   
+        -- ================= PRIVATE =================
         SELECT 
             pc.private_conversation_id AS id,
             m.private_conversation_message_id AS messageId,
@@ -229,18 +268,40 @@ public interface UserRepository extends JpaRepository<User, Long> {
             m.sent_at AS sentAt,
             m.updated_at AS updatedAt,
             m.type AS messageType,
-            CAST(0 AS SMALLINT) AS conversationType
+            CAST(0 AS SMALLINT) AS conversationType,
+            '' AS conversationName
         FROM private_conversation_message m
-        JOIN private_conversation pc 
+        JOIN private_conversation pc
             ON pc.private_conversation_id = m.private_conversation_id
         JOIN user_info u
             ON u.user_id = m.sender_id
+    
+    
+        LEFT JOIN delete_private_conversation dc
+            ON dc.private_conversation_id = pc.private_conversation_id
+            AND dc.user_id = :userId
+    
         WHERE 
             (pc.user1_id = :userId OR pc.user2_id = :userId)
             AND (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+    
+        
+            AND (dc.deleted_at IS NULL OR m.sent_at > dc.deleted_at)
+    
+         
+            AND NOT EXISTS (
+                SELECT 1
+                FROM delete_private_conversation_message d
+                WHERE d.private_conversation_message_id = m.private_conversation_message_id
+                  AND (
+                      d.is_all = TRUE
+                      OR d.user_id = :userId
+                  )
+            )
     )
     UNION ALL
     (
+        -- ================= GROUP =================
         SELECT 
             gcm.group_conversation_id AS id,
             m.group_conversation_message_id AS messageId,
@@ -250,22 +311,42 @@ public interface UserRepository extends JpaRepository<User, Long> {
             m.sent_at AS sentAt,
             m.updated_at AS updatedAt,
             m.type AS messageType,
-            CAST(1 AS SMALLINT) AS conversationType
+            CAST(1 AS SMALLINT) AS conversationType,
+            g.group_name AS conversationName
         FROM group_conversation_message m
+        JOIN group_conversation g ON g.group_conversation_id = m.group_conversation_id
         JOIN group_conversation_member gcm
             ON gcm.group_conversation_id = m.group_conversation_id
+            AND gcm.member_id = :userId
         JOIN user_info u
             ON u.user_id = m.sender_id
+    
+     
+        LEFT JOIN delete_group_conversation dc
+            ON dc.group_conversation_id = gcm.group_conversation_id
+            AND dc.member_id = :userId
+    
         WHERE 
-            gcm.member_id = :userId
-            AND (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+            (:keyword IS NULL OR m.content ILIKE CONCAT('%', :keyword, '%'))
+    
+           
+            AND (dc.deleted_at IS NULL OR m.sent_at > dc.deleted_at)
+    
+
+            AND NOT EXISTS (
+                SELECT 1
+                FROM delete_group_conversation_message d
+                WHERE d.group_conversation_message_id = m.group_conversation_message_id
+                  AND (
+                      d.is_all = TRUE
+                      OR d.member_id = :userId
+                  )
+            )
     )
     ORDER BY sentAt DESC
-    """,
-            nativeQuery = true)
+""", nativeQuery = true)
     List<MessageSearchResponse> searchAllMessages(
             @Param("userId") Long userId,
             @Param("keyword") String keyword
     );
-
 }

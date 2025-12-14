@@ -228,11 +228,8 @@ public class UserFriendServiceImpl implements UserFriendService {
             return msg;
         }
 
-        Long userId1 = Math.max(removerId, removedUserId);
 
-        Long userId2 = Math.min(removedUserId, removerId);
-
-        PrivateConversation privateConversation = privateConversationRepository.findByUser1UserIdAndUser2UserId(userId1, userId2).orElse(null);
+        PrivateConversation privateConversation = privateConversationRepository.findByUser1UserIdAndUser2UserId(removerId, removedUserId).orElse(null);
 
         if (privateConversation != null) privateConversationRepository.delete(privateConversation);
 

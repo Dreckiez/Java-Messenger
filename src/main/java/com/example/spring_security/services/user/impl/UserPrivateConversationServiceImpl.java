@@ -296,4 +296,13 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
         return listPrivateConversationMessageResponse;
     }
 
+    public Map<String, Long> getIdConv(Long userId, Long friendId) {
+
+        PrivateConversation privateConversation = privateConversationRepository
+                .findByUser1UserIdAndUser2UserId(userId, friendId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "There is no conversation."));
+
+        return Map.of("privateConversationId", privateConversation.getPrivateConversationId());
+    }
+
 }

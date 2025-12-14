@@ -47,9 +47,4 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
             Long privateConversationId,
             Long cursorId
     );
-
-
-
-
-
 }
