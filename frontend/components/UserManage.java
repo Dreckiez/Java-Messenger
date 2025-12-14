@@ -116,7 +116,7 @@ public class UserManage extends JPanel {
         row1.add(filterTextField);
 
         row1.add(createLabel("Sort:"));
-        sortByBox = createComboBox(new String[] { "Name (A-Z)", "Name (Z-A)", "Date (Latest)" });
+        sortByBox = createComboBox(new String[] { "Name (A-Z)", "Name (Z-A)", "Date (Latest)", "Date (Oldest)"});
         row1.add(sortByBox);
 
         row1.add(createLabel("Status:"));

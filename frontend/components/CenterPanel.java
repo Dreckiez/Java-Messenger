@@ -284,6 +284,16 @@ public class CenterPanel extends JPanel {
     }
 
     public void showChat() { showWelcome(); }
-    public void showWelcome() { layout.show(this, "welcome"); }
+    public void showWelcome() { createWelcomePanel(); layout.show(this, "welcome"); }
     public void resetInfoToggle() { if (chatPanel != null) chatPanel.setInfoActive(false); }
+    public void reset() {
+    // 1. Dọn dẹp ChatPanel
+    if (chatPanel != null) {
+        chatPanel.clearChat();
+    }
+
+    // 2. Chuyển về màn hình Welcome (Màn hình chờ)
+    // Vì tài khoản mới chưa có chat, không nên showChat() ngay
+    showWelcome(); 
+}
 }

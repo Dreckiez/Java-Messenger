@@ -3,12 +3,14 @@ package screens;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import components.*; 
+import components.*;
+import utils.UserSession; 
 
 public class HomeScreen extends JPanel {
     private InfoPanel infoPanel; 
     private BaseScreen screen;
     private NavPanel leftPanel; 
+    private CenterPanel centerPanel; // 🔥 1. Đưa biến này ra ngoài thành biến toàn cục
 
     private final Color BG_COLOR = new Color(241, 245, 249); 
 
@@ -18,7 +20,8 @@ public class HomeScreen extends JPanel {
         setBackground(BG_COLOR);
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        CenterPanel centerPanel = new CenterPanel();
+        // Khởi tạo các thành phần
+        centerPanel = new CenterPanel(); // Đã khai báo ở trên
         infoPanel = new InfoPanel();
         infoPanel.setVisible(false); 
         leftPanel = new NavPanel(this, centerPanel); 
@@ -27,10 +30,8 @@ public class HomeScreen extends JPanel {
         FriendPanel friendPanel = leftPanel.getFriendPanel();
         if (friendPanel != null) {
             // 1. Create Group: Chuyển tab
-
             friendPanel.setOnOpenChat((target) -> {
                 System.out.println("HomeScreen received ID: " + target.id + ", Type: " + target.type);
-                // Gọi NavPanel để chuyển tab và tải ChatList
                 leftPanel.switchToChatAndOpen(target.id, target.type); 
                 friendPanel.resetPanel();
             });
@@ -39,7 +40,6 @@ public class HomeScreen extends JPanel {
                 leftPanel.switchToChatTab();
                 friendPanel.resetPanel(); 
             });
-
         }
 
         // --- KẾT NỐI INFO PANEL ---
@@ -59,9 +59,40 @@ public class HomeScreen extends JPanel {
         add(leftPanel, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
         add(infoPanel, BorderLayout.EAST);
+
+        // 🔥 2. GỌI HÀM RESET NGAY KHI KHỞI TẠO XONG
+        resetToDefaultState();
     }
 
-    public void logout() { screen.logout(); }
+    // 🔥 3. HÀM RESET TRẠNG THÁI VỀ MẶC ĐỊNH (TAB CHAT)
+    private void resetToDefaultState() {
+        // A. Chuyển CenterPanel về màn hình Chat (hoặc Welcome)
+        if (centerPanel != null) {
+            centerPanel.showChat(); 
+        }
+
+        // B. Chuyển NavPanel (Left Panel) về Tab danh sách chat
+        // Hàm này sẽ tự động highlight nút Chat trên NavBar nếu bạn đã code logic đó trong NavPanel
+        if (leftPanel != null) {
+            leftPanel.switchToChatTab();
+        }
+
+        // C. Bật Info Panel mặc định (nếu muốn)
+        toggleInfoPanel(true);
+    }
+
+    public void logout() {
+        // 1. Xóa session
+        UserSession.clearSession(); 
+        
+        // 2. 🔥 Dọn dẹp giao diện trước khi thoát
+        if (centerPanel != null) centerPanel.reset();
+        if (infoPanel != null) infoPanel.reset();
+        // 3. Gọi hàm logout của màn hình cha
+        screen.logout(); 
+        
+    }
+    
     public void toggleInfoPanel(boolean visible) {
         if (infoPanel != null) {
             infoPanel.setVisible(visible);

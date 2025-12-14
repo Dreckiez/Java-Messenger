@@ -49,8 +49,8 @@ public class UserAdminService {
                 String apiSortParam = switch (sortBy) {
                     case "Name (A-Z)" -> "fullName";
                     case "Name (Z-A)" -> "-fullName";
-                    case "Date Created (Latest)" -> "-joinedAt";
-                    case "Date Created (Oldest)" -> "joinedAt";
+                    case "Date (Latest)" -> "-joinedAt";
+                    case "Date (Oldest)" -> "joinedAt";
                     default -> "userId";
                 };
                 urlBuilder.append("sort=").append(apiSortParam).append("&");

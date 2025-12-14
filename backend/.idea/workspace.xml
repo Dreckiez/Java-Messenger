@@ -6,30 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserPrivateConversationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserPrivateConversationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserSearchController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/controller/user/UserSearchController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/MessageSearchResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/MessageSearchResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationMessageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationMessageRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserPrivateConversationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserPrivateConversationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserSearchService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/UserSearchService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserFriendServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserFriendServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserSearchServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserSearchServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/UserRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserFriendServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserFriendServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/StatsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/StatsRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/components/CenterPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/CenterPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/ChatList.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/ChatList.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/components/ChatPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/ChatPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/FriendItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/FriendItem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/FriendPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/FriendPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/components/InfoPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/InfoPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/components/NavBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/NavBar.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/NavPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/NavPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/components/UserManage.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/UserManage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/screens/HomeScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/screens/HomeScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/screens/LoginScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/screens/LoginScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/utils/ApiUrl.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/utils/ApiUrl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/services/UserAdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/services/UserAdminService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -1453,4 +1453,36 @@ public class InfoPanel extends JPanel {
         g2.dispose();
         return new ImageIcon(img);
     }
+    public void reset() {
+        // 1. Ẩn Panel ngay lập tức
+        this.setVisible(false);
+
+        // 2. Reset các thông tin cơ bản (Header)
+        if (chatNameLabel != null) chatNameLabel.setText("");
+        if (chatStatusLabel != null) chatStatusLabel.setText("");
+        if (avatarLabel != null) avatarLabel.setIcon(null); // Avatar là Icon, không phải Text
+
+        // 3. Reset danh sách thành viên
+        // Chỉ remove các item bên trong, giữ lại cái khung panel
+        if (membersSection != null) {
+            membersSection.removeAll();
+            membersSection.revalidate(); // Quan trọng: Tính toán lại layout sau khi xóa
+            membersSection.repaint();
+        }
+
+        // 4. Reset các nút hành động (Block, Delete, Leave...)
+        // Lưu ý: Chỉ removeAll nếu hàm loadInfo() của bạn có code để "add" lại các nút này.
+        // Nếu các nút này là cố định (khởi tạo trong Constructor), thì KHÔNG ĐƯỢC removeAll().
+        if (actionsSection != null) {
+            actionsSection.removeAll(); 
+            actionsSection.revalidate();
+            actionsSection.repaint();
+        }
+
+        // ⛔️ TUYỆT ĐỐI KHÔNG DÙNG DÒNG NÀY:
+        // contentPanel.removeAll(); <--- NGUYÊN NHÂN GÂY LỖI TRẮNG XÓA
+        
+        // Nếu bạn muốn scroll lên đầu trang khi reset
+        // if (scrollPane != null) scrollPane.getVerticalScrollBar().setValue(0);
+    }
 }

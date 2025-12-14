@@ -26,13 +26,12 @@ public class ChatPanel extends JPanel {
     private Runnable onToggleInfo; 
     private boolean isInfoActive = false;
     
-    // 🔥🔥 BIẾN TOKEN QUYỀN LỰC NHẤT: Token của lần request cuối cùng
-    // Mỗi lần bấm chuyển tab, biến này sẽ thay đổi.
+    // 🔥🔥 BIẾN TOKEN QUYỀN LỰC NHẤT
     private long lastHeaderRequestToken = 0; 
     
-    // Lưu URL avatar đối tác để dùng làm fallback cho tin nhắn
+    // Lưu URL avatar đối tác
     private String currentPartnerAvatarUrl = null; 
-    private long currentChatId = -1; // Vẫn giữ để load tin nhắn
+    private long currentChatId = -1; 
 
     // --- Colors ---
     private final Color PRIMARY_COLOR = new Color(59, 130, 246);
@@ -65,14 +64,44 @@ public class ChatPanel extends JPanel {
         add(inputContainer, BorderLayout.SOUTH);
     }
 
+    // 🔥🔥🔥 HÀM CLEAR CHAT MỚI BỔ SUNG 🔥🔥🔥
+    public void clearChat() {
+        // 1. Reset Token để hủy các request load ảnh cũ đang treo
+        this.lastHeaderRequestToken = System.nanoTime(); 
+        
+        // 2. Reset ID cuộc trò chuyện
+        this.currentChatId = -1;
+        this.currentPartnerAvatarUrl = null;
+        
+        // 3. Xóa tin nhắn
+        if (messagesPanel != null) {
+            messagesPanel.removeAll();
+            messagesPanel.revalidate();
+            messagesPanel.repaint();
+        }
+
+        // 4. Xóa nội dung nhập liệu
+        if (inputField != null) {
+            setupPlaceholder(inputField, "Type a message and press Enter...");
+        }
+
+        // 5. Reset Header về trạng thái mặc định
+        if (nameLabel != null) nameLabel.setText("Select a chat");
+        if (headerAvatarLabel != null) {
+            headerAvatarLabel.setIcon(createAvatar("?", 40)); 
+            headerAvatarLabel.repaint();
+        }
+        
+        // 6. Reset nút Info
+        this.isInfoActive = false;
+        if (infoBtn != null) infoBtn.repaint();
+    }
+
     // =========================================================================
-    // 🔥🔥🔥 HÀM UPDATE HEADER SỬ DỤNG TOKEN (SỬA LẠI HOÀN TOÀN)
+    // 🔥 CÁC HÀM CŨ GIỮ NGUYÊN BÊN DƯỚI
     // =========================================================================
-    
-    // Hàm này tương thích với cả cách gọi cũ và mới
+
     public void updateChatHeader(String name, String avatarUrl, boolean isRefreshOnly) {
-        // Chúng ta không cần chatId để chống race condition nữa, dùng Token tốt hơn.
-        // Nhưng vẫn cập nhật chatId nội bộ nếu cần.
         updateChatHeaderState(-1, name, avatarUrl, isRefreshOnly);
     }
     
@@ -81,66 +110,43 @@ public class ChatPanel extends JPanel {
     }
 
     private void updateChatHeaderState(long chatId, String name, String avatarUrl, boolean isRefreshOnly) {
-        // 1. TẠO TOKEN MỚI CHO LẦN BẤM NÀY (Dấu thời gian Nano giây)
         long currentToken = System.nanoTime();
-        this.lastHeaderRequestToken = currentToken; // Cập nhật "Con dấu" hiện tại
+        this.lastHeaderRequestToken = currentToken; 
 
-        // Cập nhật biến thành viên
         if (chatId != -1) this.currentChatId = chatId;
         this.nameLabel.setText(name);
         this.currentPartnerAvatarUrl = avatarUrl; 
 
-        // 2. RESET VỀ PLACEHOLDER NGAY LẬP TỨC
-        // Bắt buộc phải làm điều này để xóa ảnh của người cũ
         if (!isRefreshOnly) {
-            headerAvatarLabel.setIcon(null); // Xóa sạch icon cũ
-            headerAvatarLabel.setIcon(createAvatar(name, 40)); // Đặt placeholder
+            headerAvatarLabel.setIcon(null); 
+            headerAvatarLabel.setIcon(createAvatar(name, 40)); 
             headerAvatarLabel.repaint();
         }
 
-        System.out.println("DEBUG CHAT: Request Avatar for '" + name + "' | Token: " + currentToken);
-
-        // 3. LOAD ẢNH MỚI (NẾU CÓ)
         if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
-            
             ImageLoader.loadImageAsync(avatarUrl, img -> {
-                
-                // 🔥🔥🔥 CHECK TOKEN: BƯỚC QUAN TRỌNG NHẤT
-                // Nếu token hiện tại của class (lastHeaderRequestToken) KHÁC VỚI token của request này (currentToken)
-                // -> Nghĩa là người dùng đã bấm sang chat khác rồi.
-                if (ChatPanel.this.lastHeaderRequestToken != currentToken) {
-                    System.out.println("⛔ ABORT: Ảnh cũ về trễ, bỏ qua. (Token mismatch)");
-                    return; 
-                }
+                if (ChatPanel.this.lastHeaderRequestToken != currentToken) return; 
 
                 if (img != null) {
                     SwingUtilities.invokeLater(() -> {
-                        // Check lại lần cuối trên luồng UI
                         if (ChatPanel.this.lastHeaderRequestToken == currentToken) {
                             ImageIcon icon = imageEditor.makeCircularImage(img, 40);
                             headerAvatarLabel.setIcon(icon);
                             headerAvatarLabel.repaint();
-                            System.out.println("✅ SUCCESS: Đã cập nhật Avatar cho " + name);
                         }
                     });
                 }
             });
             
         } else if (isRefreshOnly) {
-            // Trường hợp refresh mà user xóa avatar -> về placeholder
             headerAvatarLabel.setIcon(createAvatar(name, 40));
         }
         
-        // 4. Reset tin nhắn
         if (!isRefreshOnly) {
             messagesPanel.removeAll();
             messagesPanel.repaint();
         }
     }
-
-    // =========================================================================
-    //                            CÁC HÀM KHÁC (GIỮ NGUYÊN)
-    // =========================================================================
 
     public void loadMessages(JSONArray messages, String partnerName) {
         loadMessages(this.currentChatId, messages, partnerName);
@@ -163,7 +169,6 @@ public class ChatPanel extends JPanel {
             boolean isMe = (senderId == myId);
             String displayTime = formatTime(rawTime);
             
-            // Fallback avatar
             if (!isMe && (senderAvatarUrl == null || senderAvatarUrl.isEmpty() || "null".equals(senderAvatarUrl))) {
                 senderAvatarUrl = this.currentPartnerAvatarUrl;
             }
@@ -285,8 +290,6 @@ public class ChatPanel extends JPanel {
     }
 
     private void addMessage(String message, String time, String senderName, boolean isMe, String avatarUrl) {
-        // 🔥 FIX 1: Dùng Anonymous Class để KHÓA chiều cao tối đa bằng chiều cao ưu thích.
-        // Điều này ngăn chặn BoxLayout kéo dãn tin nhắn khi danh sách còn trống.
         JPanel wrapper = new JPanel(new BorderLayout()) {
             @Override
             public Dimension getMaximumSize() {
@@ -304,7 +307,6 @@ public class ChatPanel extends JPanel {
             JLabel nameLbl = new JLabel(senderName);
             nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
             nameLbl.setForeground(Color.GRAY);
-            // Giảm padding tên
             nameLbl.setBorder(new EmptyBorder(0, 4, 1, 0));
             nameLbl.setAlignmentX(Component.LEFT_ALIGNMENT); 
             contentBox.add(nameLbl);
@@ -317,7 +319,6 @@ public class ChatPanel extends JPanel {
         JLabel timeLbl = new JLabel(time);
         timeLbl.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         timeLbl.setForeground(TIME_COLOR);
-        // Giảm padding thời gian
         timeLbl.setBorder(new EmptyBorder(1, 2, 0, 2));
         
         if (isMe) {
@@ -346,12 +347,9 @@ public class ChatPanel extends JPanel {
                 });
             }
             
-            // Xử lý vị trí Avatar: Đẩy lên trên cùng (NORTH) để không ảnh hưởng chiều cao
             JPanel avatarWrapper = new JPanel(new BorderLayout());
             avatarWrapper.setOpaque(false);
             avatarWrapper.add(avatarLabel, BorderLayout.NORTH);
-            // Padding top 18px để ngang hàng với bong bóng chat (bỏ qua tên)
-            // Nếu có tên (senderName), bạn có thể cần tăng giảm số 18 này
             avatarWrapper.setBorder(new EmptyBorder(isMe ? 0 : 18, 0, 0, 0)); 
 
             incomingContainer.add(avatarWrapper, BorderLayout.WEST);
@@ -362,8 +360,6 @@ public class ChatPanel extends JPanel {
         
         contentBox.add(timeLbl);
         messagesPanel.add(wrapper);
-        
-        // 🔥 FIX 2: Giảm khoảng cách giữa các tin nhắn xuống cố định 4px
         messagesPanel.add(Box.createVerticalStrut(4)); 
     }
 
@@ -393,6 +389,12 @@ public class ChatPanel extends JPanel {
     private void setupPlaceholder(JTextField field, String text) {
         field.setText(text);
         field.setForeground(Color.GRAY);
+        
+        // Remove old listeners to prevent stacking
+        for(FocusListener fl : field.getFocusListeners()) {
+            field.removeFocusListener(fl);
+        }
+
         field.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 if (field.getText().equals(text)) { field.setText(""); field.setForeground(TEXT_COLOR); }
@@ -453,8 +455,6 @@ public class ChatPanel extends JPanel {
             textArea.setFocusable(false);
             textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             textArea.setForeground(isMe ? Color.WHITE : TEXT_COLOR);
-            
-            // 🔥 QUAN TRỌNG: Xóa margin mặc định để tính toán size chuẩn xác
             textArea.setMargin(new Insets(0,0,0,0)); 
             
             textArea.setSize(new Dimension(MAX_WIDTH, Short.MAX_VALUE));
@@ -462,14 +462,12 @@ public class ChatPanel extends JPanel {
             Dimension textSize = textArea.getPreferredSize();
             int bubbleWidth = Math.min(textSize.width + 24, MAX_WIDTH + 24);
             
-            // Tính lại chiều cao với width đã chốt
             textArea.setSize(new Dimension(bubbleWidth - 24, Short.MAX_VALUE)); 
-            int bubbleHeight = textArea.getPreferredSize().height + 12; // Padding trên dưới tổng 12px
+            int bubbleHeight = textArea.getPreferredSize().height + 12; 
 
             setPreferredSize(new Dimension(bubbleWidth, bubbleHeight));
             setMaximumSize(new Dimension(bubbleWidth, bubbleHeight));
             
-            // Padding nội bộ bong bóng (6px trên/dưới, 12px trái/phải)
             setBorder(new EmptyBorder(6, 12, 6, 12));
             add(textArea, BorderLayout.CENTER);
         }
