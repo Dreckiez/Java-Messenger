@@ -49,7 +49,7 @@ public class InfoPanel extends JPanel {
     private final Color BG_HOVER = new Color(241, 245, 249);     // Slate-100
     private final Color LINE_COLOR = new Color(226, 232, 240);   // Slate-200
     private final Color INPUT_BG = new Color(243, 244, 246);     // Gray-100
-    
+    private long currentAvatarLoadId = -1;
     // Role Badge Colors
     private final Color ADMIN_BADGE_BG = new Color(254, 243, 199); // Amber-100
     private final Color ADMIN_BADGE_TEXT = new Color(180, 83, 9);  // Amber-700
@@ -117,27 +117,78 @@ public class InfoPanel extends JPanel {
         if (chatData == null) return;
         this.currentChatData = chatData;
 
-        String name = chatData.has("groupName") ? chatData.getString("groupName") : chatData.optString("name", "Unknown");
-        String avatarUrl = chatData.optString("avatarUrl", null);
+        // Lấy ID hiện tại (dùng để kiểm tra ghi đè)
+        final long currentId = chatData.optLong("id", -1);
         
-        String type = chatData.optString("conversationType", "PRIVATE");
-        if (chatData.has("groupConversationId")) type = "GROUP";
-        this.isGroup = "GROUP".equalsIgnoreCase(type);
+        // 🔥 1. Cập nhật ID cuộc trò chuyện hiện tại đang được xử lý ảnh
+        this.currentAvatarLoadId = currentId; 
 
-        chatNameLabel.setText(name);
-        chatStatusLabel.setText(isGroup ? "Group Chat" : "Active now");
+        // --- XÁC ĐỊNH TYPE VÀ CÁC BIẾN CƠ SỞ ---
+        final String type = chatData.optString("conversationType", "PRIVATE");
+        this.isGroup = chatData.has("groupConversationId") || "GROUP".equalsIgnoreCase(type);
+        final boolean isGroupFinal = this.isGroup; 
+
+        // --- LOGIC XÁC ĐỊNH TÊN, TRẠNG THÁI VÀ AVATAR ---
+        String tempName;
+        String tempStatus;
+        String tempAvatarUrl;
         
-        avatarLabel.setIcon(createPlaceholderIcon(name, isGroup, 80));
-
-        if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
-            ImageLoader.loadImageAsync(avatarUrl, img -> {
-                if (img != null) {
-                    SwingUtilities.invokeLater(() -> avatarLabel.setIcon(imageEditor.makeCircularImage(img, 80)));
-                }
-            });
+        if (isGroupFinal) {
+            tempName = chatData.has("groupName") ? chatData.getString("groupName") : chatData.optString("name", "Unknown Group");
+            tempStatus = "Group Chat";
+            tempAvatarUrl = chatData.optString("avatarUrl", null);
+        } else {
+            String partnerFirstName = chatData.optString("partnerFirstName", "");
+            String partnerLastName = chatData.optString("partnerLastName", "");
+            
+            tempName = (partnerFirstName + " " + partnerLastName).trim();
+            if (tempName.isEmpty()) {
+                tempName = chatData.optString("name", "Unknown User");
+            }
+            
+            tempAvatarUrl = chatData.optString("avatarUrl", null);
+            tempStatus = chatData.optBoolean("isOnline", false) ? "Active now" : "Offline"; 
+            
+            // Cần gọi updatePrivateDetailsUI(chatData); ở đây nếu bạn muốn cập nhật các chi tiết khác
         }
+        
+        // Khai báo final
+        final String name = tempName;
+        final String status = tempStatus;
+        final String avatarUrl = tempAvatarUrl;
 
-        updateLayoutForType();
+        SwingUtilities.invokeLater(() -> {
+            // --- CẬP NHẬT HEADER CHUNG ---
+            chatNameLabel.setText(name);
+            chatStatusLabel.setText(status);
+            
+            // 🔥 Cưỡng bức dọn dẹp và đặt Placeholder Icon
+            // Điều này đảm bảo Icon Group cũ (nếu có) bị xóa và Icon chữ cái mới được vẽ.
+            avatarLabel.setIcon(null); 
+            avatarLabel.setIcon(createPlaceholderIcon(name, isGroupFinal, 80)); 
+
+            // 2. Tải ảnh nếu có
+            if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
+                // Kiểm tra ID ngay bên trong callback của ImageLoader
+                ImageLoader.loadImageAsync(avatarUrl, img -> {
+                    if (currentId == InfoPanel.this.currentAvatarLoadId) { 
+                        if (img != null) {
+                            SwingUtilities.invokeLater(() -> avatarLabel.setIcon(imageEditor.makeCircularImage(img, 80)));
+                        }
+                    } else {
+                        // Nếu ID không khớp, đây là một worker cũ và bị bỏ qua.
+                        System.out.println("DEBUG INFO: ImageLoader callback ABORTED for old ID " + currentId);
+                    }
+                });
+            }
+
+            // Cập nhật Layout
+            updateLayoutForType();
+
+            // Cưỡng bức Vẽ Lại (Cần thiết cho Swing)
+            InfoPanel.this.revalidate();
+            InfoPanel.this.repaint();
+        });
     }
 
     private void updateLayoutForType() {
@@ -146,10 +197,19 @@ public class InfoPanel extends JPanel {
         
         boolean amIAdmin = checkCurrentUserRole();
 
+        // 🔥 1. TẠO THANH TÌM KIẾM (FAKE INPUT BUTTON)
+        // Phần này sẽ nằm ngay dưới Header và trên cùng của nội dung cuộn
+        JPanel searchPanel = createSearchBar();
+
         if (isGroup) {
-            // --- 1. Hiển thị danh sách thành viên ---
+            // --- GROUP CHAT ---
             membersSection.setVisible(true);
-            membersSection.add(createSectionTitle("Members"));
+            
+            // A. Thêm Search Bar vào đầu tiên của Member Section
+            membersSection.add(searchPanel);
+            searchPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // B. Hiển thị danh sách thành viên
+            membersSection.add(createMemberTitle("Members"));
             
             JSONArray members = currentChatData.optJSONArray("groupMemberResponseList");
             if (members != null) {
@@ -163,41 +223,102 @@ public class InfoPanel extends JPanel {
                 membersSection.add(emptyLbl);
             }
 
-            // --- 2. Các hành động chung ---
+            // C. Các hành động chung (Group Settings)
             actionsSection.add(createSectionTitle("Group Settings"));
             
-            // Rename và Change Avatar thường thì Admin mới làm được, 
-            // nhưng nếu logic của bạn cho phép Member làm thì bỏ check Admin ở đây (hiện tại tôi để ai cũng sửa được theo code cũ)
-            actionsSection.add(createActionBtn("✏️  Rename Group", false, e -> confirmRenameGroup()));
-            actionsSection.add(createActionBtn("🖼️  Change Avatar", false, e -> uploadGroupAvatar()));
-            actionsSection.add(createActionBtn("➕  Add Members", false, e -> showAddMemberDialog()));
+            actionsSection.add(createActionBtn("✏️   Rename Group", false, e -> confirmRenameGroup()));
+            actionsSection.add(createActionBtn("🖼️   Change Avatar", false, e -> uploadGroupAvatar()));
+            actionsSection.add(createActionBtn("➕   Add Members", false, e -> showAddMemberDialog()));
+            actionsSection.add(Box.createVerticalStrut(10));
+            actionsSection.add(createSectionTitle("Assistant"));
+            actionsSection.add(createActionBtn("🤖   Ask AI Group Bot", false, e -> {
+                JOptionPane.showMessageDialog(this, "AI for Group is coming soon!");
+                // TODO: Mở dialog AI với context là Group Chat
+            }));
             actionsSection.add(Box.createVerticalStrut(10));
             actionsSection.add(createSectionTitle("Danger Zone"));
             
-            // Leave Group
-            actionsSection.add(createActionBtn("🚪  Leave Group", true, e -> confirmLeaveGroup()));
-            
-            // 🔥 CẬP NHẬT: Nút Delete Group hiện cho TẤT CẢ mọi người (để xóa lịch sử chat)
-            actionsSection.add(createActionBtn("🗑️  Delete Group", true, e -> confirmDelete()));
+            actionsSection.add(createActionBtn("🚪   Leave Group", true, e -> confirmLeaveGroup()));
+            actionsSection.add(createActionBtn("🗑️   Delete Group", true, e -> confirmDelete()));
 
         } else {
             // --- PRIVATE CHAT ---
             membersSection.setVisible(false);
+            searchPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            // A. Thêm Search Bar vào đầu tiên của Actions Section
+            actionsSection.add(searchPanel);
             
+            // B. Các hành động
             actionsSection.add(createSectionTitle("Actions"));
-            actionsSection.add(createActionBtn("🤖  Ask AI Assistant", false, e -> {})); 
+            actionsSection.add(createActionBtn("🤖   Ask AI Assistant", false, e -> {})); 
             
             actionsSection.add(Box.createVerticalStrut(10));
             actionsSection.add(createSectionTitle("Privacy & Support"));
             
-            // Private chat thì Delete cũng là xóa lịch sử
-            actionsSection.add(createActionBtn("🗑️  Delete Chat", true, e -> confirmDelete()));
-            actionsSection.add(createActionBtn("🚫  Block User", true, e -> confirmBlock()));
-            actionsSection.add(createActionBtn("⚠️  Report", true, e -> confirmReport()));
+            actionsSection.add(createActionBtn("🗑️   Delete Chat", true, e -> confirmDelete()));
+            actionsSection.add(createActionBtn("🚫   Block User", true, e -> confirmBlock()));
+            actionsSection.add(createActionBtn("⚠️   Report", true, e -> confirmReport()));
         }
 
         contentPanel.revalidate();
         contentPanel.repaint();
+    }
+
+    // =========================================================================
+    // 🔥 HELPER: TẠO NÚT TÌM KIẾM GIẢ LẬP INPUT
+    // =========================================================================
+    private JPanel createSearchBar() {
+        JButton searchBtn = new JButton("🔍   Search in conversation...");
+        
+        // Style
+        searchBtn.setFont(this.EMOJI_FONT);
+        searchBtn.setForeground(new Color(150, 150, 150));
+        searchBtn.setBackground(new Color(245, 247, 250));
+        searchBtn.setHorizontalAlignment(SwingConstants.LEFT);
+        
+        searchBtn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 230, 230), 1, true),
+            new EmptyBorder(8, 12, 8, 12)
+        ));
+        
+        searchBtn.setFocusPainted(false);
+        searchBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        searchBtn.addActionListener(e -> {
+            // 1. Lấy ID từ dữ liệu hiện tại của Class (biến currentChatData)
+            long id = -1;
+            if (currentChatData != null) {
+                // Ưu tiên lấy groupConversationId hoặc privateConversationId
+                if (currentChatData.has("groupConversationId")) {
+                    id = currentChatData.getLong("groupConversationId");
+                } else if (currentChatData.has("privateConversationId")) {
+                    id = currentChatData.getLong("privateConversationId");
+                } else {
+                    // Fallback: lấy id thường
+                    id = currentChatData.optLong("id", -1);
+                }
+            }
+
+            // 2. Lấy Frame cha để hiển thị Dialog
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            
+            // 3. Gọi Dialog với ID vừa lấy được
+            new MessageSearchDialog(parentFrame, id, isGroup, msgJson -> {
+                System.out.println("Selected Message: " + msgJson);
+                // TODO: Xử lý logic nhảy tới tin nhắn tại đây
+            }).setVisible(true);
+        });
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(Color.WHITE);
+        wrapper.setBorder(new EmptyBorder(0, 20, 15, 20)); 
+        wrapper.add(searchBtn, BorderLayout.CENTER);
+        
+        // 🔥 QUAN TRỌNG: KHÔNG setAlignmentX ở đây nữa.
+        // Để bên ngoài quyết định.
+        wrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50)); 
+        
+        return wrapper;
     }
     
     // ---------------------------------------------------------
@@ -985,6 +1106,7 @@ public class InfoPanel extends JPanel {
     private void uploadGroupAvatar() {
         long conversationId = findConversationIdToDelete();
         if (conversationId == -1) return;
+        System.out.println("here bro!");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Select Group Avatar");
         fileChooser.setFileFilter(new FileNameExtensionFilter("Images (JPG, PNG)", "jpg", "png", "jpeg"));
@@ -992,13 +1114,14 @@ public class InfoPanel extends JPanel {
             File fileToUpload = fileChooser.getSelectedFile();
             if (fileToUpload != null && fileToUpload.exists()) {
                 sendAvatarUploadRequest(conversationId, fileToUpload);
+                System.out.println("Here mate");
             }
         }
     }
     
     private void sendAvatarUploadRequest(long conversationId, File file) {
         String token = UserSession.getUser().getToken();
-        String url = ApiUrl.GROUP_CONVERSATION + "/" + conversationId + "/upload-avatar"; 
+        String url = ApiUrl.GROUP_CONVERSATION + "/" + conversationId + "/avatar"; 
         avatarLabel.setIcon(createPlaceholderIcon("...", true, 80)); 
         new SwingWorker<JSONObject, Void>() {
             @Override protected JSONObject doInBackground() throws Exception {
@@ -1021,6 +1144,7 @@ public class InfoPanel extends JPanel {
                         }
                     } else {
                         avatarLabel.setIcon(createPlaceholderIcon(chatNameLabel.getText(), true, 80)); 
+                        JOptionPane.showMessageDialog(InfoPanel.this, response.optString("message", "Something went wrong."), "Failed", JOptionPane.INFORMATION_MESSAGE);
                     }
                 } catch (Exception e) { e.printStackTrace(); }
             }
@@ -1241,8 +1365,6 @@ public class InfoPanel extends JPanel {
         JPanel box = new JPanel(new BorderLayout());
         box.setBackground(INPUT_BG);
         box.setBorder(new EmptyBorder(8, 12, 8, 12));
-        box.add(new JLabel("🔍 "), BorderLayout.WEST);
-        box.add(new JTextField() {{ setBorder(null); setBackground(INPUT_BG); setText("Search..."); }}, BorderLayout.CENTER);
         p.add(box);
         return p;
     }
@@ -1263,6 +1385,31 @@ public class InfoPanel extends JPanel {
         l.setBorder(new EmptyBorder(15, 20, 5, 0));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;
+    }
+
+    private JPanel createMemberTitle(String text) {
+        // 1. Tạo Panel bao bọc
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        
+        // 🔥 QUAN TRỌNG: setAlignmentX là CENTER để nó thẳng hàng dọc với các MemberCard
+        panel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Giới hạn chiều cao
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
+
+        // 2. Tạo Label chữ
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        label.setForeground(TEXT_SECONDARY); // Dùng lại màu cũ của bạn
+        
+        // Padding: Cách lề trái 20px để thẳng hàng với thanh Search và Nút
+        label.setBorder(new EmptyBorder(15, 20, 5, 0)); 
+
+        // 3. Đặt chữ vào bên TRÁI của Panel
+        panel.add(label, BorderLayout.WEST);
+        
+        return panel;
     }
     
     private JButton createActionBtn(String text, boolean danger, java.awt.event.ActionListener action) {

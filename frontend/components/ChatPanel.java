@@ -14,23 +14,27 @@ import utils.ImageEditor;
 import utils.ImageLoader;
 
 public class ChatPanel extends JPanel {
+    // --- UI Components ---
     private JPanel messagesPanel;
     private JTextField inputField;
     private JLabel nameLabel; 
-    
-    // Header Avatar
     private JLabel headerAvatarLabel;
-    
-    // 🔥 Lưu trữ URL avatar hiện tại để dùng fallback cho tin nhắn
-    private String currentPartnerAvatarUrl = null; 
-    
-    private Runnable onToggleInfo; 
     private JButton infoBtn;
+    
+    // --- State & Logic ---
+    private ImageEditor imageEditor;
+    private Runnable onToggleInfo; 
     private boolean isInfoActive = false;
     
-    private ImageEditor imageEditor;
+    // 🔥🔥 BIẾN TOKEN QUYỀN LỰC NHẤT: Token của lần request cuối cùng
+    // Mỗi lần bấm chuyển tab, biến này sẽ thay đổi.
+    private long lastHeaderRequestToken = 0; 
+    
+    // Lưu URL avatar đối tác để dùng làm fallback cho tin nhắn
+    private String currentPartnerAvatarUrl = null; 
+    private long currentChatId = -1; // Vẫn giữ để load tin nhắn
 
-    // Colors
+    // --- Colors ---
     private final Color PRIMARY_COLOR = new Color(59, 130, 246);
     private final Color BG_COLOR = new Color(245, 247, 250);
     private final Color TEXT_COLOR = new Color(31, 41, 55);
@@ -42,7 +46,144 @@ public class ChatPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(BG_COLOR);
 
-        // --- 1. HEADER ---
+        JPanel headerPanel = createHeaderPanel();
+        
+        messagesPanel = new JPanel();
+        messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
+        messagesPanel.setBackground(BG_COLOR);
+        messagesPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); 
+
+        JScrollPane scrollPane = new JScrollPane(messagesPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(BG_COLOR);
+        styleScrollBar(scrollPane);
+
+        JPanel inputContainer = createInputPanel();
+
+        add(headerPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(inputContainer, BorderLayout.SOUTH);
+    }
+
+    // =========================================================================
+    // 🔥🔥🔥 HÀM UPDATE HEADER SỬ DỤNG TOKEN (SỬA LẠI HOÀN TOÀN)
+    // =========================================================================
+    
+    // Hàm này tương thích với cả cách gọi cũ và mới
+    public void updateChatHeader(String name, String avatarUrl, boolean isRefreshOnly) {
+        // Chúng ta không cần chatId để chống race condition nữa, dùng Token tốt hơn.
+        // Nhưng vẫn cập nhật chatId nội bộ nếu cần.
+        updateChatHeaderState(-1, name, avatarUrl, isRefreshOnly);
+    }
+    
+    public void updateChatHeader(long chatId, String name, String avatarUrl, boolean isRefreshOnly) {
+        updateChatHeaderState(chatId, name, avatarUrl, isRefreshOnly);
+    }
+
+    private void updateChatHeaderState(long chatId, String name, String avatarUrl, boolean isRefreshOnly) {
+        // 1. TẠO TOKEN MỚI CHO LẦN BẤM NÀY (Dấu thời gian Nano giây)
+        long currentToken = System.nanoTime();
+        this.lastHeaderRequestToken = currentToken; // Cập nhật "Con dấu" hiện tại
+
+        // Cập nhật biến thành viên
+        if (chatId != -1) this.currentChatId = chatId;
+        this.nameLabel.setText(name);
+        this.currentPartnerAvatarUrl = avatarUrl; 
+
+        // 2. RESET VỀ PLACEHOLDER NGAY LẬP TỨC
+        // Bắt buộc phải làm điều này để xóa ảnh của người cũ
+        if (!isRefreshOnly) {
+            headerAvatarLabel.setIcon(null); // Xóa sạch icon cũ
+            headerAvatarLabel.setIcon(createAvatar(name, 40)); // Đặt placeholder
+            headerAvatarLabel.repaint();
+        }
+
+        System.out.println("DEBUG CHAT: Request Avatar for '" + name + "' | Token: " + currentToken);
+
+        // 3. LOAD ẢNH MỚI (NẾU CÓ)
+        if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
+            
+            ImageLoader.loadImageAsync(avatarUrl, img -> {
+                
+                // 🔥🔥🔥 CHECK TOKEN: BƯỚC QUAN TRỌNG NHẤT
+                // Nếu token hiện tại của class (lastHeaderRequestToken) KHÁC VỚI token của request này (currentToken)
+                // -> Nghĩa là người dùng đã bấm sang chat khác rồi.
+                if (ChatPanel.this.lastHeaderRequestToken != currentToken) {
+                    System.out.println("⛔ ABORT: Ảnh cũ về trễ, bỏ qua. (Token mismatch)");
+                    return; 
+                }
+
+                if (img != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        // Check lại lần cuối trên luồng UI
+                        if (ChatPanel.this.lastHeaderRequestToken == currentToken) {
+                            ImageIcon icon = imageEditor.makeCircularImage(img, 40);
+                            headerAvatarLabel.setIcon(icon);
+                            headerAvatarLabel.repaint();
+                            System.out.println("✅ SUCCESS: Đã cập nhật Avatar cho " + name);
+                        }
+                    });
+                }
+            });
+            
+        } else if (isRefreshOnly) {
+            // Trường hợp refresh mà user xóa avatar -> về placeholder
+            headerAvatarLabel.setIcon(createAvatar(name, 40));
+        }
+        
+        // 4. Reset tin nhắn
+        if (!isRefreshOnly) {
+            messagesPanel.removeAll();
+            messagesPanel.repaint();
+        }
+    }
+
+    // =========================================================================
+    //                            CÁC HÀM KHÁC (GIỮ NGUYÊN)
+    // =========================================================================
+
+    public void loadMessages(JSONArray messages, String partnerName) {
+        loadMessages(this.currentChatId, messages, partnerName);
+    }
+
+    public void loadMessages(long chatId, JSONArray messages, String partnerName) {
+        this.currentChatId = chatId;
+        messagesPanel.removeAll();
+        int myId = UserSession.getUser().getId(); 
+
+        for (int i = messages.length() - 1; i >= 0; i--) {
+            JSONObject msg = messages.getJSONObject(i);
+            
+            String content = msg.optString("content", "");
+            int senderId = msg.optInt("senderId", -1);
+            String rawTime = msg.optString("sentAt", "");
+            String senderAvatarUrl = msg.optString("senderAvatar", null); 
+            String senderDisplayName = msg.optString("senderName", partnerName);
+
+            boolean isMe = (senderId == myId);
+            String displayTime = formatTime(rawTime);
+            
+            // Fallback avatar
+            if (!isMe && (senderAvatarUrl == null || senderAvatarUrl.isEmpty() || "null".equals(senderAvatarUrl))) {
+                senderAvatarUrl = this.currentPartnerAvatarUrl;
+            }
+
+            addMessage(content, displayTime, (isMe ? "You" : senderDisplayName), isMe, senderAvatarUrl);
+        }
+
+        messagesPanel.revalidate();
+        messagesPanel.repaint();
+
+        SwingUtilities.invokeLater(() -> {
+            JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
+            if (scrollPane != null) {
+                JScrollBar vertical = scrollPane.getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
+            }
+        });
+    }
+
+    private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(Color.WHITE);
         headerPanel.setPreferredSize(new Dimension(800, 60));
@@ -52,10 +193,9 @@ public class ChatPanel extends JPanel {
         JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         userInfoPanel.setOpaque(false);
         
-        // Header Avatar (Khởi tạo)
         headerAvatarLabel = new JLabel();
         headerAvatarLabel.setPreferredSize(new Dimension(40, 40));
-        headerAvatarLabel.setIcon(createAvatar("?", 40)); // Mặc định
+        headerAvatarLabel.setIcon(createAvatar("?", 40)); 
 
         nameLabel = new JLabel("Select a chat");
         nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -92,20 +232,11 @@ public class ChatPanel extends JPanel {
         });
 
         headerPanel.add(userInfoPanel, BorderLayout.WEST);
-        headerPanel.add(infoBtn, BorderLayout.EAST); 
+        headerPanel.add(infoBtn, BorderLayout.EAST);
+        return headerPanel;
+    }
 
-        // --- 2. MESSAGE AREA ---
-        messagesPanel = new JPanel();
-        messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
-        messagesPanel.setBackground(BG_COLOR);
-        messagesPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); 
-
-        JScrollPane scrollPane = new JScrollPane(messagesPanel);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(BG_COLOR);
-        styleScrollBar(scrollPane);
-
-        // --- 3. INPUT AREA ---
+    private JPanel createInputPanel() {
         JPanel inputContainer = new JPanel(new BorderLayout());
         inputContainer.setBackground(BG_COLOR);
         inputContainer.setBorder(new EmptyBorder(15, 20, 20, 20));
@@ -125,65 +256,14 @@ public class ChatPanel extends JPanel {
 
         inputBar.add(inputField, BorderLayout.CENTER);
         inputContainer.add(inputBar, BorderLayout.CENTER);
-
-        add(headerPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        add(inputContainer, BorderLayout.SOUTH);
+        return inputContainer;
     }
 
-    // --- PUBLIC METHODS ---
-
-    // Hàm tương thích ngược
     public void setChatUser(String user) {
-        System.out.println("⚠️ Warning: setChatUser called without Avatar URL.");
-        updateChatHeader(user, null, false);
+        updateChatHeaderState(-1, user, null, false);
     }
-
-    // 🔥🔥🔥 HÀM CẬP NHẬT HEADER (CÓ DEBUG) 🔥🔥🔥
-    public void updateChatHeader(String name, String avatarUrl, boolean isGroup) {
-        // --- START DEBUG ---
-        System.out.println("========================================");
-        System.out.println("🔍 DEBUG ChatPanel Header Update:");
-        System.out.println("   - Name: " + name);
-        System.out.println("   - Avatar URL: " + avatarUrl);
-        System.out.println("========================================");
-        // --- END DEBUG ---
-
-        this.nameLabel.setText(name);
-        this.currentPartnerAvatarUrl = avatarUrl; 
-
-        // 1. Set avatar mặc định ngay lập tức
-        headerAvatarLabel.setIcon(createAvatar(name, 40));
-        headerAvatarLabel.repaint();
-
-        // 2. Nếu có URL, thực hiện load async
-        if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
-            System.out.println("⏳ Loading Avatar Image Async...");
-            ImageLoader.loadImageAsync(avatarUrl, img -> {
-                if (img != null) {
-                    System.out.println("✅ Avatar loaded successfully!");
-                    SwingUtilities.invokeLater(() -> {
-                        ImageIcon icon = imageEditor.makeCircularImage(img, 40);
-                        headerAvatarLabel.setIcon(icon);
-                        headerAvatarLabel.revalidate();
-                        headerAvatarLabel.repaint();
-                    });
-                } else {
-                    System.err.println("❌ Failed to load avatar image from URL.");
-                }
-            });
-        } else {
-            System.out.println("ℹ️ No Avatar URL provided, using default.");
-        }
-        
-        // Reset tin nhắn
-        messagesPanel.removeAll();
-        messagesPanel.repaint();
-    }
-
-    public void setOnToggleInfo(Runnable onToggleInfo) {
-        this.onToggleInfo = onToggleInfo;
-    }
+    
+    public void setOnToggleInfo(Runnable onToggleInfo) { this.onToggleInfo = onToggleInfo; }
     
     public void setInfoActive(boolean isActive) {
         this.isInfoActive = isActive;
@@ -195,44 +275,6 @@ public class ChatPanel extends JPanel {
         infoBtn.repaint();
     }
 
-    public void loadMessages(JSONArray messages, String partnerName) {
-        messagesPanel.removeAll();
-        int myId = UserSession.getUser().getId(); 
-
-        for (int i = messages.length() - 1; i >= 0; i--) {
-            JSONObject msg = messages.getJSONObject(i);
-            
-            String content = msg.optString("content", "");
-            int senderId = msg.optInt("senderId", -1);
-            String rawTime = msg.optString("sentAt", "");
-            
-            String senderAvatarUrl = msg.optString("senderAvatar", null); 
-            String senderDisplayName = msg.optString("senderName", partnerName);
-
-            boolean isMe = (senderId == myId);
-            String displayTime = formatTime(rawTime);
-            
-            if (!isMe && (senderAvatarUrl == null || senderAvatarUrl.isEmpty() || "null".equals(senderAvatarUrl))) {
-                senderAvatarUrl = this.currentPartnerAvatarUrl;
-            }
-
-            String finalName = isMe ? "You" : senderDisplayName;
-            addMessage(content, displayTime, finalName, isMe, senderAvatarUrl);
-        }
-
-        messagesPanel.revalidate();
-        messagesPanel.repaint();
-
-        SwingUtilities.invokeLater(() -> {
-            JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
-            if (scrollPane != null) {
-                JScrollBar vertical = scrollPane.getVerticalScrollBar();
-                vertical.setValue(vertical.getMaximum());
-            }
-        });
-    }
-
-    // --- LOGIC ---
     private void sendMessage() {
         String msg = inputField.getText().trim();
         if (!msg.isEmpty() && !msg.equals("Type a message and press Enter...")) {
@@ -243,7 +285,15 @@ public class ChatPanel extends JPanel {
     }
 
     private void addMessage(String message, String time, String senderName, boolean isMe, String avatarUrl) {
-        JPanel wrapper = new JPanel(new BorderLayout());
+        // 🔥 FIX 1: Dùng Anonymous Class để KHÓA chiều cao tối đa bằng chiều cao ưu thích.
+        // Điều này ngăn chặn BoxLayout kéo dãn tin nhắn khi danh sách còn trống.
+        JPanel wrapper = new JPanel(new BorderLayout()) {
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension pref = getPreferredSize();
+                return new Dimension(Integer.MAX_VALUE, pref.height); 
+            }
+        };
         wrapper.setOpaque(false);
         
         JPanel contentBox = new JPanel();
@@ -254,7 +304,8 @@ public class ChatPanel extends JPanel {
             JLabel nameLbl = new JLabel(senderName);
             nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
             nameLbl.setForeground(Color.GRAY);
-            nameLbl.setBorder(new EmptyBorder(0, 2, 2, 0));
+            // Giảm padding tên
+            nameLbl.setBorder(new EmptyBorder(0, 4, 1, 0));
             nameLbl.setAlignmentX(Component.LEFT_ALIGNMENT); 
             contentBox.add(nameLbl);
         }
@@ -266,7 +317,8 @@ public class ChatPanel extends JPanel {
         JLabel timeLbl = new JLabel(time);
         timeLbl.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         timeLbl.setForeground(TIME_COLOR);
-        timeLbl.setBorder(new EmptyBorder(2, 2, 0, 2));
+        // Giảm padding thời gian
+        timeLbl.setBorder(new EmptyBorder(1, 2, 0, 2));
         
         if (isMe) {
             timeLbl.setAlignmentX(Component.RIGHT_ALIGNMENT);
@@ -279,26 +331,28 @@ public class ChatPanel extends JPanel {
             
             JLabel avatarLabel = new JLabel();
             avatarLabel.setPreferredSize(new Dimension(32, 32));
-            
-            // Set default trước
             avatarLabel.setIcon(createAvatar(senderName, 32));
 
-            // Load ảnh nếu có
             if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
                 ImageLoader.loadImageAsync(avatarUrl, img -> {
                     if (img != null) {
                         SwingUtilities.invokeLater(() -> {
-                            avatarLabel.setIcon(imageEditor.makeCircularImage(img, 32));
-                            avatarLabel.repaint();
+                            if (avatarLabel.isShowing()) {
+                                avatarLabel.setIcon(imageEditor.makeCircularImage(img, 32));
+                                avatarLabel.repaint();
+                            }
                         });
                     }
                 });
             }
             
+            // Xử lý vị trí Avatar: Đẩy lên trên cùng (NORTH) để không ảnh hưởng chiều cao
             JPanel avatarWrapper = new JPanel(new BorderLayout());
             avatarWrapper.setOpaque(false);
             avatarWrapper.add(avatarLabel, BorderLayout.NORTH);
-            avatarWrapper.setBorder(new EmptyBorder(18, 0, 0, 0)); 
+            // Padding top 18px để ngang hàng với bong bóng chat (bỏ qua tên)
+            // Nếu có tên (senderName), bạn có thể cần tăng giảm số 18 này
+            avatarWrapper.setBorder(new EmptyBorder(isMe ? 0 : 18, 0, 0, 0)); 
 
             incomingContainer.add(avatarWrapper, BorderLayout.WEST);
             incomingContainer.add(contentBox, BorderLayout.CENTER);
@@ -307,41 +361,31 @@ public class ChatPanel extends JPanel {
         }
         
         contentBox.add(timeLbl);
-
         messagesPanel.add(wrapper);
-        messagesPanel.add(Box.createVerticalStrut(10)); 
+        
+        // 🔥 FIX 2: Giảm khoảng cách giữa các tin nhắn xuống cố định 4px
+        messagesPanel.add(Box.createVerticalStrut(4)); 
     }
 
-    // --- HELPER CLASSES ---
-    
     private String formatTime(String isoTime) {
         if (isoTime == null || isoTime.isEmpty()) return "";
         try {
             LocalDateTime dt = LocalDateTime.parse(isoTime);
             return dt.format(DateTimeFormatter.ofPattern("HH:mm"));
-        } catch (Exception e) {
-            return "";
-        }
+        } catch (Exception e) { return ""; }
     }
 
     private ImageIcon createAvatar(String name, int size) {
         java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = img.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
         g2d.setColor(new Color(209, 213, 219)); 
         g2d.fillOval(0, 0, size, size);
-        
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Segoe UI", Font.BOLD, size / 2)); 
-        
         String initial = (name != null && !name.isEmpty()) ? name.substring(0, 1).toUpperCase() : "?";
-        
         FontMetrics fm = g2d.getFontMetrics();
-        int x = (size - fm.stringWidth(initial)) / 2;
-        int y = ((size - fm.getHeight()) / 2) + fm.getAscent();
-        
-        g2d.drawString(initial, x, y);
+        g2d.drawString(initial, (size - fm.stringWidth(initial)) / 2, ((size - fm.getHeight()) / 2) + fm.getAscent());
         g2d.dispose();
         return new ImageIcon(img);
     }
@@ -351,49 +395,34 @@ public class ChatPanel extends JPanel {
         field.setForeground(Color.GRAY);
         field.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                if (field.getText().equals(text)) {
-                    field.setText("");
-                    field.setForeground(TEXT_COLOR);
-                }
+                if (field.getText().equals(text)) { field.setText(""); field.setForeground(TEXT_COLOR); }
             }
             public void focusLost(FocusEvent e) {
-                if (field.getText().isEmpty()) {
-                    field.setText(text);
-                    field.setForeground(Color.GRAY);
-                }
+                if (field.getText().isEmpty()) { field.setText(text); field.setForeground(Color.GRAY); }
             }
         });
     }
 
     private void styleScrollBar(JScrollPane scrollPane) {
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
-            @Override
-            protected void configureScrollBarColors() {
-                this.thumbColor = new Color(200, 200, 200);
-                this.trackColor = BG_COLOR;
+            @Override protected void configureScrollBarColors() {
+                this.thumbColor = new Color(200, 200, 200); this.trackColor = BG_COLOR;
             }
             @Override protected JButton createDecreaseButton(int orientation) { return createZeroButton(); }
             @Override protected JButton createIncreaseButton(int orientation) { return createZeroButton(); }
             private JButton createZeroButton() {
-                JButton jbutton = new JButton();
-                jbutton.setPreferredSize(new Dimension(0, 0));
-                return jbutton;
+                JButton jbutton = new JButton(); jbutton.setPreferredSize(new Dimension(0, 0)); return jbutton;
             }
         });
     }
 
+    // --- Inner Classes ---
     class RoundedPanel extends JPanel {
-        private int radius;
-        private Color backgroundColor;
-
+        private int radius; private Color backgroundColor;
         public RoundedPanel(int radius, Color bgColor) {
-            this.radius = radius;
-            this.backgroundColor = bgColor;
-            setOpaque(false);
+            this.radius = radius; this.backgroundColor = bgColor; setOpaque(false);
         }
-
-        @Override
-        protected void paintComponent(Graphics g) {
+        @Override protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(new Color(0, 0, 0, 10));
@@ -407,45 +436,49 @@ public class ChatPanel extends JPanel {
     }
 
     class MessageBubble extends JPanel {
-        private JTextArea textArea;
-        private boolean isMe;
+        private JTextArea textArea; 
+        private boolean isMe; 
         private final int MAX_WIDTH = 300; 
-
+        
         public MessageBubble(String message, boolean isMe) {
-            this.isMe = isMe;
-            setLayout(new BorderLayout());
+            this.isMe = isMe; 
+            setLayout(new BorderLayout()); 
             setOpaque(false);
-
+            
             textArea = new JTextArea(message);
-            textArea.setWrapStyleWord(true);
-            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true); 
+            textArea.setLineWrap(true); 
             textArea.setOpaque(false);
-            textArea.setEditable(false);
+            textArea.setEditable(false); 
             textArea.setFocusable(false);
             textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             textArea.setForeground(isMe ? Color.WHITE : TEXT_COLOR);
-
-            textArea.setSize(new Dimension(MAX_WIDTH, Short.MAX_VALUE));
-            Dimension textSize = textArea.getPreferredSize();
             
-            int bubbleWidth = textSize.width + 24;
-            int bubbleHeight = textSize.height + 16; 
+            // 🔥 QUAN TRỌNG: Xóa margin mặc định để tính toán size chuẩn xác
+            textArea.setMargin(new Insets(0,0,0,0)); 
+            
+            textArea.setSize(new Dimension(MAX_WIDTH, Short.MAX_VALUE));
+            
+            Dimension textSize = textArea.getPreferredSize();
+            int bubbleWidth = Math.min(textSize.width + 24, MAX_WIDTH + 24);
+            
+            // Tính lại chiều cao với width đã chốt
+            textArea.setSize(new Dimension(bubbleWidth - 24, Short.MAX_VALUE)); 
+            int bubbleHeight = textArea.getPreferredSize().height + 12; // Padding trên dưới tổng 12px
 
             setPreferredSize(new Dimension(bubbleWidth, bubbleHeight));
             setMaximumSize(new Dimension(bubbleWidth, bubbleHeight));
-
-            setBorder(new EmptyBorder(8, 12, 8, 12));
+            
+            // Padding nội bộ bong bóng (6px trên/dưới, 12px trái/phải)
+            setBorder(new EmptyBorder(6, 12, 6, 12));
             add(textArea, BorderLayout.CENTER);
         }
-
-        @Override
-        protected void paintComponent(Graphics g) {
+        
+        @Override protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
             g2.setColor(isMe ? PRIMARY_COLOR : Color.WHITE);
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
-
             if (!isMe) {
                 g2.setColor(new Color(220, 220, 220));
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 18, 18);

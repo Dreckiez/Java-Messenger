@@ -20,10 +20,10 @@ public class LoginScreen extends JPanel {
     // --- COLORS ---
     private final Color PRIMARY_COLOR = new Color(59, 130, 246); // Blue
     private final Color HOVER_COLOR = new Color(37, 99, 235);
-    private final Color BG_COLOR = new Color(248, 250, 252);     // Very light gray
+    private final Color BG_COLOR = new Color(248, 250, 252); 
     private final Color TEXT_PRIMARY = new Color(30, 41, 59);
     private final Color TEXT_SECONDARY = new Color(100, 116, 139);
-    private final Color INPUT_BG = new Color(241, 245, 249);     // Input background
+    private final Color INPUT_BG = new Color(241, 245, 249); 
 
     public LoginScreen(BaseScreen main) {
         this.mainScreen = main;
@@ -120,7 +120,7 @@ public class LoginScreen extends JPanel {
         JPasswordField passField = createStyledPasswordField();
         JPanel passPanel = wrapInRoundedPanel(passField);
         
-        // 🔥 SỬ DỤNG HÀM TẠO ICON MẮT CHUẨN (ĐỒNG BỘ VỚI REGISTER)
+        // 🔥 SỬ DỤNG HÀM TẠO ICON MẮT CHUẨN
         JToggleButton eyeBtn = createEyeButton(passField);
         passPanel.add(eyeBtn, BorderLayout.EAST);
         
@@ -220,8 +220,8 @@ public class LoginScreen extends JPanel {
                         User user = new User(token, refreshToken);
                         UserSession.setUser(user);
                         
-                        // Fetch profile
-                        fetchUserProfile(token);
+                        // Fetch profile, passing the button reference
+                        fetchUserProfile(token, loginBtn); // 🔥 TRUYỀN loginBtn
                     } else {
                         String msg = res.optString("message", "Login failed");
                         loginError.setText(msg);
@@ -236,7 +236,8 @@ public class LoginScreen extends JPanel {
         }.execute();
     }
 
-    private void fetchUserProfile(String token) {
+    // 🔥 CẬP NHẬT CHỮ KÝ HÀM VÀ LOGIC RESET
+    private void fetchUserProfile(String token, JButton loginBtn) {
         new SwingWorker<JSONObject, Void>() {
             @Override
             protected JSONObject doInBackground() {
@@ -247,6 +248,7 @@ public class LoginScreen extends JPanel {
                 try {
                     JSONObject profile = get();
                     
+                    // Logic Profile
                     int user_id = profile.getInt("userId");
                     String username = profile.optString("username", ""); 
                     String role = profile.getString("role");
@@ -260,17 +262,23 @@ public class LoginScreen extends JPanel {
 
                     UserSession.setUserInfo(user_id, username, avatar, role, address, gender, birthDay, email, fname, lname);
 
+                    // Chuyển màn hình
                     if (role.equals("ADMIN")) {
                         mainScreen.showPanel("dashboard");
                         if (mainScreen.getDashboardScreen() != null) 
-                            mainScreen.getDashboardScreen().onLoginSuccess();;
-                           
+                            mainScreen.getDashboardScreen().onLoginSuccess();
                     } else {
                         mainScreen.showPanel("home");
                     }
+                    
+                    // 🔥 RESET NÚT SAU KHI CHUYỂN MÀN HÌNH THÀNH CÔNG (Đảm bảo trạng thái sẵn sàng cho lần đăng nhập sau)
+                    resetButton(loginBtn); 
+                    
                 } catch (Exception e) {
                     e.printStackTrace();
-                    loginError.setText("Failed to load profile.");
+                    loginError.setText("Failed to load profile. Please log in again.");
+                    // 🔥 FIX: RESET NÚT KHI TẢI PROFILE THẤT BẠI
+                    resetButton(loginBtn); 
                 }
             }
         }.execute();
@@ -331,7 +339,6 @@ public class LoginScreen extends JPanel {
     }
 
     // 🔥 HELPER: Tạo icon mắt chuẩn (Hình Oval + Đồng tử + Gạch chéo)
-    // Code này giống hệt bên RegisterScreen để đồng bộ
     private JToggleButton createEyeButton(JPasswordField field) {
         JToggleButton eyeBtn = new JToggleButton();
         eyeBtn.setPreferredSize(new Dimension(40, 30));

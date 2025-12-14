@@ -32,6 +32,9 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
     private UserServices userService;
     private ImageEditor imageEditor;
 
+    private long pendingOpenId = -1; 
+    private String pendingOpenType = null;
+
     // Colors
     private final Color ACTIVE_BG = new Color(235, 242, 255);
     private final Color HOVER_BG = new Color(248, 249, 250);
@@ -65,7 +68,7 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
         searchField.setBorder(null);
         searchField.setBackground(new Color(243, 244, 246));
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        setupPlaceholder(searchField, "Search message global...");
+        setupPlaceholder(searchField, "Search conversation");
 
         searchField.addKeyListener(new KeyAdapter() {
             @Override
@@ -102,6 +105,14 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
         }
     }
     
+    public long getChatId(JSONObject chat) {
+        if (chat == null) return -1;
+        if (chat.has("id")) {
+            return chat.optLong("id", -1);
+        }
+        return -1;
+    }
+
     // 🔥🔥 TRIỂN KHAI PHƯƠNG THỨC XỬ LÝ SỰ KIỆN TỪ CHATLISTENER
     @Override
     public void onGroupNameChanged(long conversationId, String newName) {
@@ -229,6 +240,103 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
                                 onChatSelected.accept(firstItem.getChatData());
                             }
                         }
+                    }
+                    
+                    chatListPanel.revalidate(); 
+                    chatListPanel.repaint();
+                    System.out.println("DEBUG: ChatList loaded " + (conversations != null ? conversations.length() : 0) + " items.");
+                });
+            }
+        }.execute();
+    }
+
+    private void loadConversations_V2() {
+        if (UserSession.getUser() == null) return;
+
+        // 🔥 BƯỚC 1: XÓA UI TRÊN LUỒNG SỰ KIỆN (EDT) NGAY LẬP TỨC
+        SwingUtilities.invokeLater(() -> {
+            chatListPanel.removeAll();
+            chatListPanel.revalidate();
+            chatListPanel.repaint();
+            System.out.println("DEBUG: ChatList UI cleaned up.");
+        });
+
+        String token = UserSession.getUser().getToken();
+
+        new SwingWorker<JSONArray, Void>() {
+            JSONArray conversations = null;
+
+            @Override
+            protected JSONArray doInBackground() throws Exception {
+                return userService.getConversations(token);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    conversations = get(); 
+                } catch (Exception e) {
+                    System.err.println("Error fetching conversations: " + e.getMessage());
+                }
+
+                // 🔥 BƯỚC 2: HIỂN THỊ KẾT QUẢ CŨNG TRÊN LUỒNG SỰ KIỆN (EDT)
+                SwingUtilities.invokeLater(() -> {
+                    
+                    if (conversations == null || conversations.length() == 0) {
+                        showEmptyState();
+                        // Reset pending ID/Type ngay cả khi lỗi tải
+                        pendingOpenId = -1;
+                        pendingOpenType = null;
+                        if (onChatSelected != null) onChatSelected.accept(new JSONObject());
+                    } else {
+                        ChatItem itemToSelect = null;
+                        
+                        // Xóa UI lần nữa (Chỉ để an toàn, vì đã xóa ở BƯỚC 1)
+                        chatListPanel.removeAll(); 
+                        
+                        // 1. Tải và tìm kiếm item (Sử dụng logic render đơn giản của bạn)
+                        for (int i = 0; i < conversations.length(); i++) {
+                            JSONObject chat = conversations.getJSONObject(i);
+                            
+                            // item = addChat() là nơi item được thêm vào chatListPanel (hoặc tạo ra)
+                            ChatItem item = addChat(chat); 
+                            
+                            // Lấy ID/Type của item hiện tại
+                            long currentId = getChatId(chat); 
+                            String currentType = chat.optString("conversationType", "PRIVATE");
+
+                            // 2. LOGIC TÌM KIẾM CHÍNH XÁC (Sử dụng pending ID)
+                            if (pendingOpenId != -1 && currentId == pendingOpenId) {
+                                if (pendingOpenType != null && pendingOpenType.equalsIgnoreCase(currentType)) {
+                                    itemToSelect = item;
+                                    // Không break để đảm bảo tất cả các item được render
+                                    // break; 
+                                }
+                            }
+                            
+                            // Nếu item đầu tiên được render thành công, lưu nó làm Fallback (chỉ khi pendingOpenId == -1)
+                            if (i == 0 && itemToSelect == null && pendingOpenId == -1) {
+                                itemToSelect = item;
+                            }
+                        }
+                        
+                        // 3. Thực hiện Select HOẶC GỬI RỖNG
+                        if (itemToSelect != null) {
+                            selectChat(itemToSelect);
+                            if (onChatSelected != null) {
+                                onChatSelected.accept(itemToSelect.getChatData());
+                            }
+                            // Cuộn xuống item được chọn
+                            Rectangle bounds = itemToSelect.getBounds();
+                            chatListPanel.scrollRectToVisible(bounds);
+                        } else if (pendingOpenId != -1) {
+                            // Nếu có ID chờ nhưng không tìm thấy khớp -> Gửi rỗng (Welcome)
+                            if (onChatSelected != null) onChatSelected.accept(new JSONObject());
+                        }
+                        
+                        // RESET TRẠNG THÁI CHỜ
+                        pendingOpenId = -1; 
+                        pendingOpenType = null;
                     }
                     
                     chatListPanel.revalidate(); 
@@ -569,4 +677,13 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
             super.paintComponent(g);
         }
     }
+
+    public void loadConversations(int targetId, String targetType) {
+        // Ép kiểu (long) khi gán cho pendingOpenId
+        this.pendingOpenId = (long) targetId; 
+        this.pendingOpenType = targetType; 
+        System.out.println(this.pendingOpenId + "-" + this.pendingOpenType);
+        loadConversations_V2();
+    }
+
 }

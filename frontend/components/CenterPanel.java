@@ -12,7 +12,8 @@ public class CenterPanel extends JPanel {
     private SettingPanel settingPanel;
     private JPanel welcomePanel;
     private InfoPanel infoPanel;
-    
+    private long currentChatId = -1;
+    private String currentChatType = null;
     private UserServices userServices;
 
     public CenterPanel() {
@@ -92,7 +93,8 @@ public class CenterPanel extends JPanel {
         } else {
             conversationId = chatData.optLong("privateConversationId", chatData.optLong("id", -1));
         }
-        
+        this.currentChatId = conversationId; 
+        this.currentChatType = type;
         if (conversationId != -1) {
             System.out.println("DEBUG CENTER: Selected ID=" + conversationId + ", Type=" + type);
             
@@ -109,7 +111,10 @@ public class CenterPanel extends JPanel {
         new SwingWorker<JSONObject, Void>() {
             @Override
             protected JSONObject doInBackground() throws Exception {
-                System.out.println("DEBUG CENTER: Calling Group API for ID " + id);
+                if (id != CenterPanel.this.currentChatId || !"GROUP".equalsIgnoreCase(CenterPanel.this.currentChatType)) {
+                    System.out.println("DEBUG CENTER: ABORTING Group API call for old ID " + id);
+                    return null; 
+                }
                 return userServices.getGroupConversationDetails(id);
             }
 
@@ -118,6 +123,11 @@ public class CenterPanel extends JPanel {
                 try {
                     JSONObject response = get(); 
                     
+                    if (response == null || id != CenterPanel.this.currentChatId || !"GROUP".equalsIgnoreCase(CenterPanel.this.currentChatType)) {
+                        System.out.println("DEBUG CENTER: ABORT LẦN 2 (Group) - ID " + id + " bị ghi đè.");
+                        return; // Thoát khỏi hàm done()
+                    }
+
                     if (response != null) {
                         // 1. Cập nhật tin nhắn
                         if (response.has("groupConversationMessageResponseList")) {
@@ -171,6 +181,10 @@ public class CenterPanel extends JPanel {
         new SwingWorker<JSONObject, Void>() {
             @Override
             protected JSONObject doInBackground() throws Exception {
+                if (id != currentChatId || !"PRIVATE".equalsIgnoreCase(currentChatType)) { // Dùng biến thành viên
+                    System.out.println("DEBUG CENTER: ABORTING Private API call for old ID " + id);
+                    return null; 
+                }
                 return userServices.getPrivateConversationDetails((int) id);
             }
 
@@ -178,20 +192,83 @@ public class CenterPanel extends JPanel {
             protected void done() {
                 try {
                     JSONObject response = get();
+
+                    if (response == null || id != CenterPanel.this.currentChatId || !"PRIVATE".equalsIgnoreCase(CenterPanel.this.currentChatType)) {
+                        System.out.println("DEBUG CENTER: ABORT LẦN 2 (Private) - ID " + id + " bị ghi đè.");
+                        return; // Thoát khỏi hàm done()
+                    }
+
                     if (response != null) {
+                        
+                        // --- 1. TRÍCH XUẤT VÀ XỬ LÝ DỮ LIỆU ĐỐI TÁC MỚI NHẤT ---
+                        
+                        String newPartnerName = partnerName; // Mặc định là tên cũ từ ChatList
+                        String newPartnerAvatar = response.optString("avatarUrl", chatData.optString("avatarUrl", null));
+                        Long convId = response.optLong("privateConversationId");
+                        // Xử lý tên: Ưu tiên (firstName + lastName) hoặc username
+                        String partnerFirstName = response.optString("firstName", "");
+                        String partnerLastName = response.optString("lastName", "");
+                        String partnerUsername = response.optString("username", "");
+
+                        if (!partnerFirstName.isEmpty() || !partnerLastName.isEmpty()) {
+                            newPartnerName = (partnerFirstName + " " + partnerLastName).trim();
+                        } else if (!partnerUsername.isEmpty()) {
+                            newPartnerName = partnerUsername;
+                        }
+                        
+                        // Xử lý avatar: Chuyển "null" hoặc rỗng thành null
+                        if (newPartnerAvatar != null && (newPartnerAvatar.equals("null") || newPartnerAvatar.isEmpty())) {
+                            newPartnerAvatar = null;
+                        }
+
+                        // --- 2. CẬP NHẬT CHAT HEADER BẰNG DỮ LIỆU MỚI ---
+                        // Cần có hàm updateChatHeader(name, avatar, isPrivate) trong ChatPanel
+                        chatPanel.updateChatHeader(convId, newPartnerName, newPartnerAvatar, true); 
+
+                        // --- 3. TẢI TIN NHẮN ---
                         if (response.has("privateConversationMessageResponseList")) {
                             JSONArray messages = response.getJSONArray("privateConversationMessageResponseList");
-                            chatPanel.loadMessages(messages, partnerName);
+                            // Quan trọng: Truyền tên đối tác mới nhất vào loadMessages
+                            chatPanel.loadMessages(messages, newPartnerName); 
                         }
+                        
+                        // --- 4. CẬP NHẬT INFOPANEL ---
                         if (infoPanel != null) {
+                            // Khởi tạo enrichedData từ chatData tóm tắt
                             JSONObject enrichedData = new JSONObject(chatData.toString());
+                            
+                            // 🔥 Ghi đè tên/avatar (Đã làm ở bước trước)
+                            enrichedData.put("name", newPartnerName);
+                            if (newPartnerAvatar != null) enrichedData.put("avatarUrl", newPartnerAvatar);
+
+                            // 🔥 BỔ SUNG THÔNG TIN CHI TIẾT CỦA ĐỐI TÁC TỪ PHẢN HỒI API (RESPONSE)
+                            // Dữ liệu API trả về chi tiết của người dùng đối tác
                             if (response.has("userId")) {
-                                enrichedData.put("partnerId", response.getInt("userId"));
+                                enrichedData.put("partnerId", response.optInt("userId", -1));
+                                enrichedData.put("partnerUsername", response.optString("username", ""));
+                                enrichedData.put("partnerFirstName", response.optString("firstName", ""));
+                                enrichedData.put("partnerLastName", response.optString("lastName", ""));
+                                
+                                // Thêm các trường khác cần thiết cho InfoPanel (giả định chúng có trong response API)
+                                enrichedData.put("email", response.optString("email", "N/A"));
+                                enrichedData.put("address", response.optString("address", "N/A"));
+                                enrichedData.put("gender", response.optString("gender", "N/A"));
+                                enrichedData.put("birthDay", response.optString("birthDay", "N/A")); 
+                                
+                                // Thêm trạng thái online
+                                enrichedData.put("isOnline", response.optBoolean("isOnline", false));
                             }
+                            
+                            // Cần phải có các trường "partner..." để InfoPanel biết đây là thông tin đối tác 
+                            // và không nhầm với thông tin chat Group.
+
                             infoPanel.updateInfo(enrichedData);
                         }
                     }
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) { 
+                    e.printStackTrace(); 
+                    System.err.println("Lỗi xử lý dữ liệu Private Chat chi tiết: " + e.getMessage());
+                }
             }
         }.execute();
     }

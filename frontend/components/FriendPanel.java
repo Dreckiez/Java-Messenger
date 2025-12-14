@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -20,14 +22,18 @@ public class FriendPanel extends JPanel {
     private JTextField searchField;
     private JPanel listPanel;
     private JPanel centerContainer;
-
-    private List<Friend> allFriends; // Danh sách gốc từ API
-    private List<FriendItem> displayedItems; // Danh sách đang hiển thị (UI)
+    
+    private List<Friend> allFriends; 
+    private List<FriendItem> displayedItems; 
     private FriendItem selectedItem;
-
+    
     private SwingWorker<List<Friend>, Void> worker;
+    
+    // --- CALLBACKS ---
+    private Runnable onNavigateToChat; 
+    private Consumer<FriendItem.ChatTarget> onOpenChat; // Callback mở chat bằng ID
 
-    // --- MÀU SẮC (Đồng bộ với SearchFriend) ---
+    // --- MÀU SẮC ---
     private final Color BG_COLOR = new Color(248, 250, 252);
     private final Color ITEM_BG = Color.WHITE;
     private final Color HOVER_BG = new Color(241, 245, 249);
@@ -46,50 +52,54 @@ public class FriendPanel extends JPanel {
         add(createHeader(), BorderLayout.NORTH);
         add(createBody(), BorderLayout.CENTER);
         
-        // Mặc định hiển thị trạng thái đang tải hoặc trống
         showEmptyState("Loading friends...");
+    }
+
+    // --- SETTERS ---
+    public void setOnNavigateToChat(Runnable onNavigateToChat) {
+        this.onNavigateToChat = onNavigateToChat;
+    }
+    
+    // Setter quan trọng để nhận Callback từ HomeScreen
+    public void setOnOpenChat(Consumer<FriendItem.ChatTarget> onOpenChat) { 
+        this.onOpenChat = onOpenChat; 
     }
 
     private JPanel createHeader() {
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setBackground(BG_COLOR);
-        // Consistent padding
         header.setBorder(new EmptyBorder(20, 15, 10, 15));
 
-        // Title
         JLabel titleLabel = new JLabel("My Friends");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22)); // Consistent font size
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22)); 
         titleLabel.setForeground(TEXT_PRIMARY);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         header.add(titleLabel);
         header.add(Box.createVerticalStrut(15));
 
-        // --- UPDATED SEARCH BAR ---
-        // 1. Use light gray background
-        // 2. Rounded corners (20)
+        // Search Bar
         RoundedPanel searchContainer = new RoundedPanel(20, new Color(243, 244, 246));
         searchContainer.setLayout(new BorderLayout());
-        searchContainer.setBorder(new EmptyBorder(8, 15, 8, 15)); // Consistent padding
-        searchContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); // Standard height
+        searchContainer.setBorder(new EmptyBorder(8, 15, 8, 15)); 
+        searchContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
         searchContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         searchField = new JTextField();
         searchField.setBorder(null);
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        searchField.setBackground(new Color(243, 244, 246)); // Match container bg
+        searchField.setBackground(new Color(243, 244, 246)); 
         searchField.setOpaque(false);
         
         setupPlaceholder(searchField, "Search friends...");
 
-        // Filter Logic
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 String text = searchField.getText().trim();
                 if (text.isEmpty() || text.equals("Search friends...")) {
-                    displayFriends(allFriends); // Show all
+                    displayFriends(allFriends); 
                 } else {
                     filterFriends(text);
                 }
@@ -107,20 +117,15 @@ public class FriendPanel extends JPanel {
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setBackground(BG_COLOR);
         
-        // Wrapper để căn chỉnh margin cho các item bên trong
         centerContainer = new JPanel(new BorderLayout());
         centerContainer.setBackground(BG_COLOR);
-        // Giảm padding trái phải một chút nếu cần, ở đây tôi để 20
         centerContainer.setBorder(new EmptyBorder(0, 20, 0, 20)); 
         
-        // Đưa listPanel lên phía Bắc để các item không bị giãn chiều cao khi ít item
         centerContainer.add(listPanel, BorderLayout.NORTH);
 
         JScrollPane scroll = new JScrollPane(centerContainer);
         scroll.setBorder(null);
         scroll.getViewport().setBackground(BG_COLOR);
-        
-        // 🔥 FIX: Tắt hoàn toàn thanh cuộn ngang để nội dung tự co vào
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         
         scroll.getVerticalScrollBar().setUnitIncrement(16);
@@ -176,10 +181,36 @@ public class FriendPanel extends JPanel {
         for (Friend friend : friends) {
             FriendItem item = new FriendItem(friend);
             
-            // Xử lý sự kiện click
+            // 1. Truyền callback Create Group
+            if (this.onNavigateToChat != null) {
+                item.setOnNavigateToChat(this.onNavigateToChat);
+            }
+            
+            // 🔥 2. TRUYỀN CALLBACK OPEN CHAT (QUAN TRỌNG)
+            if (this.onOpenChat != null) {
+                item.setOnOpenChat(this.onOpenChat);
+            }
+
+            // 3. Xử lý sự kiện Unfriend/Block (Lazy Remove)
+            item.setOnRequestHandled(e -> {
+                String cmd = e.getActionCommand();
+                if ("UNFRIEND".equals(cmd) || "BLOCK".equals(cmd)) {
+                    // Xóa item khỏi UI ngay lập tức
+                    listPanel.remove(item);
+                    displayedItems.remove(item);
+                    allFriends.remove(friend); // Xóa khỏi cache
+                    
+                    listPanel.revalidate();
+                    listPanel.repaint();
+                    
+                    if (displayedItems.isEmpty()) {
+                        showEmptyState("No friends found.");
+                    }
+                }
+            });
+
             setupItemClick(item);
 
-            // Khoảng cách giữa các item
             listPanel.add(item);
             listPanel.add(Box.createVerticalStrut(15));
             
@@ -225,13 +256,11 @@ public class FriendPanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (selectedItem != null && selectedItem != item) {
                     selectedItem.setBackground(ITEM_BG);
-                    selectedItem.deselect(); // Nếu FriendItem có hàm này
+                    selectedItem.deselect(); 
                 }
                 selectedItem = item;
                 selectedItem.setBackground(SELECTED_BG);
-                selectedItem.select(); // Nếu FriendItem có hàm này
-                
-                // TODO: Có thể mở chat hoặc xem profile ở đây
+                selectedItem.select(); 
             }
         });
     }
@@ -241,19 +270,16 @@ public class FriendPanel extends JPanel {
     public void fetchRequests() {
         if (worker != null && !worker.isDone()) worker.cancel(true);
         
-        // Hiển thị trạng thái đang tải
         showEmptyState("Loading...");
 
         worker = new SwingWorker<List<Friend>, Void>() {
             @Override
             protected List<Friend> doInBackground() throws Exception {
                 List<Friend> list = new ArrayList<>();
-                // Gọi API lấy danh sách bạn bè
                 JSONObject json = ApiClient.getJSON(ApiUrl.FRIENDLIST, UserSession.getUser().getToken());
                 
-                // Kiểm tra key JSON trả về (Ví dụ: "listOfFriend" hoặc "data")
                 JSONArray arr = json.optJSONArray("listOfFriend"); 
-                if (arr == null) arr = new JSONArray(); // Tránh lỗi null
+                if (arr == null) arr = new JSONArray(); 
 
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
@@ -287,7 +313,7 @@ public class FriendPanel extends JPanel {
         searchField.setText("Search friends...");
         searchField.setForeground(TEXT_HINT);
         selectedItem = null;
-        fetchRequests(); // Tải lại danh sách mới nhất
+        fetchRequests(); 
     }
 
     // --- HELPER CLASSES ---
