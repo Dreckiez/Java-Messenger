@@ -7,10 +7,7 @@ import com.example.spring_security.dto.response.UserFriendResponse;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.entities.Enum.FriendRequestStatus;
 import com.example.spring_security.exception.CustomException;
-import com.example.spring_security.repository.BlockRepository;
-import com.example.spring_security.repository.FriendRepository;
-import com.example.spring_security.repository.FriendRequestRepository;
-import com.example.spring_security.repository.UserRepository;
+import com.example.spring_security.repository.*;
 import com.example.spring_security.services.user.UserFriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +33,8 @@ public class UserFriendServiceImpl implements UserFriendService {
     private final BlockRepository blockRepository;
 
     private final UserPrivateConversationServiceImpl userPrivateConversationService;
+
+    private final PrivateConversationRepository privateConversationRepository;
 
     public ListUserFriendResponse getFriendList(Long userId, String keyword) {
         if (keyword == null) keyword = "";
@@ -93,7 +93,7 @@ public class UserFriendServiceImpl implements UserFriendService {
                     .isActive(true)
                     .updatedAt(null).build();
             friendRequestRepository.save(friendRequest);
-            msg.put("message", "Friend request sent successfully.");
+            msg.put("message", friendRequestId.getSentAt().toString());
             return msg;
         }
         else {
@@ -227,6 +227,11 @@ public class UserFriendServiceImpl implements UserFriendService {
             msg.put("message", "You are no longer friends.");
             return msg;
         }
+
+
+        PrivateConversation privateConversation = privateConversationRepository.findByUser1UserIdAndUser2UserId(removerId, removedUserId).orElse(null);
+
+        if (privateConversation != null) privateConversationRepository.delete(privateConversation);
 
         friendRepository.deleteById(friend.getId());
 

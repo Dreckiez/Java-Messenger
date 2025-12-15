@@ -113,6 +113,10 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
 
          deletePrivateConversationRepository.save(deletePrivateConversation);
 
+         privateConversation.setPreviewMessage(null);
+
+         privateConversationRepository.save(privateConversation);
+
          Map<String, String> msg = new HashMap<>();
          msg.put("message", "Removed successfully!");
          return msg;
@@ -127,6 +131,8 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 .findById(privateConversationId).orElseThrow(
                         () -> new CustomException(HttpStatus.NOT_FOUND, "Illegal behavior. There is no conversation.")
                 );
+
+
 
         PrivateConversationMessage privateConversationMessage
                 = PrivateConversationMessage.builder()
@@ -288,6 +294,15 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 .build();
 
         return listPrivateConversationMessageResponse;
+    }
+
+    public Map<String, Long> getIdConv(Long userId, Long friendId) {
+
+        PrivateConversation privateConversation = privateConversationRepository
+                .findByUser1UserIdAndUser2UserId(userId, friendId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "There is no conversation."));
+
+        return Map.of("privateConversationId", privateConversation.getPrivateConversationId());
     }
 
 }

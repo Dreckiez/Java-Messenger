@@ -1,37 +1,43 @@
 package components;
 
 import javax.swing.*;
-
 import screens.HomeScreen;
-
 import java.awt.*;
+import org.json.JSONObject;
 
 public class NavPanel extends JPanel {
     private ChatList chatList;
     private CardLayout centerLayout;
     private JPanel centerPanel;
+    private NavBar navBar; 
+    
+    private HomeScreen homeScreenRef;
+    private CenterPanel centerRef; 
 
     private SearchFriend search;
     private FriendRequests request;
     private FriendPanel friend;
+    private BlockedUserPanel blockedUsers; 
+    private final Color BG_COLOR = new Color(248, 250, 252); 
+    private final Color BORDER_COLOR = new Color(226, 232, 240);
 
-    public NavPanel(HomeScreen home, CenterPanel center) {
+    public NavPanel(HomeScreen homeScreenArg, CenterPanel center) {
+        this.homeScreenRef = homeScreenArg;
+        this.centerRef = center; 
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(350, 0));
-        setBackground(new Color(245, 245, 245));
-
-        // === LEFT: Navigation ===
-        NavBar navBar = new NavBar(home, center, this);
+        setPreferredSize(new Dimension(360, 0)); 
+        setBackground(BG_COLOR);
+        setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_COLOR));
+        
+        blockedUsers = new BlockedUserPanel(); 
+        navBar = new NavBar(homeScreenRef, center, this);
         add(navBar, BorderLayout.WEST);
 
-        // === CENTER: Main Area ===
         centerLayout = new CardLayout();
         centerPanel = new JPanel(centerLayout);
+        centerPanel.setBackground(BG_COLOR);
 
-        chatList = new ChatList(selectedUser -> {
-            center.showChat(selectedUser);
-        });
-
+        chatList = new ChatList((JSONObject chatData) -> center.showChat(chatData));
         search = new SearchFriend(this);
         request = new FriendRequests();
         friend = new FriendPanel();
@@ -40,23 +46,47 @@ public class NavPanel extends JPanel {
         centerPanel.add(search, "searchfriend");
         centerPanel.add(request, "request");
         centerPanel.add(friend, "onlinefriend");
-
+        centerPanel.add(blockedUsers, "blockedusers");
         add(centerPanel, BorderLayout.CENTER);
     }
 
+    public FriendPanel getFriendPanel() { return this.friend; }
+
+    public void switchToChatTab() {
+        showPanel("chatlist");
+        reloadChatList();
+    }
+
     public void showPanel(String name) {
+        if (navBar != null) navBar.setActiveButton(name);
+        
+        // Logic ẩn/hiện InfoPanel
+        SwingUtilities.invokeLater(() -> {
+            if (homeScreenRef != null) homeScreenRef.toggleInfoPanel(false);
+            if (centerRef != null && !"chatlist".equals(name)) centerRef.resetInfoToggle();
+        });
+
+        // Trigger reload khi chuyển tab
         switch (name) {
-            case "request":
-                request.fetchRequests(); // Fetch when showing requests
-                break;
-            case "searchfriend":
-                search.resetSearch(); // Reset search when showing
-                break;
-            case "onlinefriend":
-                friend.fetchRequests();
-                break;
-            // Add other cases as needed
+            case "chatlist": if (chatList != null) chatList.loadConversations(); break;
+            case "request": if (request != null) request.fetchRequests(); break;
+            case "searchfriend": if (search != null) search.resetSearch(); break;
+            case "onlinefriend": if (friend != null) friend.fetchRequests(); break;
+            case "blockedusers": if (blockedUsers != null) blockedUsers.fetchBlockedUsers(); break;
         }
         centerLayout.show(centerPanel, name);
     }
+    
+    public void reloadChatList() { if (chatList != null) chatList.loadConversations(); }
+    public void switchToChatAndOpen(int conversationId, String conversationType) {
+        // 1. Chuyển sang tab ChatList
+        showPanel("chatlist");
+        
+        // 2. Gọi hàm tải/chọn chat trong ChatList
+        if (chatList != null) {
+            // Hàm này sẽ thiết lập pendingOpenId và pendingOpenType trong ChatList
+            chatList.loadConversations(conversationId, conversationType);
+        }
+    }
+    public void reloadBlockedUsers() { if (blockedUsers != null) blockedUsers.fetchBlockedUsers(); }
 }

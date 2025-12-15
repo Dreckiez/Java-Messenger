@@ -31,14 +31,15 @@ public class UserSearchController {
     public ResponseEntity<List<MessageSearchResponse>> searchPrivateMessages
             (@AuthenticationPrincipal User user, @PathVariable("id") Long privateConversationId,
              @RequestParam(value = "keyword", required = true) String keyword) {
-        return ResponseEntity.ok(userSearchService.searchPrivateMessage(privateConversationId, keyword));
+        return ResponseEntity.ok(userSearchService.searchPrivateMessage(user.getUserId(), privateConversationId, keyword));
     }
 
     @GetMapping("/{id}/group-conversation-messages")
     public ResponseEntity<List<MessageSearchResponse>> searchGroupMessages
             (@PathVariable("id") Long groupConversationId,
+             @AuthenticationPrincipal User user,
              @RequestParam(value = "keyword", required = true) String keyword) {
-        return ResponseEntity.ok(userSearchService.searchGroupMessages(groupConversationId, keyword));
+        return ResponseEntity.ok(userSearchService.searchGroupMessages(user.getUserId(), groupConversationId, keyword));
     }
 
 

@@ -10,7 +10,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.border.AbstractBorder; 
-
 import javax.swing.border.CompoundBorder;
 import models.UserManagementItemList;
 import screens.DashboardScreen;
@@ -27,8 +26,8 @@ public class UserManage extends JPanel {
     private JTextField filterTextField;
     private JComboBox<String> sortByBox;
     private JComboBox<String> statusFilter;
-    private JComboBox<String> friendCountOperator;
-    private JSpinner friendCountValue;
+    private JSpinner minFriendSpinner; // Greater Than
+    private JSpinner maxFriendSpinner;
     private JTextField dateFilter;
 
     private DashboardScreen screen;
@@ -117,7 +116,7 @@ public class UserManage extends JPanel {
         row1.add(filterTextField);
 
         row1.add(createLabel("Sort:"));
-        sortByBox = createComboBox(new String[] { "Name (A-Z)", "Name (Z-A)", "Date (Latest)" });
+        sortByBox = createComboBox(new String[] { "Name (A-Z)", "Name (Z-A)", "Date (Latest)", "Date (Oldest)"});
         row1.add(sortByBox);
 
         row1.add(createLabel("Status:"));
@@ -126,23 +125,28 @@ public class UserManage extends JPanel {
         mainPanel.add(row1);
 
         // Row 2
-        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
         row2.setOpaque(false);
         row2.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Label
         JLabel friendLabel = createLabel("Friends:");
         friendLabel.setForeground(PRIMARY_COLOR);
         row2.add(friendLabel);
         
-        friendCountOperator = createComboBox(new String[]{ "Greater (>)", "Smaller (<)" });
-        friendCountOperator.setPreferredSize(new Dimension(110, 35));
-        
-        friendCountValue = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1));
-        friendCountValue.setPreferredSize(new Dimension(80, 35));
-        friendCountValue.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
-        
-        row2.add(friendCountOperator);
-        row2.add(friendCountValue);
+        // Min Spinner
+        row2.add(createLabel("Min:"));
+        minFriendSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1));
+        minFriendSpinner.setPreferredSize(new Dimension(60, 35));
+        minFriendSpinner.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
+        row2.add(minFriendSpinner);
+
+        // Max Spinner
+        row2.add(createLabel("Max:"));
+        maxFriendSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1));
+        maxFriendSpinner.setPreferredSize(new Dimension(60, 35));
+        maxFriendSpinner.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
+        row2.add(maxFriendSpinner);
 
         row2.add(Box.createHorizontalStrut(30));
         JButton filterBtn = new ModernButton("Apply Filter", PRIMARY_COLOR, Color.WHITE);
@@ -215,25 +219,29 @@ public class UserManage extends JPanel {
     public void loadData() { applyFilters(); }
 
     private void applyFilters() {
+        // 1. Kiểm tra đăng nhập
         if (UserSession.getUser() == null) return;
 
         String token = UserSession.getUser().getToken();
+        
+        // 2. Lấy giá trị từ các bộ lọc cơ bản
         String type = (String) filterTypeBox.getSelectedItem();
         String keyword = filterTextField.getText().trim();
         String sort = (String) sortByBox.getSelectedItem();
         String status = (String) statusFilter.getSelectedItem();
         
-        String operator = (String) friendCountOperator.getSelectedItem();
-        int friendVal = (Integer) friendCountValue.getValue();
-        Integer greaterThan = null;
-        Integer smallerThan = null;
+        // 3. 🔥 LOGIC MỚI: Lấy giá trị từ 2 ô Min/Max Spinner
+        int minVal = (Integer) minFriendSpinner.getValue();
+        int maxVal = (Integer) maxFriendSpinner.getValue();
+        
+        // Nếu giá trị > 0 thì mới gửi đi, ngược lại để null (không lọc)
+        Integer greaterThan = (minVal > 0) ? minVal : null;
+        Integer smallerThan = (maxVal > 0) ? maxVal : null;
 
-        if (friendVal > 0) {
-            if (operator.contains(">")) greaterThan = friendVal;
-            else smallerThan = friendVal;
-        }
-
+        // 4. Gọi API
         userTable.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
+        // Biến final để dùng trong SwingWorker
         Integer finalGreater = greaterThan;
         Integer finalSmaller = smallerThan;
 
@@ -242,12 +250,14 @@ public class UserManage extends JPanel {
             protected List<UserManagementItemList> doInBackground() throws Exception {
                 return userService.getUsers(token, type, keyword, sort, status, finalGreater, finalSmaller);
             }
+
             @Override
             protected void done() {
                 try {
                     updateTableData(get());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    // Có thể thêm log hoặc thông báo lỗi nhẹ ở đây nếu cần
                 } finally {
                     userTable.setCursor(Cursor.getDefaultCursor());
                 }
@@ -256,9 +266,25 @@ public class UserManage extends JPanel {
     }
 
     private void resetFilters() {
-        filterTextField.setText("");
-        friendCountValue.setValue(0);
-        friendCountOperator.setSelectedIndex(0);
+        // 1. Reset các ô tìm kiếm text
+        if (filterTextField != null) filterTextField.setText("");
+        if (filterTypeBox != null) filterTypeBox.setSelectedIndex(0);
+
+        // 2. Reset các bộ lọc dropdown khác về mặc định
+        if (sortByBox != null) sortByBox.setSelectedIndex(0);
+        if (statusFilter != null) statusFilter.setSelectedIndex(0); // Về "All"
+
+        // 3. 🔥 LOGIC MỚI: Reset 2 ô Spinner Min/Max về 0
+        if (minFriendSpinner != null) minFriendSpinner.setValue(0);
+        if (maxFriendSpinner != null) maxFriendSpinner.setValue(0);
+
+        // 4. (Tùy chọn) Reset Date nếu có
+        if (dateFilter != null) {
+            dateFilter.setText("yyyy-MM-dd");
+            dateFilter.setForeground(Color.GRAY);
+        }
+
+        // 5. Tải lại dữ liệu gốc
         applyFilters();
     }
 

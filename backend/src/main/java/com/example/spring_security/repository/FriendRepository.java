@@ -82,8 +82,8 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
         CASE WHEN :sort = 'isOnline' THEN u.is_online END DESC,
         CASE WHEN :sort = 'madeFriendAt' THEN f.made_friend_at END ASC,
         CASE WHEN :sort = '-madeFriendAt' THEN f.made_friend_at END DESC,
-        CASE WHEN :sort = 'fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END ASC,
-        CASE WHEN :sort = '-fullName' THEN CONCAT(u.last_name, ' ', u.first_name) END DESC
+        CASE WHEN :sort = 'fullName' THEN CONCAT(u.first_name, ' ', u.last_name) END ASC,
+        CASE WHEN :sort = '-fullName' THEN CONCAT(u.first_name, ' ', u.last_name) END DESC
 """, nativeQuery = true)
     List<UserFriendResponse> findAllFriendsByUserIdAndKeywordOrderBy(@Param("userId") Long userId,
                                                                      @Param("keyword") String keyword,
@@ -106,7 +106,7 @@ public interface FriendRepository extends JpaRepository<Friend, FriendId> {
         OR 
         (f.user_id2 = :userId AND f.user_id1 = u.user_id)
     )
-    WHERE (:keyword = '' OR CONCAT(u.last_name, ' ', u.first_name) ILIKE CONCAT('%', :keyword, '%'))
+    WHERE (:keyword = '' OR CONCAT(u.first_name, ' ', u.last_name) ILIKE CONCAT('%', :keyword, '%'))
     AND NOT EXISTS (
                         SELECT 1
                         FROM group_conversation_member gc

@@ -27,11 +27,14 @@ public class MessageSearchResponse {
 
     private ConversationType conversationType;
 
+    private String conversationName;
+
     public MessageSearchResponse(Long id, Long messageId, String avatarUrl, String name,
                                  String content, java.sql.Timestamp sentAt,
                                  java.sql.Timestamp updatedAt, Short messageType,
-                                 Short conversationType) {
+                                 Short conversationType, String conversationName) {
         this.id = id;
+        this.conversationName = conversationName;
         this.messageId = messageId;
         this.avatarUrl = avatarUrl;
         this.name = name;

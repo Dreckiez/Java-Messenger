@@ -29,7 +29,7 @@ public class UserBlockController {
         return ResponseEntity.ok(userBlockService.blockRequest(blocker.getUserId(), blockedUserId));
     }
 
-    @PostMapping("/remove-block")
+    @DeleteMapping("/remove-block")
     public ResponseEntity<Map<String, String>> removeRequest(@RequestBody RemoveBlockRequest removeBlockRequest) {
         return ResponseEntity.ok(userBlockService.removeRequest(removeBlockRequest));
     }

@@ -1,9 +1,11 @@
 package com.example.spring_security.controller.admin;
 
 import com.example.spring_security.dto.request.ManageUserRequest;
+import com.example.spring_security.dto.request.UpdateStatusReportRequest;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.services.admin.ManagementUserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -64,11 +66,13 @@ public class UserManagementController {
     }
 
     @GetMapping("/get-record-signin")
-    public ResponseEntity<List<RecordSignIn>> getRecordSignIn
+    public ResponseEntity<ListRecordSignInResponse> getRecordSignIn
             (@RequestParam(value = "isSuccessful", required = false) Boolean isSuccessful,
-            @RequestParam(value = "sort", required = false) boolean sort,
-            @RequestParam(value = "userId", required = false) Long userId) {
-        return ResponseEntity.ok(managementUserService.getRecordSignIn(isSuccessful, sort, userId));
+            @RequestParam(value = "userId", required = false) Long userId,
+             @RequestParam(value = "username", required = false) String username,
+             @RequestParam(value = "startDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+             @RequestParam(value = "endDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ResponseEntity.ok(managementUserService.getRecordSignIn(isSuccessful, userId, username, startDate, endDate));
     }
 
     @GetMapping("/get-friend/{userId}")
@@ -87,6 +91,12 @@ public class UserManagementController {
             @RequestParam(value = "startDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
              @RequestParam(value = "endDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(managementUserService.getReports(sortBy, username, email, startDate, endDate));
+    }
+
+    @PatchMapping("/update-report")
+    public ResponseEntity<Map<String, String>> updateReport
+            (@RequestBody UpdateStatusReportRequest updateStatusReportRequest) {
+        return ResponseEntity.ok(managementUserService.updateReports(updateStatusReportRequest));
     }
 
     @GetMapping("/get-group")
@@ -109,8 +119,16 @@ public class UserManagementController {
     @GetMapping("/get-record-online")
     public ResponseEntity<List<UserRecordOnlineResponse>> getRecordOnline
             (@RequestParam(value = "keyword", required = false) String keyword,
-             @RequestParam(value = "sort", required = false) String sort) {
-        return ResponseEntity.ok(managementUserService.getRecordOnline(keyword, sort));
+             @RequestParam(value = "sort", required = false) String sort,
+             @RequestParam(value = "greaterThan", required = false) Long greaterThan,
+             @RequestParam(value = "smallerThan", required = false) Long smallerThan) {
+        return ResponseEntity.ok(managementUserService.getRecordOnline(keyword, sort, greaterThan, smallerThan));
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<DashboardStatsResponse> getDashboardStats
+            (@RequestParam(value = "year") int year) throws JsonProcessingException {
+        return ResponseEntity.ok(managementUserService.getDashboardStats(year));
     }
 
 }
