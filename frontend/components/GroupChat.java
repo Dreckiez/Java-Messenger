@@ -1,36 +1,114 @@
 package components;
-
+import java.util.List;
+import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.AbstractBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-import java.awt.*;
+import models.GroupChatModel;
+import services.UserAdminService;
+import utils.UserSession;
 
 public class GroupChat extends JPanel {
     private JTable groupTable;
     private DefaultTableModel tableModel;
+    private UserAdminService userService;
+    
+    // Filter Components
     private JTextField groupNameFilter;
     private JComboBox<String> sortByCombo;
 
+    // Màu sắc chủ đạo (Modern Palette)
+    private final Color PRIMARY_COLOR = new Color(37, 99, 235);
+    private final Color BG_COLOR = new Color(241, 245, 249);
+    private final Color TABLE_HEADER_COLOR = new Color(248, 250, 252);
+    private final Color TEXT_COLOR = new Color(51, 65, 85);
+
     public GroupChat() {
-        setLayout(new BorderLayout(10, 10));
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        this.userService = new UserAdminService();
+        setLayout(new BorderLayout(20, 20));
+        setBackground(BG_COLOR);
+        setBorder(new EmptyBorder(25, 30, 25, 30));
 
-        // === TOP: Title ===
-        JLabel titleLabel = new JLabel("Group Chat");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        add(titleLabel, BorderLayout.NORTH);
+        // === 1. TOP HEADER ===
+        add(createHeaderPanel(), BorderLayout.NORTH);
 
-        // === CENTER: Filters and Table ===
-        JPanel centerPanel = new JPanel(new BorderLayout(0, 10));
-        centerPanel.setBackground(Color.WHITE);
+        // === 2. CENTER CONTENT ===
+        JPanel contentContainer = new JPanel();
+        contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.Y_AXIS));
+        contentContainer.setBackground(BG_COLOR);
 
-        // Filters Panel
-        JPanel filtersPanel = createFiltersPanel();
-        centerPanel.add(filtersPanel, BorderLayout.NORTH);
+        // Filter Panel
+        contentContainer.add(createFiltersPanel());
+        contentContainer.add(Box.createVerticalStrut(20)); // Khoảng cách
 
-        // Table
-        String[] columns = { "ID", "Group Name", "Members", "Admin", "Creator", "Date Created" };
+        // Table Panel
+        contentContainer.add(createTablePanel());
+
+        add(contentContainer, BorderLayout.CENTER);
+
+        // === 3. BOTTOM ACTIONS ===
+        add(createBottomPanel(), BorderLayout.SOUTH);
+
+        // Load sample data
+        loadData();
+    }
+
+    // ==========================================
+    //              UI CREATION
+    // ==========================================
+
+    private JPanel createHeaderPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+
+        JLabel titleLabel = new JLabel("Group Chat Management");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(15, 23, 42));
+        panel.add(titleLabel, BorderLayout.WEST);
+
+        return panel;
+    }
+
+    private JPanel createFiltersPanel() {
+        RoundedPanel mainPanel = new RoundedPanel(15, Color.WHITE);
+        mainPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        mainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        mainPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+
+        // Group Name Filter
+        mainPanel.add(createLabel("Search Group:"));
+        groupNameFilter = createTextField(15);
+        mainPanel.add(groupNameFilter);
+
+        // Sort By
+        mainPanel.add(createLabel("Sort By:"));
+        sortByCombo = createComboBox(new String[] { "Name (A-Z)", "Name (Z-A)", "Date Created (Latest)", "Date Created (Oldest)" });
+        mainPanel.add(sortByCombo);
+
+        // Buttons
+        mainPanel.add(Box.createHorizontalStrut(20));
+        
+        JButton filterBtn = new ModernButton("Filter", PRIMARY_COLOR, Color.WHITE);
+        JButton resetBtn = new ModernButton("Reset", new Color(226, 232, 240), TEXT_COLOR);
+
+        filterBtn.addActionListener(e -> applyFilters());
+        resetBtn.addActionListener(e -> resetFilters());
+
+        mainPanel.add(filterBtn);
+        mainPanel.add(resetBtn);
+
+        return mainPanel;
+    }
+
+    private JPanel createTablePanel() {
+        RoundedPanel panel = new RoundedPanel(15, Color.WHITE);
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        String[] columns = { "ID", "Group Name", "Members", "Admins", "Creator", "Date Created" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -39,290 +117,284 @@ public class GroupChat extends JPanel {
         };
 
         groupTable = new JTable(tableModel);
-        groupTable.setFont(new Font("Arial", Font.PLAIN, 12));
-        groupTable.setRowHeight(35);
-        groupTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        groupTable.getTableHeader().setBackground(new Color(241, 245, 249));
-        groupTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        styleTable(groupTable);
 
         // Set column widths
         groupTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-        groupTable.getColumnModel().getColumn(1).setPreferredWidth(200);
-        groupTable.getColumnModel().getColumn(2).setPreferredWidth(100);
-        groupTable.getColumnModel().getColumn(3).setPreferredWidth(80);
-        groupTable.getColumnModel().getColumn(4).setPreferredWidth(120);
-        groupTable.getColumnModel().getColumn(5).setPreferredWidth(120);
+        groupTable.getColumnModel().getColumn(1).setPreferredWidth(250);
 
         JScrollPane scrollPane = new JScrollPane(groupTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240)));
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
-
-        add(centerPanel, BorderLayout.CENTER);
-
-        // === BOTTOM: Action Buttons ===
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        bottomPanel.setBackground(Color.WHITE);
-
-        JButton viewMembersBtn = createActionButton("Inspect Member List", new Color(59, 130, 246));
-        JButton viewAdminsBtn = createActionButton("Inspect Admin List", new Color(168, 85, 247));
-        JButton deleteGroupBtn = createActionButton("Delete Group", new Color(239, 68, 68));
-
-        viewMembersBtn.addActionListener(e -> showGroupMembers());
-        viewAdminsBtn.addActionListener(e -> showGroupAdmins());
-        deleteGroupBtn.addActionListener(e -> deleteSelectedGroup());
-
-        bottomPanel.add(viewMembersBtn);
-        bottomPanel.add(viewAdminsBtn);
-        bottomPanel.add(deleteGroupBtn);
-
-        add(bottomPanel, BorderLayout.SOUTH);
-
-        // Load sample data
-        loadGroupData();
-    }
-
-    private JPanel createFiltersPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(248, 250, 252));
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240)),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-
-        // Row 1: Group name filter and sort
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Group Name:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        groupNameFilter = new JTextField(20);
-        panel.add(groupNameFilter, gbc);
-
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Sort By:"), gbc);
-
-        gbc.gridx = 3;
-        gbc.weightx = 0.5;
-        sortByCombo = new JComboBox<>(
-                new String[] { "Name (A-Z)", "Name (Z-A)", "Date Created (Latest)", "Date Created (Oldest)" });
-        sortByCombo.addActionListener(e -> sortGroups());
-        panel.add(sortByCombo, gbc);
-
-        // Filter and Reset buttons
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 4;
-        gbc.anchor = GridBagConstraints.CENTER;
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        buttonPanel.setBackground(new Color(248, 250, 252));
-
-        JButton filterBtn = createActionButton("Filter", new Color(59, 130, 246));
-        JButton resetBtn = createActionButton("Reset", new Color(100, 116, 139));
-
-        filterBtn.addActionListener(e -> applyFilters());
-        resetBtn.addActionListener(e -> resetFilters());
-
-        buttonPanel.add(filterBtn);
-        buttonPanel.add(resetBtn);
-        panel.add(buttonPanel, gbc);
-
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        
+        panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
 
-    private JButton createActionButton(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(bgColor);
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(180, 32));
+    private JPanel createBottomPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        panel.setBackground(BG_COLOR);
 
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bgColor.darker());
-            }
+        JButton viewMembersBtn = new ModernButton("Inspect Members", new Color(59, 130, 246), Color.WHITE);
+        JButton viewAdminsBtn = new ModernButton("Inspect Admins", new Color(168, 85, 247), Color.WHITE);
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bgColor);
-            }
-        });
+        viewMembersBtn.addActionListener(e -> showGroupMembers());
+        viewAdminsBtn.addActionListener(e -> showGroupAdmins());
 
-        return btn;
+        panel.add(viewMembersBtn);
+        panel.add(viewAdminsBtn);
+        
+        return panel;
     }
 
-    private void loadGroupData() {
-        Object[][] sampleData = {
-                { 1, "Nhóm Java Developers", 45, 3, "admin", "2024-01-15" },
-                { 2, "Team Marketing", 23, 2, "jane_smith", "2024-02-20" },
-                { 3, "Dự án ABC", 15, 2, "john_doe", "2024-03-10" },
-                { 4, "Gia đình", 8, 1, "alice_brown", "2024-01-05" },
-                { 5, "Học tập cùng nhau", 67, 5, "bob_wilson", "2023-12-20" },
-                { 6, "Bóng đá Việt Nam", 120, 8, "admin", "2023-11-15" },
-                { 7, "Công ty XYZ", 89, 4, "jane_smith", "2024-04-01" }
-        };
+    // ==========================================
+    //              LOGIC & DATA
+    // ==========================================
 
-        for (Object[] row : sampleData) {
-            tableModel.addRow(row);
-        }
-    }
+    public void loadData() { applyFilters(); }
 
     private void applyFilters() {
-        String filterText = groupNameFilter.getText().toLowerCase().trim();
+        if (UserSession.getUser() == null) return;
 
-        if (filterText.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please select a group!");
-            return;
+        String token = UserSession.getUser().getToken();
+        String keyword = groupNameFilter.getText().trim();
+        String sort = (String) sortByCombo.getSelectedItem();
+
+        // Hiện loading cursor
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        new SwingWorker<List<GroupChatModel>, Void>() {
+            @Override
+            protected List<GroupChatModel> doInBackground() throws Exception {
+                return userService.getGroupChats(token, keyword, sort);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    updateTableData(get());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        }.execute();
+    }
+
+    private void updateTableData(List<GroupChatModel> groups) {
+        tableModel.setRowCount(0);
+        for (GroupChatModel g : groups) {
+            tableModel.addRow(new Object[]{
+                g.getId(),
+                g.getGroupName(),
+                g.getMemberCount(),
+                g.getAdminCount(), // Cột mới thay cho "Admins" list
+                g.getOwnerUsername(),
+                g.getCreatedAt()
+            });
         }
-
-        JOptionPane.showMessageDialog(this, "Name: " + filterText);
+        // Ép vẽ lại
+        tableModel.fireTableDataChanged();
     }
 
     private void resetFilters() {
         groupNameFilter.setText("");
         sortByCombo.setSelectedIndex(0);
-    }
-
-    private void sortGroups() {
-        String sortOption = (String) sortByCombo.getSelectedItem();
-        JOptionPane.showMessageDialog(this, "Sort By: " + sortOption);
+        applyFilters();
     }
 
     private void showGroupMembers() {
         int selectedRow = groupTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a group!");
+            JOptionPane.showMessageDialog(this, "Please select a group first!");
             return;
         }
-
         String groupName = (String) groupTable.getValueAt(selectedRow, 1);
-        int groupId = (int) groupTable.getValueAt(selectedRow, 0);
-
-        // Show dialog with members list
-        showMembersDialog(groupId, groupName);
+        Long groupId = (Long) groupTable.getValueAt(selectedRow, 0);
+        
+        Window parent = SwingUtilities.getWindowAncestor(this);
+        
+        // Truyền mode "MEMBER"
+        GroupMembersDialog dialog = new GroupMembersDialog(parent, groupId, groupName, "MEMBER");
+        dialog.setVisible(true);
     }
 
     private void showGroupAdmins() {
         int selectedRow = groupTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a group!");
+            JOptionPane.showMessageDialog(this, "Please select a group first!");
             return;
         }
-
         String groupName = (String) groupTable.getValueAt(selectedRow, 1);
-        int groupId = (int) groupTable.getValueAt(selectedRow, 0);
-
-        // Show dialog with admins list
-        showAdminsDialog(groupId, groupName);
+        Long groupId = (Long) groupTable.getValueAt(selectedRow, 0);
+        
+        Window parent = SwingUtilities.getWindowAncestor(this);
+        
+        // Truyền mode "ADMIN"
+        GroupMembersDialog dialog = new GroupMembersDialog(parent, groupId, groupName, "ADMIN");
+        dialog.setVisible(true);
     }
 
-    private void deleteSelectedGroup() {
-        int selectedRow = groupTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a group!");
-            return;
-        }
-
-        String groupName = (String) groupTable.getValueAt(selectedRow, 1);
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc muốn xóa nhóm '" + groupName + "'?",
-                "Xác nhận", JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            tableModel.removeRow(selectedRow);
-            JOptionPane.showMessageDialog(this, "Group Deleted Successfully!");
-        }
-    }
-
+    // --- Dialogs (Giữ nguyên logic cũ) ---
+    
     private void showMembersDialog(int groupId, String groupName) {
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
-                "Members List - " + groupName, true);
-        dialog.setLayout(new BorderLayout(10, 10));
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Members - " + groupName, true);
         dialog.setSize(600, 400);
         dialog.setLocationRelativeTo(this);
+        
+        String[] columns = { "ID", "Username", "Name", "Role", "Joined" };
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        styleTable(table); // Tái sử dụng style căn giữa
+        
+        model.addRow(new Object[]{1, "john_doe", "John Doe", "Member", "2024-01-20"});
+        model.addRow(new Object[]{2, "jane_smith", "Jane Smith", "Admin", "2024-01-15"});
 
-        // Members table
-        String[] columns = { "ID", "Username", "Name", "Email", "Role", "Date Joined" };
-        DefaultTableModel membersModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable membersTable = new JTable(membersModel);
-        membersTable.setFont(new Font("Arial", Font.PLAIN, 12));
-        membersTable.setRowHeight(30);
-
-        // Sample members data
-        Object[][] sampleMembers = {
-                { 1, "john_doe", "John Doe", "john@example.com", "Member", "2024-01-20" },
-                { 2, "jane_smith", "Jane Smith", "jane@example.com", "Admin", "2024-01-15" },
-                { 3, "alice_brown", "Alice Brown", "alice@example.com", "Member", "2024-02-10" }
-        };
-
-        for (Object[] row : sampleMembers) {
-            membersModel.addRow(row);
-        }
-
-        JScrollPane scrollPane = new JScrollPane(membersTable);
-        dialog.add(scrollPane, BorderLayout.CENTER);
-
-        JButton closeBtn = new JButton("Close");
-        closeBtn.addActionListener(e -> dialog.dispose());
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(closeBtn);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
-
+        dialog.add(new JScrollPane(table));
         dialog.setVisible(true);
     }
 
     private void showAdminsDialog(int groupId, String groupName) {
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Admin List - " + groupName,
-                true);
-        dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(600, 300);
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Admins - " + groupName, true);
+        dialog.setSize(500, 300);
         dialog.setLocationRelativeTo(this);
+        
+        String[] columns = { "ID", "Username", "Name", "Admin Since" };
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        styleTable(table); // Tái sử dụng style căn giữa
+        
+        model.addRow(new Object[]{2, "jane_smith", "Jane Smith", "2024-01-15"});
 
-        // Admins table
-        String[] columns = { "ID", "Username", "Name", "Email", "Admin on" };
-        DefaultTableModel adminsModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        dialog.add(new JScrollPane(table));
+        dialog.setVisible(true);
+    }
 
-        JTable adminsTable = new JTable(adminsModel);
-        adminsTable.setFont(new Font("Arial", Font.PLAIN, 12));
-        adminsTable.setRowHeight(30);
+    // ==========================================
+    //           STYLE HELPERS & CLASSES
+    // ==========================================
 
-        // Sample admins data
-        Object[][] sampleAdmins = {
-                { 2, "jane_smith", "Jane Smith", "jane@example.com", "2024-01-15" },
-                { 5, "admin", "Admin User", "admin@example.com", "2024-01-15" }
-        };
+    private void styleTable(JTable table) {
+        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        table.setRowHeight(45);
+        table.setSelectionBackground(new Color(239, 246, 255));
+        table.setSelectionForeground(Color.BLACK);
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(new Color(241, 245, 249));
+        table.setIntercellSpacing(new Dimension(0, 0));
 
-        for (Object[] row : sampleAdmins) {
-            adminsModel.addRow(row);
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        table.getTableHeader().setBackground(TABLE_HEADER_COLOR);
+        table.getTableHeader().setForeground(new Color(100, 116, 139));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 45));
+        table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(226, 232, 240)));
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        
+        // 🔥 FIX: Căn giữa TOÀN BỘ CÁC CỘT (bao gồm Name và Creator)
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+    }
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("SansSerif", Font.BOLD, 13));
+        label.setForeground(TEXT_COLOR);
+        return label;
+    }
+
+    private JTextField createTextField(int columns) {
+        JTextField tf = new JTextField(columns);
+        tf.setPreferredSize(new Dimension(tf.getPreferredSize().width, 35));
+        tf.setBorder(BorderFactory.createCompoundBorder(
+            new RoundedBorder(8, new Color(203, 213, 225)),
+            new EmptyBorder(0, 10, 0, 10)
+        ));
+        return tf;
+    }
+
+    private JComboBox<String> createComboBox(String[] items) {
+        JComboBox<String> cb = new JComboBox<>(items);
+        cb.setPreferredSize(new Dimension(150, 35));
+        cb.setBackground(Color.WHITE);
+        return cb;
+    }
+
+    // --- Custom Components ---
+
+    class ModernButton extends JButton {
+        private Color normalColor;
+        private Color hoverColor;
+        private boolean isHovered = false;
+
+        public ModernButton(String text, Color bg, Color fg) {
+            super(text);
+            this.normalColor = bg;
+            this.hoverColor = bg.darker();
+            setContentAreaFilled(false);
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setOpaque(false);
+            setForeground(fg);
+            setFont(new Font("SansSerif", Font.BOLD, 13));
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setPreferredSize(new Dimension(150, 38));
+            
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) { isHovered = true; repaint(); }
+                public void mouseExited(java.awt.event.MouseEvent evt) { isHovered = false; repaint(); }
+            });
         }
 
-        JScrollPane scrollPane = new JScrollPane(adminsTable);
-        dialog.add(scrollPane, BorderLayout.CENTER);
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(isHovered ? hoverColor : normalColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
 
-        JButton closeBtn = new JButton("Close");
-        closeBtn.addActionListener(e -> dialog.dispose());
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(closeBtn);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
+    class RoundedPanel extends JPanel {
+        private int radius;
+        private Color bgColor;
+        public RoundedPanel(int radius, Color bgColor) {
+            this.radius = radius;
+            this.bgColor = bgColor;
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bgColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g2.setColor(new Color(226, 232, 240));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
 
-        dialog.setVisible(true);
+    class RoundedBorder extends AbstractBorder {
+        private int radius;
+        private Color color;
+        public RoundedBorder(int radius, Color color) { this.radius = radius; this.color = color; }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+            g2.dispose();
+        }
+        @Override
+        public Insets getBorderInsets(Component c) { return new Insets(radius + 1, radius + 1, radius + 2, radius); }
     }
 }

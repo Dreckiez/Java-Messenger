@@ -10,6 +10,7 @@ import java.awt.CardLayout;
 
 public class BaseScreen extends JFrame {
 
+    private DashboardScreen dashboardScreen;
     private CardLayout layout;
     private JPanel panel;
 
@@ -24,6 +25,11 @@ public class BaseScreen extends JFrame {
         panel = new JPanel(layout);
 
         add(panel);
+
+        dashboardScreen = new DashboardScreen(this); 
+    
+
+        panel.add(dashboardScreen, "dashboard");
 
         ImageIcon image = new ImageIcon(getClass().getClassLoader().getResource("assets/wolf-howling.jpg"));
         setIconImage(image.getImage());
@@ -42,5 +48,9 @@ public class BaseScreen extends JFrame {
 
     public void showPanel(String name) {
         layout.show(panel, name);
+    }
+
+    public DashboardScreen getDashboardScreen() {
+        return dashboardScreen;
     }
 }

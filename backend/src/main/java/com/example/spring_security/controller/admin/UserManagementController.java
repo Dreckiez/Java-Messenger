@@ -1,14 +1,14 @@
 package com.example.spring_security.controller.admin;
 
 import com.example.spring_security.dto.request.ManageUserRequest;
-import com.example.spring_security.dto.response.ListReportResponse;
-import com.example.spring_security.dto.response.ListUserFriendResponse;
-import com.example.spring_security.dto.response.ResetPasswordResponse;
-import com.example.spring_security.entities.RecordSignIn;
-import com.example.spring_security.entities.Report;
-import com.example.spring_security.entities.User;
+import com.example.spring_security.dto.request.UpdateStatusReportRequest;
+import com.example.spring_security.dto.response.*;
+import com.example.spring_security.entities.*;
 import com.example.spring_security.services.admin.ManagementUserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,17 +33,20 @@ public class UserManagementController {
     @GetMapping("/get-user")
     public ResponseEntity<List<User>> getUserDetailList
             (@RequestParam(value = "keyword", required = false) String keyword,
+             @RequestParam(value = "username", required = false) String username,
+             @RequestParam(value = "fullName", required = false) String fullName,
+             @RequestParam(value = "email", required = false) String email,
              @RequestParam(value = "isActive", required = false) Boolean isActive,
              @RequestParam(value = "isAccepted", required = false) Boolean isAccepted,
              @RequestParam(value = "greaterThan", required = false) Integer greaterThan,
              @RequestParam(value = "smallerThan", required = false) Integer smallerThan,
              @RequestParam(value = "sort", required = false) String sort,
              @RequestParam(value = "days", required = false) Integer days) {
-        return ResponseEntity.ok(managementUserService.getUserDetailList(keyword, isActive, isAccepted, greaterThan, smallerThan, sort, days));
+        return ResponseEntity.ok(managementUserService.getUserDetailList(keyword, username, fullName, email, isActive, isAccepted, greaterThan, smallerThan, sort, days));
     }
 
     @PostMapping("/create-user")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody ManageUserRequest createUserRequest) {
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody @Valid ManageUserRequest createUserRequest) {
         return ResponseEntity.ok(managementUserService.createUser(createUserRequest));
     }
 
@@ -63,11 +66,13 @@ public class UserManagementController {
     }
 
     @GetMapping("/get-record-signin")
-    public ResponseEntity<List<RecordSignIn>> getRecordSignIn
+    public ResponseEntity<ListRecordSignInResponse> getRecordSignIn
             (@RequestParam(value = "isSuccessful", required = false) Boolean isSuccessful,
-            @RequestParam(value = "sort", required = false) boolean sort,
-            @RequestParam(value = "userId", required = false) Long userId) {
-        return ResponseEntity.ok(managementUserService.getRecordSignIn(isSuccessful, sort, userId));
+            @RequestParam(value = "userId", required = false) Long userId,
+             @RequestParam(value = "username", required = false) String username,
+             @RequestParam(value = "startDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+             @RequestParam(value = "endDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ResponseEntity.ok(managementUserService.getRecordSignIn(isSuccessful, userId, username, startDate, endDate));
     }
 
     @GetMapping("/get-friend/{userId}")
@@ -87,4 +92,43 @@ public class UserManagementController {
              @RequestParam(value = "endDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(managementUserService.getReports(sortBy, username, email, startDate, endDate));
     }
+
+    @PatchMapping("/update-report")
+    public ResponseEntity<Map<String, String>> updateReport
+            (@RequestBody UpdateStatusReportRequest updateStatusReportRequest) {
+        return ResponseEntity.ok(managementUserService.updateReports(updateStatusReportRequest));
+    }
+
+    @GetMapping("/get-group")
+    public ResponseEntity<List<GroupConversationItemListResponse>> getGroup
+            (@RequestParam(value = "keyword", required = false) String keyword,
+             @RequestParam(value = "sort", required = false) String sort) {
+        return ResponseEntity.ok(managementUserService.getGroupList(keyword, sort));
+    }
+
+    @GetMapping("/get-group/{groupConversationId}/member")
+    public ResponseEntity<List<GroupMemberResponse>> getMember(@PathVariable(value = "groupConversationId", required = true) Long groupConversationId) {
+        return ResponseEntity.ok(managementUserService.getMemberList(groupConversationId));
+    }
+
+    @GetMapping("/get-group/{groupConversationId}/admin")
+    public ResponseEntity<List<GroupMemberResponse>> getAdmin(@PathVariable(value = "groupConversationId", required = true) Long groupConversationId) {
+        return ResponseEntity.ok(managementUserService.getAdminList(groupConversationId));
+    }
+
+    @GetMapping("/get-record-online")
+    public ResponseEntity<List<UserRecordOnlineResponse>> getRecordOnline
+            (@RequestParam(value = "keyword", required = false) String keyword,
+             @RequestParam(value = "sort", required = false) String sort,
+             @RequestParam(value = "greaterThan", required = false) Long greaterThan,
+             @RequestParam(value = "smallerThan", required = false) Long smallerThan) {
+        return ResponseEntity.ok(managementUserService.getRecordOnline(keyword, sort, greaterThan, smallerThan));
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<DashboardStatsResponse> getDashboardStats
+            (@RequestParam(value = "year") int year) throws JsonProcessingException {
+        return ResponseEntity.ok(managementUserService.getDashboardStats(year));
+    }
+
 }

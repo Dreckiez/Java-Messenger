@@ -4,10 +4,12 @@ import com.example.spring_security.dto.request.*;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.entities.Enum.GroupRole;
+import com.example.spring_security.entities.Enum.RealTimeAction;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.*;
 import com.example.spring_security.services.third.CloudService;
 import com.example.spring_security.services.user.UserGroupConversationService;
+import com.example.spring_security.websocket.WebSocketGroupMessageService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class UserGroupConversationServiceImpl implements UserGroupConversationService {
+
+    private final WebSocketGroupMessageService webSocketGroupMessageService;
 
     private final UserRepository userRepository;
 
@@ -205,6 +209,19 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
         groupConversationRepository.save(groupConversation);
 
+        GroupMessageWsResponse groupMessageWsResponse = GroupMessageWsResponse.builder()
+                .senderId(userId)
+                .groupConversationId(groupConversationId)
+                .groupConversationMessageId(groupConversationMessage.getGroupConversationMessageId())
+                .content(sendMessageRequest.getContent())
+                .type(sendMessageRequest.getType())
+                .sentAt(groupConversationMessage.getSentAt())
+                .realTimeAction(RealTimeAction.SEND)
+                .updatedAt(null)
+                .build();
+
+        webSocketGroupMessageService.sendGroupMessage(groupConversationId, groupMessageWsResponse);
+
         return SendMessageResponse.builder()
                 .messageId(groupConversationMessage.getGroupConversationMessageId())
                 .content(groupConversationMessage.getContent())
@@ -261,6 +278,20 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                 .build();
 
         deleteGroupConversationMessageRepository.save(deleteGroupConversationMessage);
+
+        DeleteGroupMessageWsResponse deleteGroupMessageWsResponse = DeleteGroupMessageWsResponse.builder()
+                .userId(userId)
+                .groupConversationMessageId(groupConversationMessageId)
+                .groupConversationId(groupConversation.getGroupConversationId())
+                .realTimeAction(RealTimeAction.DELETE)
+                .isAll(deleteGroupConversationMessage.getIsAll())
+                .build();
+
+        webSocketGroupMessageService.sendDeleteGroupMessage(groupConversationId, deleteGroupMessageWsResponse);
+
+        groupConversation.setPreviewMessage(null);
+
+        groupConversationRepository.save(groupConversation);
 
         Map<String, String> msg = new HashMap<>();
 

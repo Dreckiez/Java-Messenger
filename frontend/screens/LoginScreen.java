@@ -1,26 +1,9 @@
 package screens;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingWorker;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import org.json.JSONObject;
 
 import models.User;
@@ -32,342 +15,414 @@ import utils.UserSession;
 public class LoginScreen extends JPanel {
     private BaseScreen mainScreen;
     private JLabel loginError;
-    private JPanel loginCard;
     private boolean passwordVisible = false;
+    
+    // --- COLORS ---
+    private final Color PRIMARY_COLOR = new Color(59, 130, 246); // Blue
+    private final Color HOVER_COLOR = new Color(37, 99, 235);
+    private final Color BG_COLOR = new Color(248, 250, 252); 
+    private final Color TEXT_PRIMARY = new Color(30, 41, 59);
+    private final Color TEXT_SECONDARY = new Color(100, 116, 139);
+    private final Color INPUT_BG = new Color(241, 245, 249); 
 
     public LoginScreen(BaseScreen main) {
-        mainScreen = main;
+        this.mainScreen = main;
+        setLayout(new BorderLayout());
+        setBackground(BG_COLOR);
 
-        setLayout(new GridBagLayout());
-        setBackground(new Color(240, 242, 245));
+        // --- LEFT SIDE: ILLUSTRATION / BRANDING ---
+        JPanel leftPanel = createLeftPanel();
+        
+        // --- RIGHT SIDE: LOGIN FORM ---
+        JPanel rightPanel = createRightPanel();
 
-        loginCard = new JPanel();
-        loginCard.setLayout(new GridBagLayout());
-        loginCard.setBackground(Color.WHITE);
-        loginCard.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
-                new EmptyBorder(40, 50, 40, 50)));
+        // Responsive split
+        JPanel container = new JPanel(new GridLayout(1, 2));
+        container.add(leftPanel);
+        container.add(rightPanel);
+        
+        add(container, BorderLayout.CENTER);
+    }
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 0, 5, 0);
+    private JPanel createLeftPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(PRIMARY_COLOR);
+        panel.setLayout(new GridBagLayout());
+        
+        JPanel content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setOpaque(false);
+        
+        JLabel logoLabel = new JLabel("ChatApp");
+        logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 48));
+        logoLabel.setForeground(Color.WHITE);
+        logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel sloganLabel = new JLabel("Connect with friends effortlessly.");
+        sloganLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        sloganLabel.setForeground(new Color(255, 255, 255, 200));
+        sloganLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        content.add(logoLabel);
+        content.add(Box.createVerticalStrut(20));
+        content.add(sloganLabel);
+        
+        panel.add(content);
+        return panel;
+    }
 
-        JLabel titleLabel = new JLabel("Welcome Back", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        titleLabel.setForeground(new Color(33, 37, 41));
-        gbc.insets = new Insets(0, 0, 10, 0);
-        loginCard.add(titleLabel, gbc);
+    private JPanel createRightPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.WHITE);
+        
+        // Main Form Container
+        JPanel formContainer = new JPanel();
+        formContainer.setLayout(new BoxLayout(formContainer, BoxLayout.Y_AXIS));
+        formContainer.setBackground(Color.WHITE);
+        formContainer.setBorder(new EmptyBorder(50, 60, 50, 60)); 
+        formContainer.setPreferredSize(new Dimension(450, 600)); 
 
-        // Subtitle
-        JLabel subtitleLabel = new JLabel("Sign in to continue", SwingConstants.CENTER);
-        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        subtitleLabel.setForeground(new Color(108, 117, 125));
-        gbc.insets = new Insets(0, 0, 30, 0);
-        loginCard.add(subtitleLabel, gbc);
+        // 1. Header
+        JLabel title = new JLabel("Welcome Back!");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        title.setForeground(TEXT_PRIMARY);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JLabel subTitle = new JLabel("Please enter your details.");
+        subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subTitle.setForeground(TEXT_SECONDARY);
+        subTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        formContainer.add(title);
+        formContainer.add(Box.createVerticalStrut(10));
+        formContainer.add(subTitle);
+        formContainer.add(Box.createVerticalStrut(40));
 
-        // Error label
-        loginError = new JLabel("");
-        loginError.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        loginError.setForeground(new Color(220, 53, 69));
-        loginError.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.insets = new Insets(0, 0, 15, 0);
-        loginCard.add(loginError, gbc);
+        // 2. Error Label
+        loginError = new JLabel(" ");
+        loginError.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        loginError.setForeground(new Color(239, 68, 68)); // Red
+        loginError.setAlignmentX(Component.LEFT_ALIGNMENT);
+        formContainer.add(loginError);
+        formContainer.add(Box.createVerticalStrut(10));
 
-        // Username label
-        JLabel userLabel = new JLabel("Username");
-        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        userLabel.setForeground(new Color(73, 80, 87));
-        gbc.insets = new Insets(5, 0, 5, 0);
-        gbc.anchor = GridBagConstraints.WEST;
-        loginCard.add(userLabel, gbc);
+        // 3. Username Field
+        formContainer.add(createLabel("Username"));
+        formContainer.add(Box.createVerticalStrut(8));
+        JTextField userField = createStyledTextField();
+        formContainer.add(wrapInRoundedPanel(userField));
+        formContainer.add(Box.createVerticalStrut(20));
 
-        // Username field
-        JTextField userField = new JTextField(20);
-        userField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        userField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-                new EmptyBorder(10, 12, 10, 12)));
-        gbc.insets = new Insets(0, 0, 15, 0);
-        gbc.anchor = GridBagConstraints.CENTER;
-        loginCard.add(userField, gbc);
+        // 4. Password Field
+        formContainer.add(createLabel("Password"));
+        formContainer.add(Box.createVerticalStrut(8));
+        
+        JPasswordField passField = createStyledPasswordField();
+        JPanel passPanel = wrapInRoundedPanel(passField);
+        
+        // 🔥 SỬ DỤNG HÀM TẠO ICON MẮT CHUẨN
+        JToggleButton eyeBtn = createEyeButton(passField);
+        passPanel.add(eyeBtn, BorderLayout.EAST);
+        
+        formContainer.add(passPanel);
+        formContainer.add(Box.createVerticalStrut(10));
 
-        // Password label
-        JLabel passLabel = new JLabel("Password");
-        passLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        passLabel.setForeground(new Color(73, 80, 87));
-        gbc.insets = new Insets(5, 0, 5, 0);
-        gbc.anchor = GridBagConstraints.WEST;
-        loginCard.add(passLabel, gbc);
-
-        // Password field container
-        JPanel passContainer = new JPanel();
-        passContainer.setLayout(new GridBagLayout());
-        passContainer.setBackground(Color.WHITE);
-
-        GridBagConstraints passGbc = new GridBagConstraints();
-        passGbc.gridx = 0;
-        passGbc.gridy = 0;
-        passGbc.weightx = 1.0;
-        passGbc.fill = GridBagConstraints.HORIZONTAL;
-
-        JPasswordField passField = new JPasswordField(20);
-        passField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        passField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-                new EmptyBorder(10, 12, 10, 12)));
-        passContainer.add(passField, passGbc);
-
-        passGbc.gridx = 1;
-        passGbc.weightx = 0;
-        passGbc.insets = new Insets(0, 5, 0, 0);
-
-        JButton togglePassBtn = new JButton("Show");
-        togglePassBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        togglePassBtn.setForeground(new Color(13, 110, 253));
-        togglePassBtn.setBackground(Color.WHITE);
-        togglePassBtn.setFocusable(false);
-        togglePassBtn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-                new EmptyBorder(10, 15, 10, 15)));
-        togglePassBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        togglePassBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                togglePassBtn.setBackground(new Color(240, 242, 245));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                togglePassBtn.setBackground(Color.WHITE);
-            }
+        // 5. Forgot Password Link
+        JLabel forgotPass = new JLabel("Forgot password?");
+        forgotPass.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        forgotPass.setForeground(PRIMARY_COLOR);
+        forgotPass.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        forgotPass.setAlignmentX(Component.LEFT_ALIGNMENT);
+        forgotPass.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) { mainScreen.showPanel("forgotPassword"); }
         });
+        
+        JPanel forgotPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        forgotPanel.setBackground(Color.WHITE);
+        forgotPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        forgotPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        forgotPanel.add(forgotPass);
+        formContainer.add(forgotPanel);
+        
+        formContainer.add(Box.createVerticalStrut(30));
 
-        togglePassBtn.addActionListener(e -> {
-            passwordVisible = !passwordVisible;
-            if (passwordVisible) {
-                passField.setEchoChar((char) 0);
-                togglePassBtn.setText("Hide");
-            } else {
-                passField.setEchoChar('•');
-                togglePassBtn.setText("Show");
-            }
+        // 6. Login Button
+        JButton loginBtn = new JButton("Log in");
+        styleButton(loginBtn, PRIMARY_COLOR, Color.WHITE);
+        loginBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        loginBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        
+        loginBtn.addActionListener(e -> performLogin(userField, passField, loginBtn));
+        
+        formContainer.add(loginBtn);
+        formContainer.add(Box.createVerticalStrut(20));
+
+        // 7. Register Link
+        JPanel regPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        regPanel.setBackground(Color.WHITE);
+        regPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JLabel noAcc = new JLabel("Don't have an account? ");
+        noAcc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        noAcc.setForeground(TEXT_SECONDARY);
+        
+        JLabel regLink = new JLabel("Sign up");
+        regLink.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        regLink.setForeground(PRIMARY_COLOR);
+        regLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        regLink.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) { mainScreen.showPanel("register"); }
         });
+        
+        regPanel.add(noAcc);
+        regPanel.add(regLink);
+        formContainer.add(regPanel);
 
-        passContainer.add(togglePassBtn, passGbc);
+        // Center the formContainer in the right panel
+        panel.add(formContainer);
+        return panel;
+    }
 
-        gbc.insets = new Insets(0, 0, 20, 0);
-        gbc.anchor = GridBagConstraints.CENTER;
-        loginCard.add(passContainer, gbc);
+    // --- LOGIC ---
 
-        JLabel forgotPasswordLink = new JLabel("Forgot password?");
-        forgotPasswordLink.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        forgotPasswordLink.setForeground(new Color(13, 110, 253));
-        forgotPasswordLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        forgotPasswordLink.setHorizontalAlignment(SwingConstants.RIGHT);
+    private void performLogin(JTextField userField, JPasswordField passField, JButton loginBtn) {
+        String username = userField.getText().trim();
+        String password = new String(passField.getPassword()).trim();
 
-        forgotPasswordLink.addMouseListener(new MouseAdapter() {
+        if (username.isEmpty() || password.isEmpty()) {
+            loginError.setText("Please enter both username and password");
+            return;
+        }
+
+        loginBtn.setText("Logging in...");
+        loginBtn.setEnabled(false);
+        loginBtn.setBackground(new Color(147, 197, 253)); // Lighter blue
+
+        JSONObject payload = new JSONObject();
+        payload.put("username", username);
+        payload.put("password", password);
+
+        new SwingWorker<JSONObject, Void>() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                mainScreen.showPanel("forgotPassword");
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                forgotPasswordLink.setForeground(new Color(11, 94, 215));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                forgotPasswordLink.setForeground(new Color(13, 110, 253));
-            }
-        });
-
-        gbc.insets = new Insets(0, 0, 20, 0);
-        gbc.anchor = GridBagConstraints.EAST;
-        loginCard.add(forgotPasswordLink, gbc);
-
-        // Login button
-        JButton loginButton = new JButton("Login");
-        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        loginButton.setForeground(Color.WHITE);
-        loginButton.setBackground(new Color(13, 110, 253));
-        loginButton.setFocusable(false);
-        loginButton.setBorder(new EmptyBorder(12, 0, 12, 0));
-        loginButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        loginButton.setOpaque(true);
-        loginButton.setBorderPainted(false);
-
-        loginButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (loginButton.isEnabled()) {
-                    loginButton.setBackground(new Color(11, 94, 215));
-                }
+            protected JSONObject doInBackground() {
+                return ApiClient.postJSON(ApiUrl.LOGIN, payload, null);
             }
 
             @Override
-            public void mouseExited(MouseEvent e) {
-                loginButton.setBackground(new Color(13, 110, 253));
-            }
-        });
-
-        loginButton.addActionListener(e -> {
-
-            String username = userField.getText();
-            String password = new String(passField.getPassword());
-
-            userField.setText("");
-            passField.setText("");
-
-            if (username.isEmpty() || password.isEmpty()) {
-                loginError.setText("Please enter both username and password");
-                return;
-            }
-
-            JSONObject payload = new JSONObject();
-
-            payload.put("username", username);
-            payload.put("password", password);
-
-            loginButton.setText("Logging in...");
-            loginButton.setEnabled(false);
-            loginButton.setBackground(new Color(108, 117, 125));
-
-            new SwingWorker<JSONObject, Void>() {
-                @Override
-                protected JSONObject doInBackground() {
-                    return ApiClient.postJSON(ApiUrl.LOGIN, payload, null);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        JSONObject res = get(); // get() returns result of doInBackground()
-
-                        int status = res.optInt("httpStatus", 0);
-                        if (status == 200) {
-                            String token = res.getString("token");
-                            String refreshToken = res.getString("refreshToken");
-
-                            User user = new User(token, refreshToken);
-                            UserSession.setUser(user);
-
-                            // Start another SwingWorker to fetch user profile
-                            new SwingWorker<JSONObject, Void>() {
-
-                                @Override
-                                protected JSONObject doInBackground() {
-                                    return UserServices.getMyProfile(token);
-                                }
-
-                                @Override
-                                protected void done() {
-                                    try {
-                                        JSONObject profile = get(); // result from UserService
-
-                                        String role = profile.getString("role");
-                                        String avatar = profile.getString("avatarUrl");
-                                        int user_id = profile.getInt("userId");
-                                        String address = profile.getString("address");
-                                        String gender = profile.getString("gender");
-                                        String birthDay = profile.optString("birthDay", "");
-                                        String email = profile.getString("email");
-                                        String fname = profile.getString("firstName");
-                                        String lname = profile.getString("lastName");
-
-                                        UserSession.setUserInfo(user_id, username, avatar, role, address, gender,
-                                                birthDay, email, fname, lname);
-
-                                        if (role.equals("ADMIN")) {
-                                            mainScreen.showPanel("dashboard");
-                                        } else {
-                                            mainScreen.showPanel("home");
-                                        }
-
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        loginError.setText("⚠️ Failed to load profile.");
-                                    }
-                                }
-
-                            }.execute();
-
-                        } else {
-                            // Failure → show error
-                            String msg = res.optString("message", "Login failed");
-                            loginError.setText(msg);
-                        }
-                    } catch (Exception e) {
-                        loginError.setText("⚠️ Server unreachable or unknown error");
-                        e.printStackTrace();
-                    } finally {
-                        // Re-enable button
-                        loginButton.setText("Login");
-                        loginButton.setEnabled(true);
-                        loginButton.setBackground(new Color(13, 110, 253));
+            protected void done() {
+                try {
+                    JSONObject res = get();
+                    int status = res.optInt("httpStatus", 0);
+                    
+                    if (status == 200) {
+                        String token = res.getString("token");
+                        String refreshToken = res.getString("refreshToken");
+                        User user = new User(token, refreshToken);
+                        UserSession.setUser(user);
+                        
+                        // Fetch profile, passing the button reference
+                        fetchUserProfile(token, loginBtn); // 🔥 TRUYỀN loginBtn
+                    } else {
+                        String msg = res.optString("message", "Login failed");
+                        loginError.setText(msg);
+                        resetButton(loginBtn);
                     }
+                } catch (Exception e) {
+                    loginError.setText("Server error. Please try again.");
+                    e.printStackTrace();
+                    resetButton(loginBtn);
                 }
-            }.execute();
+            }
+        }.execute();
+    }
+
+    // 🔥 CẬP NHẬT CHỮ KÝ HÀM VÀ LOGIC RESET
+    private void fetchUserProfile(String token, JButton loginBtn) {
+        new SwingWorker<JSONObject, Void>() {
+            @Override
+            protected JSONObject doInBackground() {
+                return UserServices.getMyProfile(token);
+            }
+            @Override
+            protected void done() {
+                try {
+                    JSONObject profile = get();
+                    
+                    // Logic Profile
+                    int user_id = profile.getInt("userId");
+                    String username = profile.optString("username", ""); 
+                    String role = profile.getString("role");
+                    String avatar = profile.optString("avatarUrl", null);
+                    String email = profile.getString("email");
+                    String fname = profile.getString("firstName");
+                    String lname = profile.getString("lastName");
+                    String gender = profile.getString("gender");
+                    String address = profile.getString("address");
+                    String birthDay = profile.optString("birthDay", "");
+
+                    UserSession.setUserInfo(user_id, username, avatar, role, address, gender, birthDay, email, fname, lname);
+
+                    // Chuyển màn hình
+                    if (role.equals("ADMIN")) {
+                        mainScreen.showPanel("dashboard");
+                        if (mainScreen.getDashboardScreen() != null) 
+                            mainScreen.getDashboardScreen().onLoginSuccess();
+                    } else {
+                        mainScreen.showPanel("home");
+                    }
+                    
+                    // 🔥 RESET NÚT SAU KHI CHUYỂN MÀN HÌNH THÀNH CÔNG (Đảm bảo trạng thái sẵn sàng cho lần đăng nhập sau)
+                    resetButton(loginBtn); 
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    loginError.setText("Failed to load profile. Please log in again.");
+                    // 🔥 FIX: RESET NÚT KHI TẢI PROFILE THẤT BẠI
+                    resetButton(loginBtn); 
+                }
+            }
+        }.execute();
+    }
+
+    private void resetButton(JButton btn) {
+        btn.setText("Log in");
+        btn.setEnabled(true);
+        btn.setBackground(PRIMARY_COLOR);
+    }
+
+    // --- UI HELPERS ---
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setForeground(TEXT_PRIMARY);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return label;
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField();
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        field.setForeground(TEXT_PRIMARY);
+        field.setBackground(INPUT_BG);
+        field.setBorder(null);
+        return field;
+    }
+
+    private JPasswordField createStyledPasswordField() {
+        JPasswordField field = new JPasswordField();
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        field.setForeground(TEXT_PRIMARY);
+        field.setBackground(INPUT_BG);
+        field.setBorder(null);
+        return field;
+    }
+
+    private JPanel wrapInRoundedPanel(JComponent component) {
+        JPanel panel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(INPUT_BG);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(10, 15, 10, 15));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); 
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(component, BorderLayout.CENTER);
+        return panel;
+    }
+
+    // 🔥 HELPER: Tạo icon mắt chuẩn (Hình Oval + Đồng tử + Gạch chéo)
+    private JToggleButton createEyeButton(JPasswordField field) {
+        JToggleButton eyeBtn = new JToggleButton();
+        eyeBtn.setPreferredSize(new Dimension(40, 30));
+        
+        // --- Bỏ toàn bộ viền nút ---
+        eyeBtn.setBorder(null);
+        eyeBtn.setBorderPainted(false);
+        eyeBtn.setContentAreaFilled(false);
+        eyeBtn.setFocusPainted(false);
+        // ---------------------------
+        
+        eyeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        eyeBtn.setUI(new javax.swing.plaf.basic.BasicToggleButtonUI() {
+            @Override
+            public void paint(Graphics g, JComponent c) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                int w = c.getWidth();
+                int h = c.getHeight();
+                int x = (w - 20) / 2; // Căn giữa icon
+                int y = (h - 12) / 2;
+
+                g2.setColor(TEXT_SECONDARY); // Màu xám icon
+
+                if (eyeBtn.isSelected()) {
+                    // --- Trạng thái hiện mật khẩu ---
+                    // Vẽ khung mắt (Oval)
+                    g2.setStroke(new BasicStroke(1.5f)); // Viền mắt mảnh
+                    g2.drawOval(x, y, 18, 12);
+                    
+                    // Vẽ đồng tử (Hình tròn đặc)
+                    g2.fillOval(x + 6, y + 3, 6, 6);
+                } else {
+                    // --- Trạng thái ẩn mật khẩu ---
+                    // Vẽ khung mắt
+                    g2.setStroke(new BasicStroke(1.5f));
+                    g2.drawOval(x, y, 18, 12);
+                    
+                    // Vẽ đồng tử
+                    g2.fillOval(x + 6, y + 3, 6, 6);
+                    
+                    // Vẽ đường gạch chéo
+                    g2.setStroke(new BasicStroke(2f)); // Gạch chéo đậm hơn chút
+                    g2.drawLine(x + 4, y + 2, x + 16, y + 10);
+                }
+                g2.dispose();
+            }
         });
 
-        gbc.insets = new Insets(0, 0, 20, 0);
-        loginCard.add(loginButton, gbc);
-
-        // Register section
-        JPanel registerPanel = new JPanel();
-        registerPanel.setBackground(Color.WHITE);
-        registerPanel.setLayout(new GridBagLayout());
-
-        GridBagConstraints regGbc = new GridBagConstraints();
-        regGbc.gridx = 0;
-        regGbc.gridy = 0;
-        regGbc.insets = new Insets(0, 0, 0, 5);
-
-        JLabel registerPrefix = new JLabel("Don't have an account?");
-        registerPrefix.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        registerPrefix.setForeground(new Color(108, 117, 125));
-        registerPanel.add(registerPrefix, regGbc);
-
-        regGbc.gridx = 1;
-        regGbc.insets = new Insets(0, 0, 0, 0);
-
-        JLabel registerLink = new JLabel("Register");
-        registerLink.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        registerLink.setForeground(new Color(13, 110, 253));
-        registerLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        registerLink.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                mainScreen.showPanel("register");
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                registerLink.setForeground(new Color(11, 94, 215));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                registerLink.setForeground(new Color(13, 110, 253));
+        eyeBtn.addActionListener(e -> {
+            if (eyeBtn.isSelected()) {
+                field.setEchoChar((char) 0); // Hiện chữ
+            } else {
+                field.setEchoChar('•'); // Ẩn chữ
             }
         });
-        registerPanel.add(registerLink, regGbc);
+        return eyeBtn;
+    }
 
-        gbc.insets = new Insets(0, 0, 0, 0);
-        loginCard.add(registerPanel, gbc);
+    private void styleButton(JButton btn, Color bg, Color fg) {
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btn.setForeground(fg);
+        btn.setBackground(bg);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { if(btn.isEnabled()) btn.setBackground(HOVER_COLOR); }
+            public void mouseExited(MouseEvent e) { if(btn.isEnabled()) btn.setBackground(bg); }
+        });
 
-        // Add the card to the main panel (centered)
-        GridBagConstraints mainGbc = new GridBagConstraints();
-        add(loginCard, mainGbc);
-
-        // Add component listener to handle resizing
-        addComponentListener(new ComponentAdapter() {
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
             @Override
-            public void componentResized(ComponentEvent e) {
-                revalidate();
-                repaint();
+            public void paint(Graphics g, JComponent c) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(btn.getBackground());
+                g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 12, 12);
+                super.paint(g2, c);
+                g2.dispose();
             }
         });
     }

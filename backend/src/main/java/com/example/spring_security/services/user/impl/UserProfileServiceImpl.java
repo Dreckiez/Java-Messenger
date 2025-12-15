@@ -13,6 +13,7 @@ import com.example.spring_security.repository.TokenRepo.VerifyEmailChangeTokenRe
 import com.example.spring_security.repository.TokenRepo.VerifyTokenRepository;
 import com.example.spring_security.services.third.CloudService;
 import com.example.spring_security.services.third.EmailService;
+import com.example.spring_security.services.third.JWTService;
 import com.example.spring_security.services.user.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +45,8 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final CloudService cloudService;
 
+    private final JWTService jwtService;
+
     public String updateAvatar(User user, MultipartFile avatar) {
         if (avatar.isEmpty())
             throw new CustomException(HttpStatus.BAD_REQUEST, "There is no avatar to set.");
@@ -61,11 +64,39 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
     }
 
+    public Map<String, String> removeAvatar(User user) {
+        user.setAvatarUrl(null);
+        userRepository.save(user);
+        Map<String, String> msg = new HashMap<>();
+
+        msg.put("message", "Remove successfully.");
+
+        return msg;
+    }
+
     public UserProfileResponse getProfile(User user) {
         return new UserProfileResponse(user);
     }
 
-    public UserProfileResponse updateProfile(UpdateProfileRequest updateProfileRequest, User user) {
+    public Map<String, Object> updateProfile(UpdateProfileRequest updateProfileRequest, User user) {
+        String token = "";
+        String refreshToken = "";
+        if (updateProfileRequest.getUsername() != null) {
+            if (userRepository.existsByUsername(updateProfileRequest.getUsername())) {
+                throw new CustomException(HttpStatus.CONFLICT, "This username is already in use.");
+            }
+            user.setUsername(updateProfileRequest.getUsername());
+            userRepository.save(user);
+            token = jwtService.generateToken(user);
+            refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
+        }
+
+        if (updateProfileRequest.getEmail() != null) {
+            if (userRepository.existsByEmail(updateProfileRequest.getEmail())) {
+                throw new CustomException(HttpStatus.CONFLICT, "This email is already in use.");
+            }
+            user.setEmail(updateProfileRequest.getEmail());
+        }
 
         if (updateProfileRequest.getFirstName() != null) {
             user.setFirstName(updateProfileRequest.getFirstName());
@@ -89,7 +120,15 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         userRepository.save(user);
 
-        return new UserProfileResponse(user);
+        UserProfileResponse userProfileResponse = new UserProfileResponse(user);
+
+       Map<String, Object> response = new HashMap<>();
+
+        response.put("userProfile", userProfileResponse);
+        response.put("token", token);
+        response.put("refreshToken", refreshToken);
+
+        return response;
     }
 
     public Map<String, String> changePassword(ChangePasswordRequest changePasswordRequest, User user) {

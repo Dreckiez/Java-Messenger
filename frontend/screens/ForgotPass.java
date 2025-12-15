@@ -1,25 +1,9 @@
 package screens;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingWorker;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import org.json.JSONObject;
 
 import utils.ApiClient;
@@ -28,233 +12,269 @@ import utils.ApiUrl;
 public class ForgotPass extends JPanel {
     private BaseScreen mainScreen;
     private JLabel messageLabel;
-    private JPanel forgotPasswordCard;
+    
+    // --- COLORS ---
+    private final Color PRIMARY_COLOR = new Color(59, 130, 246); // Blue
+    private final Color HOVER_COLOR = new Color(37, 99, 235);
+    private final Color BG_COLOR = new Color(248, 250, 252);     
+    private final Color TEXT_PRIMARY = new Color(30, 41, 59);
+    private final Color TEXT_SECONDARY = new Color(100, 116, 139);
+    private final Color INPUT_BG = new Color(241, 245, 249);     
 
     public ForgotPass(BaseScreen main) {
-        mainScreen = main;
+        this.mainScreen = main;
+        setLayout(new BorderLayout());
+        setBackground(BG_COLOR);
 
-        setLayout(new GridBagLayout());
-        setBackground(new Color(240, 242, 245));
+        // Split Screen Layout
+        JPanel container = new JPanel(new GridLayout(1, 2));
+        container.add(createLeftPanel());
+        container.add(createRightPanel());
+        
+        add(container, BorderLayout.CENTER);
+    }
 
-        forgotPasswordCard = new JPanel();
-        forgotPasswordCard.setLayout(new GridBagLayout());
-        forgotPasswordCard.setBackground(Color.WHITE);
-        forgotPasswordCard.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
-                new EmptyBorder(40, 50, 40, 50)));
+    private JPanel createLeftPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(PRIMARY_COLOR);
+        panel.setLayout(new GridBagLayout());
+        
+        JPanel content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setOpaque(false);
+        
+        JLabel iconLabel = new JLabel("🔒"); // Hoặc dùng icon ảnh khóa
+        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 64));
+        iconLabel.setForeground(Color.WHITE);
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel titleLabel = new JLabel("Forgot Password?");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel descLabel = new JLabel("No worries, we'll send you reset instructions.");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        descLabel.setForeground(new Color(255, 255, 255, 200));
+        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        content.add(iconLabel);
+        content.add(Box.createVerticalStrut(20));
+        content.add(titleLabel);
+        content.add(Box.createVerticalStrut(10));
+        content.add(descLabel);
+        
+        panel.add(content);
+        return panel;
+    }
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 0, 5, 0);
+    private JPanel createRightPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.WHITE);
+        
+        // Form Container
+        JPanel formContent = new JPanel();
+        formContent.setLayout(new BoxLayout(formContent, BoxLayout.Y_AXIS));
+        formContent.setBackground(Color.WHITE);
+        formContent.setBorder(new EmptyBorder(50, 60, 50, 60)); 
+        formContent.setPreferredSize(new Dimension(450, 500)); 
 
-        // Title
-        JLabel titleLabel = new JLabel("Forgot Password", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        titleLabel.setForeground(new Color(33, 37, 41));
-        gbc.insets = new Insets(0, 0, 10, 0);
-        forgotPasswordCard.add(titleLabel, gbc);
+        // 1. Header (Mobile friendly / Small screen fallback)
+        JLabel title = new JLabel("Reset Password");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        title.setForeground(TEXT_PRIMARY);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JLabel subTitle = new JLabel("Enter the email associated with your account.");
+        subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subTitle.setForeground(TEXT_SECONDARY);
+        subTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        formContent.add(title);
+        formContent.add(Box.createVerticalStrut(10));
+        formContent.add(subTitle);
+        formContent.add(Box.createVerticalStrut(30));
 
-        // Subtitle
-        JLabel subtitleLabel = new JLabel("Enter your email", SwingConstants.CENTER);
-        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        subtitleLabel.setForeground(new Color(108, 117, 125));
-        gbc.insets = new Insets(0, 0, 10, 0);
-        forgotPasswordCard.add(subtitleLabel, gbc);
+        // 2. Message Label
+        messageLabel = new JLabel(" ");
+        messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        formContent.add(messageLabel);
+        formContent.add(Box.createVerticalStrut(10));
 
-        // Description
-        JLabel descriptionLabel = new JLabel(
-                "<html><center>We'll send a new temporary password to your registered email address</center></html>");
-        descriptionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        descriptionLabel.setForeground(new Color(108, 117, 125));
-        gbc.insets = new Insets(0, 0, 30, 0);
-        forgotPasswordCard.add(descriptionLabel, gbc);
+        // 3. Email Field
+        formContent.add(createLabel("Email Address"));
+        formContent.add(Box.createVerticalStrut(8));
+        JTextField emailField = createStyledTextField();
+        formContent.add(wrapInRoundedPanel(emailField));
+        formContent.add(Box.createVerticalStrut(30));
 
-        // Message label (for success/error messages)
-        messageLabel = new JLabel("");
-        messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.insets = new Insets(0, 0, 15, 0);
-        forgotPasswordCard.add(messageLabel, gbc);
+        // 4. Reset Button
+        JButton resetBtn = new JButton("Send Instructions");
+        styleButton(resetBtn, PRIMARY_COLOR, Color.WHITE, false);
+        resetBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        resetBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        
+        resetBtn.addActionListener(e -> performReset(emailField, resetBtn));
+        
+        formContent.add(resetBtn);
+        formContent.add(Box.createVerticalStrut(20));
 
-        // Username/Email label
-        JLabel inputLabel = new JLabel("Email");
-        inputLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        inputLabel.setForeground(new Color(73, 80, 87));
-        gbc.insets = new Insets(5, 0, 5, 0);
-        gbc.anchor = GridBagConstraints.WEST;
-        forgotPasswordCard.add(inputLabel, gbc);
+        // 5. Back to Login
+        JButton backBtn = new JButton("← Back to Log in");
+        styleButton(backBtn, Color.WHITE, TEXT_SECONDARY, true); // Ghost button style
+        backBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        backBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        
+        backBtn.addActionListener(e -> mainScreen.showPanel("login"));
+        
+        formContent.add(backBtn);
 
-        // Username/Email field
-        JTextField inputField = new JTextField(20);
-        inputField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        inputField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-                new EmptyBorder(10, 12, 10, 12)));
-        gbc.insets = new Insets(0, 0, 20, 0);
-        gbc.anchor = GridBagConstraints.CENTER;
-        forgotPasswordCard.add(inputField, gbc);
+        panel.add(formContent);
+        return panel;
+    }
 
-        // Button panel (for Reset and Back buttons)
-        JPanel buttonPanel = new JPanel(new GridBagLayout());
-        buttonPanel.setBackground(Color.WHITE);
+    // --- LOGIC ---
 
-        GridBagConstraints btnGbc = new GridBagConstraints();
-        btnGbc.gridx = 0;
-        btnGbc.gridy = 0;
-        btnGbc.insets = new Insets(0, 0, 0, 10);
-        btnGbc.fill = GridBagConstraints.HORIZONTAL;
-        btnGbc.weightx = 1.0;
+    private void performReset(JTextField emailField, JButton btn) {
+        String email = emailField.getText().trim();
 
-        // Reset Password button
-        JButton resetButton = new JButton("Reset Password");
-        resetButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        resetButton.setForeground(Color.WHITE);
-        resetButton.setBackground(new Color(13, 110, 253));
-        resetButton.setFocusable(false);
-        resetButton.setBorder(new EmptyBorder(12, 20, 12, 20));
-        resetButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        resetButton.setOpaque(true);
-        resetButton.setBorderPainted(false);
+        if (email.isEmpty()) {
+            showError("Please enter your email address.");
+            return;
+        }
 
-        resetButton.addMouseListener(new MouseAdapter() {
+        btn.setText("Sending...");
+        btn.setEnabled(false);
+        btn.setBackground(new Color(147, 197, 253));
+        messageLabel.setText(" ");
+
+        new SwingWorker<JSONObject, Void>() {
             @Override
-            public void mouseEntered(MouseEvent e) {
-                if (resetButton.isEnabled()) {
-                    resetButton.setBackground(new Color(11, 94, 215));
-                }
+            protected JSONObject doInBackground() {
+                JSONObject payload = new JSONObject();
+                payload.put("email", email);
+                return ApiClient.postJSON(ApiUrl.FORGOT_PASSWORD, payload, null);
             }
 
             @Override
-            public void mouseExited(MouseEvent e) {
-                if (resetButton.isEnabled()) {
-                    resetButton.setBackground(new Color(13, 110, 253));
-                }
-            }
-        });
+            protected void done() {
+                try {
+                    JSONObject res = get();
+                    int status = res.optInt("httpStatus", 0);
 
-        resetButton.addActionListener(e -> {
-            String input = inputField.getText().trim();
-
-            if (input.isEmpty()) {
-                showError("Please enter your email");
-                return;
-            }
-
-            // Disable button and show loading state
-            resetButton.setText("Sending...");
-            resetButton.setEnabled(false);
-            resetButton.setBackground(new Color(108, 117, 125));
-            messageLabel.setText("");
-
-            // Make API call in background
-            new SwingWorker<JSONObject, Void>() {
-                @Override
-                protected JSONObject doInBackground() {
-                    JSONObject payload = new JSONObject();
-
-                    payload.put("email", input);
-
-                    return ApiClient.postJSON(ApiUrl.FORGOT_PASSWORD, payload, null);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        JSONObject response = get();
-                        int status = response.optInt("httpStatus", 0);
-
-                        if (status == 200) {
-                            showSuccess("A new password has been sent to your email!");
-                            inputField.setText("");
-
-                            // Optionally redirect to login after a delay
-                            new Thread(() -> {
-                                try {
-                                    Thread.sleep(3000); // Wait 3 seconds
-                                    javax.swing.SwingUtilities.invokeLater(() -> {
-                                        mainScreen.showPanel("login");
-                                    });
-                                } catch (InterruptedException ex) {
-                                    ex.printStackTrace();
-                                }
-                            }).start();
-                        } else {
-                            String msg = response.optString("message", "Failed to reset password");
-                            showError(msg);
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        showError("Server error. Please try again later.");
-                    } finally {
-                        // Re-enable button
-                        resetButton.setText("Reset Password");
-                        resetButton.setEnabled(true);
-                        resetButton.setBackground(new Color(13, 110, 253));
+                    if (status == 200) {
+                        showSuccess("Reset instructions sent! Check your email.");
+                        emailField.setText("");
+                        
+                        // Auto redirect
+                        Timer timer = new Timer(3000, e -> mainScreen.showPanel("login"));
+                        timer.setRepeats(false);
+                        timer.start();
+                    } else {
+                        String msg = res.optString("message", "Failed to send email.");
+                        showError(msg);
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showError("Server error. Please try again.");
+                } finally {
+                    btn.setText("Send Instructions");
+                    btn.setEnabled(true);
+                    btn.setBackground(PRIMARY_COLOR);
                 }
-            }.execute();
-        });
-
-        buttonPanel.add(resetButton, btnGbc);
-
-        btnGbc.gridx = 1;
-        btnGbc.insets = new Insets(0, 0, 0, 0);
-
-        // Back to Login button
-        JButton backButton = new JButton("Back to Login");
-        backButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        backButton.setForeground(new Color(108, 117, 125));
-        backButton.setBackground(Color.WHITE);
-        backButton.setFocusable(false);
-        backButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-                new EmptyBorder(11, 19, 11, 19)));
-        backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        backButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                backButton.setBackground(new Color(240, 242, 245));
             }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                backButton.setBackground(Color.WHITE);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                mainScreen.showPanel("login");
-            }
-        });
-
-        buttonPanel.add(backButton, btnGbc);
-
-        gbc.insets = new Insets(0, 0, 0, 0);
-        forgotPasswordCard.add(buttonPanel, gbc);
-
-        // Add the card to the main panel (centered)
-        GridBagConstraints mainGbc = new GridBagConstraints();
-        add(forgotPasswordCard, mainGbc);
-
-        // Add component listener to handle resizing
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                revalidate();
-                repaint();
-            }
-        });
+        }.execute();
     }
 
     private void showError(String message) {
         messageLabel.setText(message);
-        messageLabel.setForeground(new Color(220, 53, 69));
+        messageLabel.setForeground(new Color(220, 53, 69)); // Red
     }
 
     private void showSuccess(String message) {
         messageLabel.setText(message);
-        messageLabel.setForeground(new Color(25, 135, 84));
+        messageLabel.setForeground(new Color(34, 197, 94)); // Green
+    }
+
+    // --- UI HELPERS ---
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        label.setForeground(TEXT_PRIMARY);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setBorder(new EmptyBorder(0, 0, 5, 0));
+        return label;
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField();
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setForeground(TEXT_PRIMARY);
+        field.setBackground(INPUT_BG);
+        field.setBorder(null);
+        return field;
+    }
+
+    private JPanel wrapInRoundedPanel(JComponent component) {
+        JPanel panel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(INPUT_BG);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(10, 15, 10, 15));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); 
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(component, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private void styleButton(JButton btn, Color bg, Color fg, boolean isGhost) {
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setForeground(fg);
+        btn.setBackground(bg);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { 
+                if(btn.isEnabled()) {
+                    if (isGhost) btn.setForeground(PRIMARY_COLOR); // Ghost hover text color
+                    else btn.setBackground(HOVER_COLOR); // Solid hover bg color
+                }
+            }
+            public void mouseExited(MouseEvent e) { 
+                if(btn.isEnabled()) {
+                    if (isGhost) btn.setForeground(fg);
+                    else btn.setBackground(bg); 
+                }
+            }
+        });
+
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+            @Override
+            public void paint(Graphics g, JComponent c) {
+                if (!isGhost) { // Chỉ vẽ nền nếu không phải nút Ghost
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(btn.getBackground());
+                    g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 12, 12);
+                    super.paint(g2, c);
+                    g2.dispose();
+                } else {
+                    super.paint(g, c); // Nút Ghost chỉ vẽ chữ
+                }
+            }
+        });
     }
 }

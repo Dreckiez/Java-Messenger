@@ -5,9 +5,10 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-
 import javax.swing.ImageIcon;
-
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 public class ImageEditor {
 
     public BufferedImage scaleImage(Image srcImg, int targetSize) {
@@ -65,5 +66,31 @@ public class ImageEditor {
 
         g2.dispose();
         return new ImageIcon(circleBuffer);
+    }
+    // 🔥 PHƯƠNG THỨC MỚI CẦN THÊM (1)
+    public BufferedImage createInitialAvatar(String name, Color bgColor, int size) {
+        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = img.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Vẽ nền tròn
+        g2d.setColor(bgColor);
+        g2d.fillOval(0, 0, size, size);
+
+        // Chuẩn bị vẽ chữ
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Segoe UI", Font.BOLD, size / 2));
+        
+        // Lấy chữ cái đầu tiên
+        String initial = (name != null && !name.isEmpty()) ? name.substring(0, 1).toUpperCase() : "?";
+        
+        // Căn giữa chữ
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = (size - fm.stringWidth(initial)) / 2;
+        int y = ((size - fm.getHeight()) / 2) + fm.getAscent();
+        g2d.drawString(initial, x, y);
+        g2d.dispose();
+
+        return img;
     }
 }

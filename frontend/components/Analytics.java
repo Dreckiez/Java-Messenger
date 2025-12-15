@@ -1,378 +1,372 @@
 package components;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.Calendar;
+
+import models.AnalyticsModel;
+import services.UserAdminService;
+import utils.UserSession;
 
 public class Analytics extends JPanel {
-    private JComboBox<String> registrationYearCombo, activeUsersYearCombo;
-    private JPanel registrationChartPanel, activeUsersChartPanel;
+    private UserAdminService userService;
+    private JComboBox<String> globalYearCombo;
+    
+    // Components để update dữ liệu
+    private CustomChartPanel registrationChart;
+    private CustomChartPanel activeUsersChart;
+    
+    // Labels Stats Registration
+    private JLabel lblRegTotal, lblRegAvg, lblRegHigh, lblRegGrowth;
+    
+    // Labels Stats Active Users
+    private JLabel lblActAvg, lblActHigh, lblActPercent, lblActTrend;
+
+    // Colors
+    private final Color BG_COLOR = new Color(241, 245, 249);
+    private final Color CHART_COLOR_BLUE = new Color(59, 130, 246);
+    private final Color CHART_COLOR_GREEN = new Color(34, 197, 94);
 
     public Analytics() {
-        setLayout(new BorderLayout(10, 10));
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        this.userService = new UserAdminService();
+        
+        setLayout(new BorderLayout(20, 20));
+        setBackground(BG_COLOR);
+        setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        // === TOP: Title ===
+        // === 1. TOP HEADER (Title + Global Year Selector) ===
+        add(createHeaderPanel(), BorderLayout.NORTH);
+
+        // === 2. CENTER: Charts Scrollable Area ===
+        // Dùng ScrollPane phòng trường hợp màn hình nhỏ
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(BG_COLOR);
+
+        contentPanel.add(createRegistrationSection());
+        contentPanel.add(Box.createVerticalStrut(20));
+        contentPanel.add(createActiveUsersSection());
+
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getViewport().setBackground(BG_COLOR);
+        
+        add(scrollPane, BorderLayout.CENTER);
+
+        // Load data mặc định (Năm hiện tại)
+        loadData();
+    }
+
+    private JPanel createHeaderPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+
         JLabel titleLabel = new JLabel("Analytics Dashboard");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
+        titleLabel.setForeground(new Color(15, 23, 42));
+        panel.add(titleLabel, BorderLayout.WEST);
 
-        // === CENTER: Charts Grid ===
-        JPanel chartsPanel = new JPanel(new GridLayout(2, 1, 0, 20));
-        chartsPanel.setBackground(Color.WHITE);
+        // Global Year Selector
+        JPanel yearPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        yearPanel.setBackground(BG_COLOR);
+        yearPanel.add(new JLabel("Select Year:"));
+        
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        String[] years = new String[5];
+        for (int i = 0; i < 5; i++) years[i] = String.valueOf(currentYear - i);
+        
+        globalYearCombo = new JComboBox<>(years);
+        globalYearCombo.setPreferredSize(new Dimension(100, 30));
+        globalYearCombo.addActionListener(e -> loadData()); // Gọi loadData khi đổi năm
+        
+        yearPanel.add(globalYearCombo);
+        panel.add(yearPanel, BorderLayout.EAST);
 
-        // Registration Chart Section
-        JPanel registrationSection = createRegistrationSection();
-        chartsPanel.add(registrationSection);
-
-        // Active Users Chart Section
-        JPanel activeUsersSection = createActiveUsersSection();
-        chartsPanel.add(activeUsersSection);
-
-        add(chartsPanel, BorderLayout.CENTER);
+        return panel;
     }
 
+    // === SECTION 1: REGISTRATION ===
     private JPanel createRegistrationSection() {
-        JPanel section = new JPanel(new BorderLayout(10, 10));
-        section.setBackground(Color.WHITE);
-        section.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240), 2),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
+        JPanel section = createSectionContainer();
 
-        // Header with title and year selector
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(Color.WHITE);
+        // Header
+        JPanel header = createSectionHeader("New Registration");
+        section.add(header, BorderLayout.NORTH);
 
-        JLabel sectionTitle = new JLabel("New Registration");
-        sectionTitle.setFont(new Font("Arial", Font.BOLD, 18));
-        headerPanel.add(sectionTitle, BorderLayout.WEST);
+        // Chart
+        registrationChart = new CustomChartPanel(CHART_COLOR_BLUE, true); // true = Bar chart
+        section.add(registrationChart, BorderLayout.CENTER);
 
-        JPanel yearPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        yearPanel.setBackground(Color.WHITE);
-        yearPanel.add(new JLabel("Year:"));
-        registrationYearCombo = new JComboBox<>(new String[] { "2024", "2023", "2022", "2021", "2020" });
-        registrationYearCombo.addActionListener(e -> updateRegistrationChart());
-        yearPanel.add(registrationYearCombo);
-        headerPanel.add(yearPanel, BorderLayout.EAST);
+        // Stats
+        JPanel stats = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 10));
+        stats.setBackground(new Color(248, 250, 252));
+        stats.setBorder(new EmptyBorder(10, 0, 0, 0));
 
-        section.add(headerPanel, BorderLayout.NORTH);
+        lblRegTotal = createStatValueLabel("...");
+        lblRegAvg = createStatValueLabel("...");
+        lblRegHigh = createStatValueLabel("...");
+        lblRegGrowth = createStatValueLabel("...");
 
-        // Chart Panel
-        registrationChartPanel = createRegistrationChart("2024");
-        section.add(registrationChartPanel, BorderLayout.CENTER);
+        stats.add(createStatCard("Total Registration", lblRegTotal, CHART_COLOR_BLUE));
+        stats.add(createStatCard("Avg/month", lblRegAvg, new Color(168, 85, 247)));
+        stats.add(createStatCard("Highest Month", lblRegHigh, CHART_COLOR_GREEN));
+        stats.add(createStatCard("Growth", lblRegGrowth, new Color(251, 146, 60)));
 
-        // Statistics Panel
-        JPanel statsPanel = createRegistrationStats();
-        section.add(statsPanel, BorderLayout.SOUTH);
-
+        section.add(stats, BorderLayout.SOUTH);
         return section;
     }
 
+    // === SECTION 2: ACTIVE USERS ===
     private JPanel createActiveUsersSection() {
-        JPanel section = new JPanel(new BorderLayout(10, 10));
-        section.setBackground(Color.WHITE);
-        section.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240), 2),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
+        JPanel section = createSectionContainer();
 
-        // Header with title and year selector
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(Color.WHITE);
+        // Header
+        JPanel header = createSectionHeader("Online Users Activity");
+        section.add(header, BorderLayout.NORTH);
 
-        JLabel sectionTitle = new JLabel("Online Users");
-        sectionTitle.setFont(new Font("Arial", Font.BOLD, 18));
-        headerPanel.add(sectionTitle, BorderLayout.WEST);
+        // Chart
+        activeUsersChart = new CustomChartPanel(CHART_COLOR_GREEN, false); // false = Line chart
+        section.add(activeUsersChart, BorderLayout.CENTER);
 
-        JPanel yearPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        yearPanel.setBackground(Color.WHITE);
-        yearPanel.add(new JLabel("Year:"));
-        activeUsersYearCombo = new JComboBox<>(new String[] { "2024", "2023", "2022", "2021", "2020" });
-        activeUsersYearCombo.addActionListener(e -> updateActiveUsersChart());
-        yearPanel.add(activeUsersYearCombo);
-        headerPanel.add(yearPanel, BorderLayout.EAST);
+        // Stats
+        JPanel stats = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 10));
+        stats.setBackground(new Color(248, 250, 252));
+        stats.setBorder(new EmptyBorder(10, 0, 0, 0));
 
-        section.add(headerPanel, BorderLayout.NORTH);
+        lblActAvg = createStatValueLabel("...");
+        lblActHigh = createStatValueLabel("...");
+        lblActPercent = createStatValueLabel("...");
+        lblActTrend = createStatValueLabel("...");
 
-        // Chart Panel
-        activeUsersChartPanel = createActiveUsersChart("2024");
-        section.add(activeUsersChartPanel, BorderLayout.CENTER);
+        stats.add(createStatCard("Avg Activities", lblActAvg, CHART_COLOR_GREEN));
+        stats.add(createStatCard("Highest Month", lblActHigh, CHART_COLOR_BLUE));
+        stats.add(createStatCard("Activity %", lblActPercent, new Color(168, 85, 247)));
+        stats.add(createStatCard("Trend", lblActTrend, new Color(251, 146, 60)));
 
-        // Statistics Panel
-        JPanel statsPanel = createActiveUsersStats();
-        section.add(statsPanel, BorderLayout.SOUTH);
-
+        section.add(stats, BorderLayout.SOUTH);
         return section;
     }
 
-    private JPanel createRegistrationChart(String year) {
-        JPanel chartPanel = new JPanel() {
+    // === LOGIC LOAD DATA ===
+    private void loadData() {
+        if (UserSession.getUser() == null) return;
+        
+        String yearStr = (String) globalYearCombo.getSelectedItem();
+        int year = Integer.parseInt(yearStr);
+        String token = UserSession.getUser().getToken();
+
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        new SwingWorker<AnalyticsModel, Void>() {
             @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            protected AnalyticsModel doInBackground() throws Exception {
+                return userService.getAnalytics(token, year);
+            }
 
-                // Sample data for the selected year
-                int[] data = getRegistrationDataForYear(year);
-                String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-                        "Dec" };
-
-                int width = getWidth();
-                int height = getHeight();
-                int padding = 50;
-                int chartWidth = width - 2 * padding;
-                int chartHeight = height - 2 * padding;
-
-                // Find max value for scaling
-                int maxValue = 0;
-                for (int value : data) {
-                    if (value > maxValue)
-                        maxValue = value;
-                }
-
-                // Draw axes
-                g2d.setColor(new Color(100, 116, 139));
-                g2d.setStroke(new BasicStroke(2));
-                g2d.drawLine(padding, height - padding, width - padding, height - padding); // X-axis
-                g2d.drawLine(padding, padding, padding, height - padding); // Y-axis
-
-                // Draw bars
-                int barWidth = chartWidth / (data.length * 2);
-                int spacing = barWidth / 2;
-
-                for (int i = 0; i < data.length; i++) {
-                    int barHeight = (int) ((double) data[i] / maxValue * chartHeight);
-                    int x = padding + i * (barWidth + spacing) + spacing;
-                    int y = height - padding - barHeight;
-
-                    // Gradient color for bars
-                    GradientPaint gradient = new GradientPaint(
-                            x, y, new Color(59, 130, 246),
-                            x, y + barHeight, new Color(147, 197, 253));
-                    g2d.setPaint(gradient);
-                    g2d.fillRoundRect(x, y, barWidth, barHeight, 8, 8);
-
-                    // Draw value on top of bar
-                    g2d.setColor(new Color(51, 65, 85));
-                    g2d.setFont(new Font("Arial", Font.BOLD, 11));
-                    String valueStr = String.valueOf(data[i]);
-                    FontMetrics fm = g2d.getFontMetrics();
-                    int textWidth = fm.stringWidth(valueStr);
-                    g2d.drawString(valueStr, x + (barWidth - textWidth) / 2, y - 5);
-
-                    // Draw month label
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                    int labelWidth = fm.stringWidth(months[i]);
-                    g2d.drawString(months[i], x + (barWidth - labelWidth) / 2, height - padding + 20);
-                }
-
-                // Draw Y-axis labels
-                g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                g2d.setColor(new Color(100, 116, 139));
-                for (int i = 0; i <= 5; i++) {
-                    int value = (maxValue / 5) * i;
-                    int y = height - padding - (chartHeight / 5) * i;
-                    g2d.drawString(String.valueOf(value), 10, y + 5);
-                    g2d.setColor(new Color(226, 232, 240));
-                    g2d.drawLine(padding, y, width - padding, y);
-                    g2d.setColor(new Color(100, 116, 139));
+            @Override
+            protected void done() {
+                try {
+                    AnalyticsModel data = get();
+                    if (data != null) {
+                        updateUI(data);
+                    } else {
+                        // Reset về 0 nếu không có data hoặc lỗi
+                        registrationChart.setData(new int[12]);
+                        activeUsersChart.setData(new int[12]);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    setCursor(Cursor.getDefaultCursor());
                 }
             }
-        };
-
-        chartPanel.setBackground(Color.WHITE);
-        chartPanel.setPreferredSize(new Dimension(0, 250));
-        return chartPanel;
+        }.execute();
     }
 
-    private JPanel createActiveUsersChart(String year) {
-        JPanel chartPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    private void updateUI(AnalyticsModel data) {
+        // 1. Update Registration
+        if (data.getRegistration() != null) {
+            registrationChart.setData(data.getRegistration().dataByMonth);
+            
+            AnalyticsModel.RegStats rStats = data.getRegistration().stats;
+            lblRegTotal.setText(String.valueOf(rStats.totalRegistration));
+            lblRegAvg.setText(String.valueOf(rStats.avgMonthly));
+            lblRegHigh.setText(rStats.highestMonth);
+            lblRegGrowth.setText(rStats.growthPercentage);
+        }
 
-                // Sample data for the selected year
-                int[] data = getActiveUsersDataForYear(year);
-                String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-                        "Dec" };
-
-                int width = getWidth();
-                int height = getHeight();
-                int padding = 50;
-                int chartWidth = width - 2 * padding;
-                int chartHeight = height - 2 * padding;
-
-                // Find max value for scaling
-                int maxValue = 0;
-                for (int value : data) {
-                    if (value > maxValue)
-                        maxValue = value;
-                }
-
-                // Draw axes
-                g2d.setColor(new Color(100, 116, 139));
-                g2d.setStroke(new BasicStroke(2));
-                g2d.drawLine(padding, height - padding, width - padding, height - padding); // X-axis
-                g2d.drawLine(padding, padding, padding, height - padding); // Y-axis
-
-                // Draw grid lines
-                g2d.setColor(new Color(241, 245, 249));
-                for (int i = 0; i <= 5; i++) {
-                    int y = height - padding - (chartHeight / 5) * i;
-                    g2d.drawLine(padding, y, width - padding, y);
-                }
-
-                // Draw line chart
-                g2d.setColor(new Color(34, 197, 94));
-                g2d.setStroke(new BasicStroke(3));
-
-                int pointSpacing = chartWidth / (data.length - 1);
-
-                for (int i = 0; i < data.length - 1; i++) {
-                    int x1 = padding + i * pointSpacing;
-                    int y1 = height - padding - (int) ((double) data[i] / maxValue * chartHeight);
-                    int x2 = padding + (i + 1) * pointSpacing;
-                    int y2 = height - padding - (int) ((double) data[i + 1] / maxValue * chartHeight);
-
-                    g2d.drawLine(x1, y1, x2, y2);
-                }
-
-                // Draw points and values
-                for (int i = 0; i < data.length; i++) {
-                    int x = padding + i * pointSpacing;
-                    int y = height - padding - (int) ((double) data[i] / maxValue * chartHeight);
-
-                    // Point
-                    g2d.setColor(Color.WHITE);
-                    g2d.fillOval(x - 5, y - 5, 10, 10);
-                    g2d.setColor(new Color(34, 197, 94));
-                    g2d.fillOval(x - 4, y - 4, 8, 8);
-
-                    // Value
-                    g2d.setColor(new Color(51, 65, 85));
-                    g2d.setFont(new Font("Arial", Font.BOLD, 11));
-                    String valueStr = String.valueOf(data[i]);
-                    FontMetrics fm = g2d.getFontMetrics();
-                    int textWidth = fm.stringWidth(valueStr);
-                    g2d.drawString(valueStr, x - textWidth / 2, y - 10);
-
-                    // Month label
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                    g2d.setColor(new Color(100, 116, 139));
-                    int labelWidth = fm.stringWidth(months[i]);
-                    g2d.drawString(months[i], x - labelWidth / 2, height - padding + 20);
-                }
-
-                // Draw Y-axis labels
-                g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                g2d.setColor(new Color(100, 116, 139));
-                for (int i = 0; i <= 5; i++) {
-                    int value = (maxValue / 5) * i;
-                    int y = height - padding - (chartHeight / 5) * i;
-                    g2d.drawString(String.valueOf(value), 10, y + 5);
-                }
-            }
-        };
-
-        chartPanel.setBackground(Color.WHITE);
-        chartPanel.setPreferredSize(new Dimension(0, 250));
-        return chartPanel;
+        // 2. Update Active Users
+        if (data.getActiveUsers() != null) {
+            activeUsersChart.setData(data.getActiveUsers().dataByMonth);
+            
+            AnalyticsModel.ActiveStats aStats = data.getActiveUsers().stats;
+            lblActAvg.setText(String.valueOf(aStats.avgActivitiesMonthly));
+            lblActHigh.setText(aStats.highestMonth);
+            lblActPercent.setText(aStats.activityPercentage);
+            lblActTrend.setText(aStats.trend);
+        }
     }
 
-    private JPanel createRegistrationStats() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 10));
-        panel.setBackground(new Color(248, 250, 252));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+    // === UI HELPERS ===
 
-        panel.add(createStatCard("Total Registration", "1,247", new Color(59, 130, 246)));
-        panel.add(createStatCard("Avg/month", "104", new Color(168, 85, 247)));
-        panel.add(createStatCard("Highest Month", "145 (Aug)", new Color(34, 197, 94)));
-        panel.add(createStatCard("Growth", "+23.5%", new Color(251, 146, 60)));
-
-        return panel;
+    private JPanel createSectionContainer() {
+        JPanel section = new JPanel(new BorderLayout(10, 10));
+        section.setBackground(Color.WHITE);
+        section.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(226, 232, 240), 1),
+                new EmptyBorder(15, 15, 15, 15)));
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 350)); // Chiều cao cố định cho đẹp
+        return section;
     }
 
-    private JPanel createActiveUsersStats() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 10));
-        panel.setBackground(new Color(248, 250, 252));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-
-        panel.add(createStatCard("Avg activities/month", "856", new Color(34, 197, 94)));
-        panel.add(createStatCard("Highest Month", "923 (Nov)", new Color(59, 130, 246)));
-        panel.add(createStatCard("Activity Percentage", "68.7%", new Color(168, 85, 247)));
-        panel.add(createStatCard("Trend", "Rising", new Color(34, 197, 94)));
-
-        return panel;
+    private JPanel createSectionHeader(String title) {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Color.WHITE);
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 18));
+        header.add(lblTitle, BorderLayout.WEST);
+        return header;
     }
 
-    private JPanel createStatCard(String label, String value, Color color) {
+    private JLabel createStatValueLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("SansSerif", Font.BOLD, 22)); // Font to cho số liệu
+        return label;
+    }
+
+    private JPanel createStatCard(String title, JLabel valueLabel, Color color) {
         JPanel card = new JPanel(new BorderLayout(5, 5));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(226, 232, 240)),
-                BorderFactory.createEmptyBorder(15, 20, 15, 20)));
-        card.setPreferredSize(new Dimension(200, 80));
+                new EmptyBorder(10, 15, 10, 15)));
+        card.setPreferredSize(new Dimension(180, 80));
 
-        JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Arial", Font.BOLD, 24));
-        lblValue.setForeground(color);
-        card.add(lblValue, BorderLayout.CENTER);
+        valueLabel.setForeground(color);
+        card.add(valueLabel, BorderLayout.CENTER);
 
-        JLabel lblLabel = new JLabel(label);
-        lblLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-        lblLabel.setForeground(new Color(100, 116, 139));
-        card.add(lblLabel, BorderLayout.SOUTH);
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblTitle.setForeground(new Color(100, 116, 139));
+        card.add(lblTitle, BorderLayout.SOUTH);
 
         return card;
     }
 
-    private void updateRegistrationChart() {
-        String selectedYear = (String) registrationYearCombo.getSelectedItem();
-        JPanel parent = (JPanel) registrationChartPanel.getParent();
-        parent.remove(registrationChartPanel);
-        registrationChartPanel = createRegistrationChart(selectedYear);
-        parent.add(registrationChartPanel, BorderLayout.CENTER);
-        parent.revalidate();
-        parent.repaint();
-    }
+    // === CUSTOM CHART PANEL (Tái sử dụng logic vẽ) ===
+    class CustomChartPanel extends JPanel {
+        private int[] data = new int[12]; // Mặc định 0
+        private Color color;
+        private boolean isBarChart; // true = Bar, false = Line
 
-    private void updateActiveUsersChart() {
-        String selectedYear = (String) activeUsersYearCombo.getSelectedItem();
-        JPanel parent = (JPanel) activeUsersChartPanel.getParent();
-        parent.remove(activeUsersChartPanel);
-        activeUsersChartPanel = createActiveUsersChart(selectedYear);
-        parent.add(activeUsersChartPanel, BorderLayout.CENTER);
-        parent.revalidate();
-        parent.repaint();
-    }
-
-    private int[] getRegistrationDataForYear(String year) {
-        // Sample data for demonstration
-        switch (year) {
-            case "2024":
-                return new int[] { 89, 95, 102, 118, 125, 132, 128, 145, 138, 142, 135, 98 };
-            case "2023":
-                return new int[] { 67, 72, 78, 85, 92, 98, 105, 112, 108, 115, 120, 110 };
-            case "2022":
-                return new int[] { 45, 52, 58, 63, 68, 75, 82, 88, 92, 95, 98, 87 };
-            default:
-                return new int[] { 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85 };
+        public CustomChartPanel(Color color, boolean isBarChart) {
+            this.color = color;
+            this.isBarChart = isBarChart;
+            setBackground(Color.WHITE);
+            setPreferredSize(new Dimension(0, 200));
         }
-    }
 
-    private int[] getActiveUsersDataForYear(String year) {
-        // Sample data for demonstration
-        switch (year) {
-            case "2024":
-                return new int[] { 723, 745, 768, 802, 835, 856, 872, 889, 895, 910, 923, 856 };
-            case "2023":
-                return new int[] { 598, 612, 635, 658, 678, 695, 715, 732, 748, 765, 780, 720 };
-            case "2022":
-                return new int[] { 445, 468, 489, 512, 535, 558, 578, 595, 612, 628, 645, 610 };
-            default:
-                return new int[] { 320, 345, 368, 390, 412, 435, 458, 480, 502, 525, 548, 520 };
+        public void setData(int[] newData) {
+            this.data = newData != null ? newData : new int[12];
+            repaint(); // 🔥 Vẽ lại khi có dữ liệu mới
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int width = getWidth();
+            int height = getHeight();
+            int padding = 40;
+            int chartWidth = width - 2 * padding;
+            int chartHeight = height - 2 * padding;
+
+            // Tìm Max Value
+            int maxValue = 1; // Tránh chia cho 0
+            for (int v : data) maxValue = Math.max(maxValue, v);
+            // Làm tròn max value lên (ví dụ 17 -> 20) để biểu đồ đẹp hơn
+            maxValue = (int) (Math.ceil(maxValue / 5.0) * 5); 
+            if (maxValue == 0) maxValue = 5;
+
+            // Vẽ trục
+            g2d.setColor(new Color(203, 213, 225));
+            g2d.drawLine(padding, height - padding, width - padding, height - padding); // X
+            g2d.drawLine(padding, padding, padding, height - padding); // Y
+
+            // Vẽ lưới ngang & Label trục Y
+            g2d.setFont(new Font("SansSerif", Font.PLAIN, 10));
+            for (int i = 0; i <= 5; i++) {
+                int y = height - padding - (chartHeight / 5) * i;
+                int val = (maxValue / 5) * i;
+                g2d.setColor(new Color(226, 232, 240));
+                g2d.drawLine(padding, y, width - padding, y); // Grid line
+                
+                g2d.setColor(new Color(100, 116, 139));
+                g2d.drawString(String.valueOf(val), 10, y + 5); // Y Label
+            }
+
+            // Vẽ biểu đồ
+            String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+            int step = chartWidth / 12;
+
+            if (isBarChart) {
+                // BAR CHART
+                int barWidth = step / 2;
+                for (int i = 0; i < 12; i++) {
+                    int barHeight = (int) ((double) data[i] / maxValue * chartHeight);
+                    int x = padding + i * step + step / 4;
+                    int y = height - padding - barHeight;
+
+                    g2d.setColor(color);
+                    g2d.fillRoundRect(x, y, barWidth, barHeight, 5, 5);
+                    
+                    // Month Label
+                    g2d.setColor(new Color(100, 116, 139));
+                    g2d.drawString(months[i], x, height - padding + 15);
+                    
+                    // Value Label (Nếu > 0)
+                    if (data[i] > 0) {
+                        g2d.setColor(Color.BLACK);
+                        g2d.drawString(String.valueOf(data[i]), x + barWidth/2 - 5, y - 5);
+                    }
+                }
+            } else {
+                // LINE CHART
+                g2d.setColor(color);
+                g2d.setStroke(new BasicStroke(2));
+                
+                // Points calculation
+                int[][] points = new int[12][2];
+                for(int i=0; i<12; i++) {
+                    points[i][0] = padding + i * step + step / 2;
+                    points[i][1] = height - padding - (int) ((double) data[i] / maxValue * chartHeight);
+                }
+
+                // Draw lines
+                for (int i = 0; i < 11; i++) {
+                    g2d.drawLine(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
+                }
+                
+                // Draw dots & Labels
+                for (int i = 0; i < 12; i++) {
+                    g2d.setColor(Color.WHITE);
+                    g2d.fillOval(points[i][0] - 4, points[i][1] - 4, 8, 8);
+                    g2d.setColor(color);
+                    g2d.drawOval(points[i][0] - 4, points[i][1] - 4, 8, 8);
+                    
+                    g2d.setColor(new Color(100, 116, 139));
+                    g2d.drawString(months[i], points[i][0] - 10, height - padding + 15);
+                    
+                    if (data[i] > 0) {
+                        g2d.setColor(Color.BLACK);
+                        g2d.drawString(String.valueOf(data[i]), points[i][0] - 5, points[i][1] - 8);
+                    }
+                }
+            }
         }
     }
 }

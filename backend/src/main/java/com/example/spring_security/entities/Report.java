@@ -1,5 +1,6 @@
 package com.example.spring_security.entities;
 
+import com.example.spring_security.entities.Enum.ReportStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,10 +26,10 @@ public class Report {
     @JoinColumn(name = "reported_user_id", insertable = false, updatable = false)
     private User reportedUser;
 
-    @Column(name = "title", length = 50)
-    private String title;
+    @Column(name = "reason")
+    private String reason;
 
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;
+    @Column(name = "status")
+    private ReportStatus status;
 
 }

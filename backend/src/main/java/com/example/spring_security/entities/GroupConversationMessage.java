@@ -28,7 +28,7 @@ public class GroupConversationMessage {
     @JoinColumn(name = "sender_id")
     private User sender;
 
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "text")
     private String content;
 
     @Column(name = "sent_at")

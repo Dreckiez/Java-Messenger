@@ -1,186 +1,487 @@
 package components;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import utils.UserSession;
+import utils.ImageEditor;
+import utils.ImageLoader;
 
 public class ChatPanel extends JPanel {
+    // --- UI Components ---
     private JPanel messagesPanel;
     private JTextField inputField;
-    private JButton sendButton;
-    private String currentUser;
-    private JLabel headerLabel;
+    private JLabel nameLabel; 
+    private JLabel headerAvatarLabel;
+    private JButton infoBtn;
+    
+    // --- State & Logic ---
+    private ImageEditor imageEditor;
+    private Runnable onToggleInfo; 
+    private boolean isInfoActive = false;
+    
+    // 🔥🔥 BIẾN TOKEN QUYỀN LỰC NHẤT
+    private long lastHeaderRequestToken = 0; 
+    
+    // Lưu URL avatar đối tác
+    private String currentPartnerAvatarUrl = null; 
+    private long currentChatId = -1; 
+
+    // --- Colors ---
+    private final Color PRIMARY_COLOR = new Color(59, 130, 246);
+    private final Color BG_COLOR = new Color(245, 247, 250);
+    private final Color TEXT_COLOR = new Color(31, 41, 55);
+    private final Color TIME_COLOR = new Color(156, 163, 175);
+    private final Color ACTIVE_INFO_BG = new Color(219, 234, 254);
 
     public ChatPanel() {
+        this.imageEditor = new ImageEditor();
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(BG_COLOR);
 
-        // Header
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
-                BorderFactory.createEmptyBorder(15, 20, 15, 20)));
-
-        // User info in header
-        JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        userInfoPanel.setOpaque(false);
-
-        // Avatar placeholder
-        JLabel avatarLabel = new JLabel();
-        avatarLabel.setPreferredSize(new Dimension(40, 40));
-        avatarLabel.setIcon(createDefaultAvatar());
-
-        headerLabel = new JLabel("Select a chat");
-        headerLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-
-        userInfoPanel.add(avatarLabel);
-        userInfoPanel.add(headerLabel);
-
-        headerPanel.add(userInfoPanel, BorderLayout.WEST);
-
-        // Messages area
+        JPanel headerPanel = createHeaderPanel();
+        
         messagesPanel = new JPanel();
         messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
-        messagesPanel.setBackground(Color.WHITE);
-        messagesPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        messagesPanel.setBackground(BG_COLOR);
+        messagesPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); 
 
         JScrollPane scrollPane = new JScrollPane(messagesPanel);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getViewport().setBackground(BG_COLOR);
+        styleScrollBar(scrollPane);
 
-        // Input panel
-        JPanel inputPanel = new JPanel(new BorderLayout(10, 0));
-        inputPanel.setBackground(Color.WHITE);
-        inputPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-
-        inputField = new JTextField();
-        inputField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        inputField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220), 1, true),
-                BorderFactory.createEmptyBorder(10, 15, 10, 15)));
-        inputField.setBackground(new Color(245, 245, 245));
-
-        // Placeholder text
-        inputField.setText("Type a message...");
-        inputField.setForeground(new Color(150, 150, 150));
-
-        inputField.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (inputField.getText().equals("Type a message...")) {
-                    inputField.setText("");
-                    inputField.setForeground(Color.BLACK);
-                }
-            }
-
-            public void focusLost(FocusEvent e) {
-                if (inputField.getText().isEmpty()) {
-                    inputField.setText("Type a message...");
-                    inputField.setForeground(new Color(150, 150, 150));
-                }
-            }
-        });
-
-        sendButton = new JButton("Send");
-        sendButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        sendButton.setBackground(new Color(59, 130, 246));
-        sendButton.setForeground(Color.WHITE);
-        sendButton.setFocusPainted(false);
-        sendButton.setBorderPainted(false);
-        sendButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        sendButton.setPreferredSize(new Dimension(80, 40));
-
-        // Hover effect for send button
-        sendButton.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                sendButton.setBackground(new Color(37, 99, 235));
-            }
-
-            public void mouseExited(MouseEvent e) {
-                sendButton.setBackground(new Color(59, 130, 246));
-            }
-        });
-
-        // Send message action
-        ActionListener sendAction = e -> sendMessage();
-        inputField.addActionListener(sendAction);
-        sendButton.addActionListener(sendAction);
-
-        inputPanel.add(inputField, BorderLayout.CENTER);
-        inputPanel.add(sendButton, BorderLayout.EAST);
+        JPanel inputContainer = createInputPanel();
 
         add(headerPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
-        add(inputPanel, BorderLayout.SOUTH);
+        add(inputContainer, BorderLayout.SOUTH);
+    }
 
-        // Add some demo messages
-        addDemoMessages();
+    // 🔥🔥🔥 HÀM CLEAR CHAT MỚI BỔ SUNG 🔥🔥🔥
+    public void clearChat() {
+        // 1. Reset Token để hủy các request load ảnh cũ đang treo
+        this.lastHeaderRequestToken = System.nanoTime(); 
+        
+        // 2. Reset ID cuộc trò chuyện
+        this.currentChatId = -1;
+        this.currentPartnerAvatarUrl = null;
+        
+        // 3. Xóa tin nhắn
+        if (messagesPanel != null) {
+            messagesPanel.removeAll();
+            messagesPanel.revalidate();
+            messagesPanel.repaint();
+        }
+
+        // 4. Xóa nội dung nhập liệu
+        if (inputField != null) {
+            setupPlaceholder(inputField, "Type a message and press Enter...");
+        }
+
+        // 5. Reset Header về trạng thái mặc định
+        if (nameLabel != null) nameLabel.setText("Select a chat");
+        if (headerAvatarLabel != null) {
+            headerAvatarLabel.setIcon(createAvatar("?", 40)); 
+            headerAvatarLabel.repaint();
+        }
+        
+        // 6. Reset nút Info
+        this.isInfoActive = false;
+        if (infoBtn != null) infoBtn.repaint();
+    }
+
+    // =========================================================================
+    // 🔥 CÁC HÀM CŨ GIỮ NGUYÊN BÊN DƯỚI
+    // =========================================================================
+
+    public void updateChatHeader(String name, String avatarUrl, boolean isRefreshOnly) {
+        updateChatHeaderState(-1, name, avatarUrl, isRefreshOnly);
+    }
+    
+    public void updateChatHeader(long chatId, String name, String avatarUrl, boolean isRefreshOnly) {
+        updateChatHeaderState(chatId, name, avatarUrl, isRefreshOnly);
+    }
+
+    private void updateChatHeaderState(long chatId, String name, String avatarUrl, boolean isRefreshOnly) {
+        long currentToken = System.nanoTime();
+        this.lastHeaderRequestToken = currentToken; 
+
+        if (chatId != -1) this.currentChatId = chatId;
+        this.nameLabel.setText(name);
+        this.currentPartnerAvatarUrl = avatarUrl; 
+
+        if (!isRefreshOnly) {
+            headerAvatarLabel.setIcon(null); 
+            headerAvatarLabel.setIcon(createAvatar(name, 40)); 
+            headerAvatarLabel.repaint();
+        }
+
+        if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
+            ImageLoader.loadImageAsync(avatarUrl, img -> {
+                if (ChatPanel.this.lastHeaderRequestToken != currentToken) return; 
+
+                if (img != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        if (ChatPanel.this.lastHeaderRequestToken == currentToken) {
+                            ImageIcon icon = imageEditor.makeCircularImage(img, 40);
+                            headerAvatarLabel.setIcon(icon);
+                            headerAvatarLabel.repaint();
+                        }
+                    });
+                }
+            });
+            
+        } else if (isRefreshOnly) {
+            headerAvatarLabel.setIcon(createAvatar(name, 40));
+        }
+        
+        if (!isRefreshOnly) {
+            messagesPanel.removeAll();
+            messagesPanel.repaint();
+        }
+    }
+
+    public void loadMessages(JSONArray messages, String partnerName) {
+        loadMessages(this.currentChatId, messages, partnerName);
+    }
+
+    public void loadMessages(long chatId, JSONArray messages, String partnerName) {
+        this.currentChatId = chatId;
+        messagesPanel.removeAll();
+        int myId = UserSession.getUser().getId(); 
+
+        for (int i = messages.length() - 1; i >= 0; i--) {
+            JSONObject msg = messages.getJSONObject(i);
+            
+            String content = msg.optString("content", "");
+            int senderId = msg.optInt("senderId", -1);
+            String rawTime = msg.optString("sentAt", "");
+            String senderAvatarUrl = msg.optString("senderAvatar", null); 
+            String senderDisplayName = msg.optString("senderName", partnerName);
+
+            boolean isMe = (senderId == myId);
+            String displayTime = formatTime(rawTime);
+            
+            if (!isMe && (senderAvatarUrl == null || senderAvatarUrl.isEmpty() || "null".equals(senderAvatarUrl))) {
+                senderAvatarUrl = this.currentPartnerAvatarUrl;
+            }
+
+            addMessage(content, displayTime, (isMe ? "You" : senderDisplayName), isMe, senderAvatarUrl);
+        }
+
+        messagesPanel.revalidate();
+        messagesPanel.repaint();
+
+        SwingUtilities.invokeLater(() -> {
+            JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
+            if (scrollPane != null) {
+                JScrollBar vertical = scrollPane.getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
+            }
+        });
+    }
+
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setPreferredSize(new Dimension(800, 60));
+        headerPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+        headerPanel.setBorder(new EmptyBorder(0, 20, 0, 20)); 
+
+        JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        userInfoPanel.setOpaque(false);
+        
+        headerAvatarLabel = new JLabel();
+        headerAvatarLabel.setPreferredSize(new Dimension(40, 40));
+        headerAvatarLabel.setIcon(createAvatar("?", 40)); 
+
+        nameLabel = new JLabel("Select a chat");
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        nameLabel.setForeground(TEXT_COLOR);
+
+        userInfoPanel.add(headerAvatarLabel);
+        userInfoPanel.add(nameLabel);
+        
+        infoBtn = new JButton("ℹ️"); 
+        infoBtn.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+        infoBtn.setBorderPainted(false);
+        infoBtn.setContentAreaFilled(false);
+        infoBtn.setFocusPainted(false);
+        infoBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        infoBtn.setPreferredSize(new Dimension(40, 40));
+        
+        infoBtn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+            @Override
+            public void paint(Graphics g, JComponent c) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                if (isInfoActive) {
+                    g2.setColor(ACTIVE_INFO_BG);
+                    g2.fillOval(0, 0, c.getWidth(), c.getHeight());
+                }
+                super.paint(g2, c);
+                g2.dispose();
+            }
+        });
+        
+        infoBtn.addActionListener(e -> {
+            toggleInfoState();
+            if (onToggleInfo != null) onToggleInfo.run();
+        });
+
+        headerPanel.add(userInfoPanel, BorderLayout.WEST);
+        headerPanel.add(infoBtn, BorderLayout.EAST);
+        return headerPanel;
+    }
+
+    private JPanel createInputPanel() {
+        JPanel inputContainer = new JPanel(new BorderLayout());
+        inputContainer.setBackground(BG_COLOR);
+        inputContainer.setBorder(new EmptyBorder(15, 20, 20, 20));
+
+        RoundedPanel inputBar = new RoundedPanel(30, Color.WHITE);
+        inputBar.setLayout(new BorderLayout());
+        inputBar.setBorder(new EmptyBorder(5, 15, 5, 15));
+
+        inputField = new JTextField();
+        inputField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        inputField.setBorder(null);
+        inputField.setBackground(Color.WHITE);
+        
+        setupPlaceholder(inputField, "Type a message and press Enter...");
+
+        inputField.addActionListener(e -> sendMessage());
+
+        inputBar.add(inputField, BorderLayout.CENTER);
+        inputContainer.add(inputBar, BorderLayout.CENTER);
+        return inputContainer;
+    }
+
+    public void setChatUser(String user) {
+        updateChatHeaderState(-1, user, null, false);
+    }
+    
+    public void setOnToggleInfo(Runnable onToggleInfo) { this.onToggleInfo = onToggleInfo; }
+    
+    public void setInfoActive(boolean isActive) {
+        this.isInfoActive = isActive;
+        infoBtn.repaint();
+    }
+    
+    private void toggleInfoState() {
+        this.isInfoActive = !this.isInfoActive;
+        infoBtn.repaint();
     }
 
     private void sendMessage() {
         String msg = inputField.getText().trim();
-        if (!msg.isEmpty() && !msg.equals("Type a message...")) {
-            addMessage(msg, true);
+        if (!msg.isEmpty() && !msg.equals("Type a message and press Enter...")) {
+            String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            addMessage(msg, time, "You", true, null);
             inputField.setText("");
-            inputField.setForeground(Color.BLACK);
-
-            // Simulate received message after 1 second (for demo)
-            Timer timer = new Timer(1000, e -> {
-                addMessage("Thanks for your message! 😊", false);
-            });
-            timer.setRepeats(false);
-            timer.start();
         }
     }
 
-    private void addMessage(String message, boolean isSentByMe) {
-        MessageBubble bubble = new MessageBubble(message, isSentByMe);
-        messagesPanel.add(bubble);
-        messagesPanel.revalidate();
+    private void addMessage(String message, String time, String senderName, boolean isMe, String avatarUrl) {
+        JPanel wrapper = new JPanel(new BorderLayout()) {
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension pref = getPreferredSize();
+                return new Dimension(Integer.MAX_VALUE, pref.height); 
+            }
+        };
+        wrapper.setOpaque(false);
+        
+        JPanel contentBox = new JPanel();
+        contentBox.setLayout(new BoxLayout(contentBox, BoxLayout.Y_AXIS));
+        contentBox.setOpaque(false);
 
-        // Auto-scroll to bottom
-        SwingUtilities.invokeLater(() -> {
-            JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
-            JScrollBar vertical = scrollPane.getVerticalScrollBar();
-            vertical.setValue(vertical.getMaximum());
+        if (!isMe) {
+            JLabel nameLbl = new JLabel(senderName);
+            nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            nameLbl.setForeground(Color.GRAY);
+            nameLbl.setBorder(new EmptyBorder(0, 4, 1, 0));
+            nameLbl.setAlignmentX(Component.LEFT_ALIGNMENT); 
+            contentBox.add(nameLbl);
+        }
+
+        MessageBubble bubble = new MessageBubble(message, isMe);
+        bubble.setAlignmentX(isMe ? Component.RIGHT_ALIGNMENT : Component.LEFT_ALIGNMENT);
+        contentBox.add(bubble);
+
+        JLabel timeLbl = new JLabel(time);
+        timeLbl.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+        timeLbl.setForeground(TIME_COLOR);
+        timeLbl.setBorder(new EmptyBorder(1, 2, 0, 2));
+        
+        if (isMe) {
+            timeLbl.setAlignmentX(Component.RIGHT_ALIGNMENT);
+            wrapper.add(contentBox, BorderLayout.EAST);
+        } else {
+            timeLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+            
+            JPanel incomingContainer = new JPanel(new BorderLayout(8, 0)); 
+            incomingContainer.setOpaque(false);
+            
+            JLabel avatarLabel = new JLabel();
+            avatarLabel.setPreferredSize(new Dimension(32, 32));
+            avatarLabel.setIcon(createAvatar(senderName, 32));
+
+            if (avatarUrl != null && !avatarUrl.isEmpty() && !"null".equals(avatarUrl)) {
+                ImageLoader.loadImageAsync(avatarUrl, img -> {
+                    if (img != null) {
+                        SwingUtilities.invokeLater(() -> {
+                            if (avatarLabel.isShowing()) {
+                                avatarLabel.setIcon(imageEditor.makeCircularImage(img, 32));
+                                avatarLabel.repaint();
+                            }
+                        });
+                    }
+                });
+            }
+            
+            JPanel avatarWrapper = new JPanel(new BorderLayout());
+            avatarWrapper.setOpaque(false);
+            avatarWrapper.add(avatarLabel, BorderLayout.NORTH);
+            avatarWrapper.setBorder(new EmptyBorder(isMe ? 0 : 18, 0, 0, 0)); 
+
+            incomingContainer.add(avatarWrapper, BorderLayout.WEST);
+            incomingContainer.add(contentBox, BorderLayout.CENTER);
+            
+            wrapper.add(incomingContainer, BorderLayout.WEST);
+        }
+        
+        contentBox.add(timeLbl);
+        messagesPanel.add(wrapper);
+        messagesPanel.add(Box.createVerticalStrut(4)); 
+    }
+
+    private String formatTime(String isoTime) {
+        if (isoTime == null || isoTime.isEmpty()) return "";
+        try {
+            LocalDateTime dt = LocalDateTime.parse(isoTime);
+            return dt.format(DateTimeFormatter.ofPattern("HH:mm"));
+        } catch (Exception e) { return ""; }
+    }
+
+    private ImageIcon createAvatar(String name, int size) {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = img.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setColor(new Color(209, 213, 219)); 
+        g2d.fillOval(0, 0, size, size);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Segoe UI", Font.BOLD, size / 2)); 
+        String initial = (name != null && !name.isEmpty()) ? name.substring(0, 1).toUpperCase() : "?";
+        FontMetrics fm = g2d.getFontMetrics();
+        g2d.drawString(initial, (size - fm.stringWidth(initial)) / 2, ((size - fm.getHeight()) / 2) + fm.getAscent());
+        g2d.dispose();
+        return new ImageIcon(img);
+    }
+
+    private void setupPlaceholder(JTextField field, String text) {
+        field.setText(text);
+        field.setForeground(Color.GRAY);
+        
+        // Remove old listeners to prevent stacking
+        for(FocusListener fl : field.getFocusListeners()) {
+            field.removeFocusListener(fl);
+        }
+
+        field.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                if (field.getText().equals(text)) { field.setText(""); field.setForeground(TEXT_COLOR); }
+            }
+            public void focusLost(FocusEvent e) {
+                if (field.getText().isEmpty()) { field.setText(text); field.setForeground(Color.GRAY); }
+            }
         });
     }
 
-    public void setChatUser(String user) {
-        currentUser = user;
-        headerLabel.setText(user);
-        messagesPanel.removeAll();
-        messagesPanel.revalidate();
-        messagesPanel.repaint();
-
-        // Add welcome message
-        addMessage("Chat started with " + user, false);
+    private void styleScrollBar(JScrollPane scrollPane) {
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
+            @Override protected void configureScrollBarColors() {
+                this.thumbColor = new Color(200, 200, 200); this.trackColor = BG_COLOR;
+            }
+            @Override protected JButton createDecreaseButton(int orientation) { return createZeroButton(); }
+            @Override protected JButton createIncreaseButton(int orientation) { return createZeroButton(); }
+            private JButton createZeroButton() {
+                JButton jbutton = new JButton(); jbutton.setPreferredSize(new Dimension(0, 0)); return jbutton;
+            }
+        });
     }
 
-    private void addDemoMessages() {
-        // Demo conversation
-        addMessage("Hey! How are you?", false);
-        addMessage("I'm doing great! Thanks for asking 😊", true);
-        addMessage("That's awesome! Want to grab lunch later?", false);
+    // --- Inner Classes ---
+    class RoundedPanel extends JPanel {
+        private int radius; private Color backgroundColor;
+        public RoundedPanel(int radius, Color bgColor) {
+            this.radius = radius; this.backgroundColor = bgColor; setOpaque(false);
+        }
+        @Override protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(0, 0, 0, 10));
+            g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, radius, radius);
+            g2.setColor(backgroundColor);
+            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
+            g2.setColor(new Color(230,230,230));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
+            super.paintComponent(g);
+        }
     }
 
-    private ImageIcon createDefaultAvatar() {
-        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(40, 40,
-                java.awt.image.BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = img.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    class MessageBubble extends JPanel {
+        private JTextArea textArea; 
+        private boolean isMe; 
+        private final int MAX_WIDTH = 300; 
+        
+        public MessageBubble(String message, boolean isMe) {
+            this.isMe = isMe; 
+            setLayout(new BorderLayout()); 
+            setOpaque(false);
+            
+            textArea = new JTextArea(message);
+            textArea.setWrapStyleWord(true); 
+            textArea.setLineWrap(true); 
+            textArea.setOpaque(false);
+            textArea.setEditable(false); 
+            textArea.setFocusable(false);
+            textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            textArea.setForeground(isMe ? Color.WHITE : TEXT_COLOR);
+            textArea.setMargin(new Insets(0,0,0,0)); 
+            
+            textArea.setSize(new Dimension(MAX_WIDTH, Short.MAX_VALUE));
+            
+            Dimension textSize = textArea.getPreferredSize();
+            int bubbleWidth = Math.min(textSize.width + 24, MAX_WIDTH + 24);
+            
+            textArea.setSize(new Dimension(bubbleWidth - 24, Short.MAX_VALUE)); 
+            int bubbleHeight = textArea.getPreferredSize().height + 12; 
 
-        g2d.setColor(new Color(156, 163, 175));
-        g2d.fillOval(0, 0, 40, 40);
-
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        g2d.drawString("?", 14, 27);
-
-        g2d.dispose();
-        return new ImageIcon(img);
+            setPreferredSize(new Dimension(bubbleWidth, bubbleHeight));
+            setMaximumSize(new Dimension(bubbleWidth, bubbleHeight));
+            
+            setBorder(new EmptyBorder(6, 12, 6, 12));
+            add(textArea, BorderLayout.CENTER);
+        }
+        
+        @Override protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(isMe ? PRIMARY_COLOR : Color.WHITE);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+            if (!isMe) {
+                g2.setColor(new Color(220, 220, 220));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 18, 18);
+            }
+            super.paintComponent(g);
+        }
     }
 }

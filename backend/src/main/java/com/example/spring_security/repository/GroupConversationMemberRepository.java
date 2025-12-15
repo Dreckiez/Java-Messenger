@@ -35,6 +35,23 @@ public interface GroupConversationMemberRepository
             """, nativeQuery = true)
     List<GroupMemberResponse> findMembersByGroupConversationId(Long groupConversationId);
 
+    @Query(value = """
+            SELECT 
+                u.user_id AS userId,
+                u.username AS username,
+                u.first_name AS firstName,
+                u.last_name AS lastName,
+                u.avatar_url AS avatarUrl,
+                u.is_online AS isOnline,
+                gcm.group_role AS groupRole,
+                gcm.joined_at AS joinedAt,
+                gcm.appointed_at AS appointedAt
+                
+            FROM group_conversation_member gcm
+            JOIN user_info u ON u.user_id = gcm.member_id
+            WHERE gcm.group_conversation_id = :groupConversationId AND gcm.group_role = 1
+            """, nativeQuery = true)
+    List<GroupMemberResponse> findAdminsByGroupConversationId(Long groupConversationId);
 
     @Query(value = """
             SELECT member_id
@@ -66,4 +83,23 @@ public interface GroupConversationMemberRepository
             )
             """, nativeQuery = true)
     Optional<GroupConversationMember> findJoinedEarliest(@Param("groupConversationId") Long groupConversationId);
+
+
+    @Query(value = """
+    SELECT COUNT(*) 
+    FROM group_conversation_member
+    WHERE group_conversation_id = :groupId
+    """, nativeQuery = true)
+    Long countMembers(Long groupId);
+
+    @Query(value = """
+    SELECT COUNT(*) 
+    FROM group_conversation_member
+    WHERE group_conversation_id = :groupId
+      AND group_role = 1
+    """, nativeQuery = true)
+    Long countAdmins(Long groupId);
+
+
+
 }
