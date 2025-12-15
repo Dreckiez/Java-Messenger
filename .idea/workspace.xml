@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="" />
+    <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/StatsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/StatsRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/components/CenterPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/CenterPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/components/ChatPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/ChatPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/components/InfoPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/InfoPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/components/NavBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/NavBar.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/components/UserManage.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/UserManage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/screens/HomeScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/screens/HomeScreen.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/services/UserAdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/services/UserAdminService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -30,6 +40,7 @@
     <setting file="jar://$MAVEN_REPOSITORY$/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar!/jakarta/validation/constraints/Size.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/3.5.5/spring-data-commons-3.5.5.jar!/org/springframework/data/repository/CrudRepository.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-jpa/3.5.5/spring-data-jpa-3.5.5.jar!/org/springframework/data/jpa/repository/JpaRepository.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-core/6.5.6/spring-security-core-6.5.6.jar!/org/springframework/security/core/Authentication.class" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-core/6.5.6/spring-security-core-6.5.6.jar!/org/springframework/security/core/userdetails/UserDetailsService.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MavenImportPreferences">
@@ -57,11 +68,13 @@
   &quot;keyToString&quot;: {
     &quot;Application.Main.executor&quot;: &quot;Run&quot;,
     &quot;Application.SpringSecurityApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.spring-security [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.spring-security [package].executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Minh&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/HCMUS/Nam 3/KTPM/Java/Spring Boot Learn/New Project/Java-Messenger/backend&quot;,

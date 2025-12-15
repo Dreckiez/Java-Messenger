@@ -1,6 +1,7 @@
 package com.example.spring_security.controller.user;
 import com.example.spring_security.dto.request.SendMessageRequest;
 import com.example.spring_security.dto.response.ListPrivateConversationMessageResponse;
+import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.SendMessageResponse;
 import com.example.spring_security.entities.User;
 import com.example.spring_security.services.user.UserPrivateConversationService;
@@ -53,4 +54,12 @@ public class UserPrivateConversationController {
             @RequestParam(value = "cursorId", required = false) Long cursorId) {
         return ResponseEntity.ok(userPrivateConversationService.getMessages(user.getUserId(), privateConversationId, cursorId));
     }
+
+    @GetMapping("/{friendId}")
+    public ResponseEntity<Map<String, Long>> getIdConv
+            (@AuthenticationPrincipal User user,
+             @PathVariable(value = "friendId", required = true) Long friendId) {
+        return ResponseEntity.ok(userPrivateConversationService.getIdConv(user.getUserId(), friendId));
+    }
+
 }

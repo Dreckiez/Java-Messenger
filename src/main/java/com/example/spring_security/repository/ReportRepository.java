@@ -1,6 +1,7 @@
 package com.example.spring_security.repository;
 
 import com.example.spring_security.entities.Report;
+import com.example.spring_security.entities.ReportId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,8 +9,9 @@ import org.springframework.data.repository.query.Param;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-public interface ReportRepository extends JpaRepository<Report, Long> {
+public interface ReportRepository extends JpaRepository<Report, ReportId> {
     @Query(value = """
     SELECT r.* 
     FROM report r
@@ -28,5 +30,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
             @Param("username") String username,
             @Param("email") String email
     );
+
+    Optional<Report> findById(ReportId id);
 
 }

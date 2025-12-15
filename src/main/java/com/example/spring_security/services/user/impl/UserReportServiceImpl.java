@@ -1,6 +1,7 @@
 package com.example.spring_security.services.user.impl;
 
 import com.example.spring_security.dto.request.ReportRequest;
+import com.example.spring_security.entities.Enum.ReportStatus;
 import com.example.spring_security.entities.Report;
 import com.example.spring_security.entities.ReportId;
 import com.example.spring_security.exception.CustomException;
@@ -37,8 +38,8 @@ public class UserReportServiceImpl implements UserReportService {
                         .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User no longer exists.")))
                 .reportedUser(userRepository.findById(reportedUserId)
                         .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User no longer exists.")))
-                .title(reportRequest.getTitle())
-                .content(reportRequest.getContent())
+                .reason(reportRequest.getReason())
+                .status(ReportStatus.PENDING)
                 .build();
 
         Map<String, String> message = new HashMap<>();

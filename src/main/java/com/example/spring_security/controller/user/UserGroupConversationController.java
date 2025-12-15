@@ -68,7 +68,7 @@ public class UserGroupConversationController {
                 .removeConversation(user.getUserId(), groupConversationId));
     }
 
-    @PatchMapping("/{id}/groupName")
+    @PutMapping("/{id}/groupName")
     public ResponseEntity<Map<String, String>> renameConversation(
             @AuthenticationPrincipal User user,
             @PathVariable("id") Long groupConversationId,
@@ -78,7 +78,7 @@ public class UserGroupConversationController {
                 .renameConversation(user.getUserId(), groupConversationId, renameGroupRequest));
     }
 
-    @PatchMapping("{id}/avatar")
+    @PutMapping("{id}/avatar")
     public ResponseEntity<Map<String, String>> updateAvatar(
             @AuthenticationPrincipal User user,
             @PathVariable("id") Long groupConversationId,
@@ -120,7 +120,7 @@ public class UserGroupConversationController {
         );
     }
 
-    @PatchMapping("{id}/members")
+    @PutMapping("{id}/members")
     public ResponseEntity<Map<String, String>> modifyRole(
             @AuthenticationPrincipal User user,
             @PathVariable("id") Long groupConversationId,
