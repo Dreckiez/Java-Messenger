@@ -79,7 +79,7 @@ public class ApiClient {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             // Thiết lập phương thức là PUT
-            conn.setRequestMethod("PUT"); 
+            conn.setRequestMethod("PUT");
 
             if (token != null && !token.isEmpty())
                 conn.setRequestProperty("Authorization", "Bearer " + token);
@@ -89,8 +89,8 @@ public class ApiClient {
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true); // Bắt buộc cho PUT có body
 
-            conn.setConnectTimeout(5000); 
-            conn.setReadTimeout(5000); 
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
 
             // Gửi Request Body (JSON)
             try (OutputStream os = conn.getOutputStream()) {
@@ -192,7 +192,7 @@ public class ApiClient {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             // Thiết lập phương thức là DELETE
-            conn.setRequestMethod("DELETE"); 
+            conn.setRequestMethod("DELETE");
 
             if (token != null && !token.isEmpty())
                 conn.setRequestProperty("Authorization", "Bearer " + token);
@@ -202,8 +202,8 @@ public class ApiClient {
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true); // Bắt buộc cho DELETE có body
 
-            conn.setConnectTimeout(5000); 
-            conn.setReadTimeout(5000); 
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
 
             // Gửi Request Body (JSON)
             try (OutputStream os = conn.getOutputStream()) {
@@ -256,28 +256,31 @@ public class ApiClient {
             conn.setDoOutput(true); // Cho phép gửi body
             conn.setDoInput(true);
             conn.setRequestMethod("PUT"); // 🔥 Theo yêu cầu của bạn là PUT
-            
+
             if (token != null && !token.isEmpty()) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
-            
+
             // Quan trọng: Content-Type phải là multipart/form-data và kèm boundary
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
             // 2. Ghi Body (OutputStream)
             try (OutputStream outputStream = conn.getOutputStream();
-                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true)) {
+                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true)) {
 
                 // --- Bắt đầu phần File ---
                 writer.append("--" + boundary).append(LINE_FEED);
-                // "avatar" là tên field server mong đợi (cần khớp với backend: avatar/image/file)
-                writer.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"" + file.getName() + "\"").append(LINE_FEED);
-                
+                // "avatar" là tên field server mong đợi (cần khớp với backend:
+                // avatar/image/file)
+                writer.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"" + file.getName() + "\"")
+                        .append(LINE_FEED);
+
                 // Xác định Content-Type của file (image/png, image/jpeg...)
                 String contentType = java.net.URLConnection.guessContentTypeFromName(file.getName());
-                if (contentType == null) contentType = "application/octet-stream";
+                if (contentType == null)
+                    contentType = "application/octet-stream";
                 writer.append("Content-Type: " + contentType).append(LINE_FEED);
-                
+
                 // Content-Transfer-Encoding
                 writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
                 writer.append(LINE_FEED);
@@ -307,7 +310,7 @@ public class ApiClient {
                     response.append(line.trim());
                 }
             }
-            
+
             conn.disconnect();
 
             // Parse kết quả trả về
@@ -327,14 +330,14 @@ public class ApiClient {
     }
 
     public static String sendGetRequestRaw(String urlStr, String token) throws Exception {
-        URL url = new URL(urlStr);
+        URL url = URI.create(urlStr).toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        
+
         // 1. Cấu hình Request
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(5000); // Timeout 5 giây
         conn.setReadTimeout(5000);
-        
+
         // 2. Thêm Headers
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Accept", "application/json");
@@ -352,7 +355,7 @@ public class ApiClient {
         // Sử dụng UTF_8 để không bị lỗi font tiếng Việt
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-            
+
             StringBuilder response = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) {

@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict UcSsXhWo5ZqM6u6kU9ocrD8kJ8WIMvLpOZlC422cF8AmokWMyL7JTFJOWEAPCSQ
 
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.10
@@ -164,10 +163,10 @@ ALTER TABLE public.delete_private_conversation ENABLE TRIGGER ALL;
 
 ALTER TABLE public.private_conversation_message DISABLE TRIGGER ALL;
 
-INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type, is_read, read_at) VALUES (4, 15, 2, 'Hi, this is user 2 in conversation 15', '2025-12-14 16:26:33.89448', NULL, 0, NULL, NULL);
-INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type, is_read, read_at) VALUES (5, 15, 6, 'Hello user 2, this is user 6', '2025-12-14 16:26:33.89448', NULL, 0, NULL, NULL);
-INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type, is_read, read_at) VALUES (6, 16, 5, 'Hi, this is user 5 in conversation 16', '2025-12-14 16:26:43.854', NULL, 0, NULL, NULL);
-INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type, is_read, read_at) VALUES (7, 16, 6, 'Hello user 5, this is user 6', '2025-12-14 16:26:43.854', NULL, 0, NULL, NULL);
+INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type) VALUES (4, 15, 2, 'Hi, this is user 2 in conversation 15', '2025-12-14 16:26:33.89448', NULL, 0);
+INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type) VALUES (5, 15, 6, 'Hello user 2, this is user 6', '2025-12-14 16:26:33.89448', NULL, 0);
+INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type) VALUES (6, 16, 5, 'Hi, this is user 5 in conversation 16', '2025-12-14 16:26:43.854', NULL, 0);
+INSERT INTO public.private_conversation_message (private_conversation_message_id, private_conversation_id, sender_id, content, sent_at, updated_at, type) VALUES (7, 16, 6, 'Hello user 5, this is user 6', '2025-12-14 16:26:43.854', NULL, 0);
 
 
 ALTER TABLE public.private_conversation_message ENABLE TRIGGER ALL;
@@ -529,7 +528,7 @@ ALTER TABLE public.read_group_conversation_message ENABLE TRIGGER ALL;
 
 ALTER TABLE public.read_private_conversation_message DISABLE TRIGGER ALL;
 
-INSERT INTO public.read_private_conversation_message (user_id, private_conversation_message_id, read_at, private_conversation_id) VALUES (2, 5, '2025-12-14 16:26:54.415155', 15);
+INSERT INTO public.read_private_conversation_message (user_id, private_conversation_message_id, read_at) VALUES (2, 5, '2025-12-14 16:26:54.415155');
 
 
 ALTER TABLE public.read_private_conversation_message ENABLE TRIGGER ALL;
@@ -1036,7 +1035,6 @@ SELECT pg_catalog.setval('public.group_conversation_group_conversation_id_seq', 
 -- Name: group_conversation_message_group_conversation_message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.group_conversation_message_group_conversation_message_id_seq', 2, true);
 
 
 --
@@ -1045,7 +1043,6 @@ SELECT pg_catalog.setval('public.group_conversation_message_group_conversation_m
 -- Name: private_conversation_message_private_conversation_message_i_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.private_conversation_message_private_conversation_message_i_seq', 7, true);
 
 
 --
@@ -1081,7 +1078,6 @@ SELECT pg_catalog.setval('public.request_password_reset_request_id_seq', 1, fals
 -- Name: request_password_reset_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.request_password_reset_seq', 1, false);
 
 
 --
@@ -1099,7 +1095,6 @@ SELECT pg_catalog.setval('public.user_info_user_id_seq', 6, true);
 -- Name: verify_email_change_token_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.verify_email_change_token_seq', 1, false);
 
 
 --
@@ -1108,7 +1103,6 @@ SELECT pg_catalog.setval('public.verify_email_change_token_seq', 1, false);
 -- Name: verify_email_change_token_verification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.verify_email_change_token_verification_id_seq', 1, false);
 
 
 --
@@ -1117,7 +1111,6 @@ SELECT pg_catalog.setval('public.verify_email_change_token_verification_id_seq',
 -- Name: verify_token_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.verify_token_seq', 1, false);
 
 
 --
@@ -1135,5 +1128,4 @@ SELECT pg_catalog.setval('public.verify_token_verification_id_seq', 1, false);
 -- PostgreSQL database dump complete
 --
 
-\unrestrict UcSsXhWo5ZqM6u6kU9ocrD8kJ8WIMvLpOZlC422cF8AmokWMyL7JTFJOWEAPCSQ
 

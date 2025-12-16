@@ -14,6 +14,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 
 import models.User;
@@ -27,7 +28,7 @@ import utils.UserSession;
 public class NavBar extends JPanel implements UserListener {
 
     private JButton avatarBtn;
-    
+
     // Các nút điều hướng
     private JButton chatBtn;
     private JButton searchBtn;
@@ -35,36 +36,39 @@ public class NavBar extends JPanel implements UserListener {
     private JButton friendBtn;
     private JButton requestBtn;
     private JButton blockedBtn;
-    
-    private ImageEditor editor;
-    
-    // 🔥 BIẾN LƯU TRẠNG THÁI (Mặc định là chatlist)
-    private String currentActivePanel = "chatlist"; 
 
-    private final Color ACTIVE_BG = new Color(226, 232, 240); 
-    private final Color DEFAULT_BG = new Color(245, 245, 245); 
+    private ImageEditor editor;
+
+    private NotificationDot requestDot;
+
+    // 🔥 BIẾN LƯU TRẠNG THÁI (Mặc định là chatlist)
+    private String currentActivePanel = "chatlist";
+
+    private final Color ACTIVE_BG = new Color(226, 232, 240);
+    private final Color DEFAULT_BG = new Color(245, 245, 245);
 
     public NavBar(HomeScreen home, CenterPanel center, NavPanel navPanel) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(60, 0)); 
+        setPreferredSize(new Dimension(60, 0));
         setBackground(DEFAULT_BG);
 
         UserSession.addListener(this);
 
         editor = new ImageEditor();
         avatarBtn = new JButton();
+        requestDot = new NotificationDot();
         refreshAvatar(UserSession.getUser());
 
-        avatarBtn.setFocusable(true); 
+        avatarBtn.setFocusable(true);
         avatarBtn.setBorderPainted(false);
         avatarBtn.setContentAreaFilled(false);
         avatarBtn.setFocusPainted(false);
-        avatarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); 
+        avatarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         avatarBtn.addActionListener(e -> {
             center.showSettings();
             home.toggleInfoPanel(false);
             resetAllButtons();
-            // Settings không nằm trong danh sách nút active chính, 
+            // Settings không nằm trong danh sách nút active chính,
             // nhưng ta có thể giữ currentActivePanel là cái cũ để khi quay lại thì đúng.
         });
 
@@ -72,16 +76,26 @@ public class NavBar extends JPanel implements UserListener {
         centerWrapper.setLayout(new BoxLayout(centerWrapper, BoxLayout.Y_AXIS));
         centerWrapper.setOpaque(false);
 
-        JPanel centerButtons = new JPanel(new GridLayout(6, 1, 0, 10)); 
+        JPanel centerButtons = new JPanel(new GridLayout(6, 1, 0, 10));
         centerButtons.setOpaque(false);
-        centerButtons.setMaximumSize(new Dimension(50, 360)); 
-        centerButtons.setPreferredSize(new Dimension(50, 360)); 
+        centerButtons.setMaximumSize(new Dimension(50, 360));
+        centerButtons.setPreferredSize(new Dimension(50, 360));
 
         chatBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/chat.png")));
         searchBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/search.png")));
         friendBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/friend.png")));
+
         requestBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/request.png")));
-        globalMsgBtn = new JButton(new ImageIcon(getClass().getClassLoader().getResource("assets/searchmsgglobal.png")));
+        requestBtn.setLayout(null);
+        // requestBtn.setLayout(new OverlayLayout(requestBtn));
+        // requestDot.setAlignmentX(1.0f); // RIGHT
+        // requestDot.setAlignmentY(0.0f); // TOP
+        requestDot.setBounds(32, 12, 10, 10);
+        requestBtn.add(requestDot);
+        requestDot.setVisible(false); // hidden by default
+
+        globalMsgBtn = new JButton(
+                new ImageIcon(getClass().getClassLoader().getResource("assets/searchmsgglobal.png")));
 
         ImageIcon blockedIcon = new ImageIcon(getClass().getClassLoader().getResource("assets/block.png"));
         if (blockedIcon.getImage() == null) {
@@ -96,7 +110,7 @@ public class NavBar extends JPanel implements UserListener {
         st.styleButton(requestBtn);
         st.styleButton(friendBtn);
         st.styleButton(blockedBtn);
-        st.styleButton(globalMsgBtn); 
+        st.styleButton(globalMsgBtn);
 
         // --- ACTION LISTENERS ---
 
@@ -132,20 +146,19 @@ public class NavBar extends JPanel implements UserListener {
             // 2. Mở Dialog (Code sẽ dừng ở dòng setVisible cho đến khi Dialog tắt)
             JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
             MessageSearchDialog searchDialog = new MessageSearchDialog(
-                owner, 
-                -1, 
-                false,  
-                selectedMsg -> {
-                    // Nếu chọn tin nhắn -> Center Panel sẽ mở chat
-                    // Lúc này logic bên Center có thể gọi setActiveButton("chatlist")
-                    // nên ta không cần lo lắng lắm.
-                    if (center != null) {
-                        // center.openConversationFromSearch(selectedMsg);
-                    }
-                }
-            );
-            searchDialog.setVisible(true); 
-            
+                    owner,
+                    -1,
+                    false,
+                    selectedMsg -> {
+                        // Nếu chọn tin nhắn -> Center Panel sẽ mở chat
+                        // Lúc này logic bên Center có thể gọi setActiveButton("chatlist")
+                        // nên ta không cần lo lắng lắm.
+                        if (center != null) {
+                            // center.openConversationFromSearch(selectedMsg);
+                        }
+                    });
+            searchDialog.setVisible(true);
+
             // 3. 🔥 Dòng này chạy ngay sau khi Dialog tắt (Close hoặc Cancel)
             // Khôi phục lại trạng thái nút cũ
             setActiveButton(currentActivePanel);
@@ -170,11 +183,11 @@ public class NavBar extends JPanel implements UserListener {
         add(avatarBtn, BorderLayout.NORTH);
         add(centerWrapper, BorderLayout.CENTER);
         add(logoutBtn, BorderLayout.SOUTH);
-        
+
         // Mặc định ban đầu
         highlightButton(chatBtn);
     }
-    
+
     public void setActiveButton(String panelName) {
         // 🔥 Cập nhật biến lưu trạng thái
         // Chỉ lưu nếu panelName KHÔNG phải là globalmsg (vì globalmsg chỉ là tạm thời)
@@ -184,19 +197,31 @@ public class NavBar extends JPanel implements UserListener {
 
         resetAllButtons();
         switch (panelName) {
-            case "chatlist": highlightButton(chatBtn); break;
-            case "searchfriend": highlightButton(searchBtn); break;
-            case "onlinefriend": highlightButton(friendBtn); break;
-            case "request": highlightButton(requestBtn); break;
-            case "blockedusers": highlightButton(blockedBtn); break;
-            case "globalmsg": highlightButton(globalMsgBtn); break;
+            case "chatlist":
+                highlightButton(chatBtn);
+                break;
+            case "searchfriend":
+                highlightButton(searchBtn);
+                break;
+            case "onlinefriend":
+                highlightButton(friendBtn);
+                break;
+            case "request":
+                highlightButton(requestBtn);
+                break;
+            case "blockedusers":
+                highlightButton(blockedBtn);
+                break;
+            case "globalmsg":
+                highlightButton(globalMsgBtn);
+                break;
         }
     }
 
     private void highlightButton(JButton btn) {
         if (btn != null) {
-            btn.setContentAreaFilled(true); 
-            btn.setBackground(ACTIVE_BG);   
+            btn.setContentAreaFilled(true);
+            btn.setBackground(ACTIVE_BG);
             btn.repaint();
         }
     }
@@ -204,7 +229,7 @@ public class NavBar extends JPanel implements UserListener {
     private void resetAllButtons() {
         resetButton(chatBtn);
         resetButton(searchBtn);
-        resetButton(globalMsgBtn); 
+        resetButton(globalMsgBtn);
         resetButton(friendBtn);
         resetButton(requestBtn);
         resetButton(blockedBtn);
@@ -212,7 +237,7 @@ public class NavBar extends JPanel implements UserListener {
 
     private void resetButton(JButton btn) {
         if (btn != null) {
-            btn.setContentAreaFilled(false); 
+            btn.setContentAreaFilled(false);
             btn.setBackground(DEFAULT_BG);
             btn.repaint();
         }
@@ -221,6 +246,18 @@ public class NavBar extends JPanel implements UserListener {
     @Override
     public void onUserUpdated(User user) {
         refreshAvatar(user);
+    }
+
+    public void showRequestDot() {
+        requestDot.setVisible(true);
+    }
+
+    public void hideRequestDot() {
+        requestDot.setVisible(false);
+    }
+
+    public String getCurrentActivePanel() {
+        return currentActivePanel;
     }
 
     public void refreshAvatar(User user) {

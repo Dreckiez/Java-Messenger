@@ -34,8 +34,8 @@ public class FriendRequests extends JPanel {
     private final Color TEXT_PRIMARY = new Color(30, 41, 59);
     private final Color TEXT_SECONDARY = new Color(148, 163, 184);
     private final Color COLOR_GREEN = new Color(16, 185, 129); // Accept
-    private final Color COLOR_RED = new Color(239, 68, 68);     // Reject
-    private final Color BG_HOVER = new Color(241, 245, 249); 
+    private final Color COLOR_RED = new Color(239, 68, 68); // Reject
+    private final Color BG_HOVER = new Color(241, 245, 249);
 
     public FriendRequests() {
         allRequests = new ArrayList<>();
@@ -48,7 +48,7 @@ public class FriendRequests extends JPanel {
 
         JScrollPane scrollPane = createScrollPane();
         // 🔥 Đặt padding cho RequestsPanel bên trong JScrollPane
-        requestsPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15)); 
+        requestsPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
         add(scrollPane, BorderLayout.CENTER);
     }
 
@@ -69,7 +69,7 @@ public class FriendRequests extends JPanel {
         // --- SEARCH BAR ---
         RoundedPanel searchContainer = new RoundedPanel(20, new Color(243, 244, 246));
         searchContainer.setLayout(new BorderLayout());
-        searchContainer.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15)); 
+        searchContainer.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         searchContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         searchContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -88,6 +88,7 @@ public class FriendRequests extends JPanel {
                     searchField.setForeground(TEXT_PRIMARY);
                 }
             }
+
             public void focusLost(FocusEvent e) {
                 if (searchField.getText().isEmpty()) {
                     searchField.setText(placeholder);
@@ -131,8 +132,17 @@ public class FriendRequests extends JPanel {
                 this.thumbColor = new Color(180, 180, 180);
                 this.trackColor = new Color(240, 240, 240);
             }
-            @Override protected JButton createDecreaseButton(int orientation) { return createZeroButton(); }
-            @Override protected JButton createIncreaseButton(int orientation) { return createZeroButton(); }
+
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return createZeroButton();
+            }
+
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return createZeroButton();
+            }
+
             private JButton createZeroButton() {
                 JButton button = new JButton();
                 button.setPreferredSize(new Dimension(0, 0));
@@ -151,7 +161,7 @@ public class FriendRequests extends JPanel {
     }
 
     private void removeRequestItem(RequestItem item) {
-        allRequests.remove(item.getRequest());
+        allRequests.removeIf(r -> r.getUserId().equals(item.getRequest().getUserId()));
         displayedItems.remove(item);
         requestsPanel.remove(item);
 
@@ -172,12 +182,14 @@ public class FriendRequests extends JPanel {
         }
 
         for (Request request : allRequests) {
-            // Khởi tạo RequestItem và truyền instance của FriendRequests để truy cập màu sắc
-            RequestItem item = new RequestItem(request); 
-            
+            // Khởi tạo RequestItem và truyền instance của FriendRequests để truy cập màu
+            // sắc
+            RequestItem item = new RequestItem(request);
+
             // 🔥 Cần truyền màu sắc và Parent để RequestItem có thể dùng
-            // (Tuy nhiên, RequestItem đã sử dụng màu sắc nội bộ, nên ta chỉ cần setup click và callback)
-            
+            // (Tuy nhiên, RequestItem đã sử dụng màu sắc nội bộ, nên ta chỉ cần setup click
+            // và callback)
+
             setupItemClick(item);
 
             // Bắt sự kiện khi Request được xử lý (Accept/Reject)
@@ -213,6 +225,10 @@ public class FriendRequests extends JPanel {
             }
         }
 
+        if (displayedItems.isEmpty()) {
+            showEmptyState("No matching requests.");
+        }
+
         requestsPanel.revalidate();
         requestsPanel.repaint();
     }
@@ -225,12 +241,14 @@ public class FriendRequests extends JPanel {
                     item.setBackground(BG_HOVER);
                 }
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
-                 if (selectedItem != item) {
+                if (selectedItem != item) {
                     item.setBackground(Color.WHITE);
                 }
             }
+
             @Override
             public void mousePressed(MouseEvent e) {
                 selectRequest(item);
@@ -242,9 +260,9 @@ public class FriendRequests extends JPanel {
         // Deselect previous
         if (selectedItem != null) {
             // 🔥 Gọi phương thức deselect() của item
-            selectedItem.deselect(); 
+            selectedItem.deselect();
         }
-        
+
         // Nếu chọn lại item đang được chọn, coi như bỏ chọn (toggle)
         if (selectedItem == item) {
             selectedItem = null;
@@ -253,7 +271,7 @@ public class FriendRequests extends JPanel {
             // Select new
             selectedItem = item;
             // 🔥 Gọi phương thức select() của item
-            item.select(); 
+            item.select();
         }
     }
 
@@ -263,13 +281,12 @@ public class FriendRequests extends JPanel {
         msgLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         msgLabel.setForeground(TEXT_SECONDARY);
         msgLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         requestsPanel.add(Box.createVerticalStrut(50));
         requestsPanel.add(msgLabel);
         requestsPanel.revalidate();
         requestsPanel.repaint();
     }
-
 
     // Public method to fetch requests from backend (call this when tab is opened)
     public void fetchRequests() {
@@ -317,7 +334,7 @@ public class FriendRequests extends JPanel {
                     // Lấy các trường cần thiết
                     String name = o.optString("username", "Unknown User");
                     String avatar = o.optString("avatarUrl", "");
-                    int userId = o.optInt("userId", -1);
+                    Long userId = o.optLong("userId", -1L);
                     String time = o.optString("sentAt", "");
 
                     list.add(new Request(name, avatar, userId, time));
@@ -342,12 +359,28 @@ public class FriendRequests extends JPanel {
         };
         worker.execute();
     }
-    
+
+    public void removeRequestByUserId(Long userId) {
+        allRequests.removeIf(r -> r.getUserId().equals(userId));
+        displayAllRequests();
+    }
+
     // Public getter cho màu sắc (dù RequestItem hiện tại không sử dụng)
-    public Color getAcceptColor() { return COLOR_GREEN; }
-    public Color getRejectColor() { return COLOR_RED; }
-    public Color getHoverColor() { return BG_HOVER; }
-    public Color getSelectedColor() { return new Color(219, 234, 254); } // Xanh nhạt
+    public Color getAcceptColor() {
+        return COLOR_GREEN;
+    }
+
+    public Color getRejectColor() {
+        return COLOR_RED;
+    }
+
+    public Color getHoverColor() {
+        return BG_HOVER;
+    }
+
+    public Color getSelectedColor() {
+        return new Color(219, 234, 254);
+    } // Xanh nhạt
 
     // Reset the panel (optional, similar to SearchFriend)
     public void resetPanel() {
@@ -361,11 +394,13 @@ public class FriendRequests extends JPanel {
     class RoundedPanel extends JPanel {
         private int radius;
         private Color backgroundColor;
+
         public RoundedPanel(int radius, Color bgColor) {
             this.radius = radius;
             this.backgroundColor = bgColor;
             setOpaque(false);
         }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
@@ -374,5 +409,57 @@ public class FriendRequests extends JPanel {
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
             super.paintComponent(g);
         }
+    }
+
+    public interface CountCallback {
+        void onCount(int count);
+    }
+
+    public void checkPendingCount(CountCallback callback) {
+        SwingWorker<Integer, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Integer doInBackground() throws Exception {
+                String url = ApiUrl.FRIENDREQUESTLIST;
+                String token = UserSession.getUser().getToken();
+
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .header("Authorization", "Bearer " + token)
+                        .header("Accept", "application/json")
+                        .GET()
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                String responseBody = response.body();
+
+                JSONArray arr = new JSONArray();
+
+                if (responseBody.trim().startsWith("[")) {
+                    arr = new JSONArray(responseBody);
+                } else if (responseBody.trim().startsWith("{")) {
+                    JSONObject json = new JSONObject(responseBody);
+                    if (json.has("array")) {
+                        arr = json.getJSONArray("array");
+                    } else if (json.has("data")) {
+                        arr = json.getJSONArray("data");
+                    } else if (json.has("friendRequests")) {
+                        arr = json.getJSONArray("friendRequests");
+                    }
+                }
+
+                return arr.length();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    callback.onCount(get());
+                } catch (Exception e) {
+                    callback.onCount(0);
+                }
+            }
+        };
+        worker.execute();
     }
 }

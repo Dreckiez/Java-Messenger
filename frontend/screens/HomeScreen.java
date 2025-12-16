@@ -4,41 +4,48 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import components.*;
-import utils.UserSession; 
+import services.NotificationSocketListener;
+import utils.SocketManager;
+import utils.UserSession;
 
 public class HomeScreen extends JPanel {
-    private InfoPanel infoPanel; 
+    private InfoPanel infoPanel;
     private BaseScreen screen;
-    private NavPanel leftPanel; 
+    private NavPanel leftPanel;
     private CenterPanel centerPanel; // 🔥 1. Đưa biến này ra ngoài thành biến toàn cục
 
-    private final Color BG_COLOR = new Color(241, 245, 249); 
+    private final Color BG_COLOR = new Color(241, 245, 249);
 
     public HomeScreen(BaseScreen screen) {
         this.screen = screen;
-        setLayout(new BorderLayout(15, 0)); 
+        setLayout(new BorderLayout(15, 0));
         setBackground(BG_COLOR);
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
         // Khởi tạo các thành phần
         centerPanel = new CenterPanel(); // Đã khai báo ở trên
         infoPanel = new InfoPanel();
-        infoPanel.setVisible(false); 
-        leftPanel = new NavPanel(this, centerPanel); 
-        
+        infoPanel.setVisible(false);
+        leftPanel = new NavPanel(this, centerPanel);
+
+        NotificationSocketListener.init(
+                leftPanel.getNavBar(),
+                leftPanel,
+                leftPanel.getFriendRequests());
+
         // --- KẾT NỐI FRIEND PANEL -> NAV PANEL ---
         FriendPanel friendPanel = leftPanel.getFriendPanel();
         if (friendPanel != null) {
             // 1. Create Group: Chuyển tab
             friendPanel.setOnOpenChat((target) -> {
                 System.out.println("HomeScreen received ID: " + target.id + ", Type: " + target.type);
-                leftPanel.switchToChatAndOpen(target.id, target.type); 
+                leftPanel.switchToChatAndOpen(target.id, target.type);
                 friendPanel.resetPanel();
             });
 
             friendPanel.setOnNavigateToChat(() -> {
                 leftPanel.switchToChatTab();
-                friendPanel.resetPanel(); 
+                friendPanel.resetPanel();
             });
         }
 
@@ -46,14 +53,14 @@ public class HomeScreen extends JPanel {
         infoPanel.setOnChatActionCompleted(() -> {
             toggleInfoPanel(false);
             centerPanel.showWelcome();
-            leftPanel.reloadChatList(); 
+            leftPanel.reloadChatList();
             leftPanel.reloadBlockedUsers();
         });
 
         centerPanel.setInfoPanel(infoPanel);
         centerPanel.setToggleInfoCallback(() -> {
             boolean currentStatus = infoPanel.isVisible();
-            toggleInfoPanel(!currentStatus); 
+            toggleInfoPanel(!currentStatus);
         });
 
         add(leftPanel, BorderLayout.WEST);
@@ -68,11 +75,12 @@ public class HomeScreen extends JPanel {
     private void resetToDefaultState() {
         // A. Chuyển CenterPanel về màn hình Chat (hoặc Welcome)
         if (centerPanel != null) {
-            centerPanel.showChat(); 
+            centerPanel.showChat();
         }
 
         // B. Chuyển NavPanel (Left Panel) về Tab danh sách chat
-        // Hàm này sẽ tự động highlight nút Chat trên NavBar nếu bạn đã code logic đó trong NavPanel
+        // Hàm này sẽ tự động highlight nút Chat trên NavBar nếu bạn đã code logic đó
+        // trong NavPanel
         if (leftPanel != null) {
             leftPanel.switchToChatTab();
         }
@@ -81,22 +89,32 @@ public class HomeScreen extends JPanel {
         toggleInfoPanel(true);
     }
 
+    public void startConnection() {
+        System.out.println("DEBUG: HomeScreen starting connection...");
+        resetToDefaultState();
+        leftPanel.checkInitialRequests();
+        SocketManager.connect();
+    }
+
     public void logout() {
         // 1. Xóa session
-        UserSession.clearSession(); 
-        
+        UserSession.clearSession();
+
         // 2. 🔥 Dọn dẹp giao diện trước khi thoát
-        if (centerPanel != null) centerPanel.reset();
-        if (infoPanel != null) infoPanel.reset();
+        if (centerPanel != null)
+            centerPanel.reset();
+        if (infoPanel != null)
+            infoPanel.reset();
         // 3. Gọi hàm logout của màn hình cha
-        screen.logout(); 
-        
+        screen.logout();
+
     }
-    
+
     public void toggleInfoPanel(boolean visible) {
         if (infoPanel != null) {
             infoPanel.setVisible(visible);
-            this.revalidate(); this.repaint();
+            this.revalidate();
+            this.repaint();
         }
     }
 }

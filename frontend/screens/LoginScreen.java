@@ -16,14 +16,14 @@ public class LoginScreen extends JPanel {
     private BaseScreen mainScreen;
     private JLabel loginError;
     private boolean passwordVisible = false;
-    
+
     // --- COLORS ---
     private final Color PRIMARY_COLOR = new Color(59, 130, 246); // Blue
     private final Color HOVER_COLOR = new Color(37, 99, 235);
-    private final Color BG_COLOR = new Color(248, 250, 252); 
+    private final Color BG_COLOR = new Color(248, 250, 252);
     private final Color TEXT_PRIMARY = new Color(30, 41, 59);
     private final Color TEXT_SECONDARY = new Color(100, 116, 139);
-    private final Color INPUT_BG = new Color(241, 245, 249); 
+    private final Color INPUT_BG = new Color(241, 245, 249);
 
     public LoginScreen(BaseScreen main) {
         this.mainScreen = main;
@@ -32,7 +32,7 @@ public class LoginScreen extends JPanel {
 
         // --- LEFT SIDE: ILLUSTRATION / BRANDING ---
         JPanel leftPanel = createLeftPanel();
-        
+
         // --- RIGHT SIDE: LOGIN FORM ---
         JPanel rightPanel = createRightPanel();
 
@@ -40,7 +40,7 @@ public class LoginScreen extends JPanel {
         JPanel container = new JPanel(new GridLayout(1, 2));
         container.add(leftPanel);
         container.add(rightPanel);
-        
+
         add(container, BorderLayout.CENTER);
     }
 
@@ -48,25 +48,25 @@ public class LoginScreen extends JPanel {
         JPanel panel = new JPanel();
         panel.setBackground(PRIMARY_COLOR);
         panel.setLayout(new GridBagLayout());
-        
+
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setOpaque(false);
-        
+
         JLabel logoLabel = new JLabel("ChatApp");
         logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 48));
         logoLabel.setForeground(Color.WHITE);
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         JLabel sloganLabel = new JLabel("Connect with friends effortlessly.");
         sloganLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         sloganLabel.setForeground(new Color(255, 255, 255, 200));
         sloganLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         content.add(logoLabel);
         content.add(Box.createVerticalStrut(20));
         content.add(sloganLabel);
-        
+
         panel.add(content);
         return panel;
     }
@@ -74,25 +74,25 @@ public class LoginScreen extends JPanel {
     private JPanel createRightPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(Color.WHITE);
-        
+
         // Main Form Container
         JPanel formContainer = new JPanel();
         formContainer.setLayout(new BoxLayout(formContainer, BoxLayout.Y_AXIS));
         formContainer.setBackground(Color.WHITE);
-        formContainer.setBorder(new EmptyBorder(50, 60, 50, 60)); 
-        formContainer.setPreferredSize(new Dimension(450, 600)); 
+        formContainer.setBorder(new EmptyBorder(50, 60, 50, 60));
+        formContainer.setPreferredSize(new Dimension(450, 600));
 
         // 1. Header
         JLabel title = new JLabel("Welcome Back!");
         title.setFont(new Font("Segoe UI", Font.BOLD, 32));
         title.setForeground(TEXT_PRIMARY);
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         JLabel subTitle = new JLabel("Please enter your details.");
         subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         subTitle.setForeground(TEXT_SECONDARY);
         subTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         formContainer.add(title);
         formContainer.add(Box.createVerticalStrut(10));
         formContainer.add(subTitle);
@@ -116,14 +116,14 @@ public class LoginScreen extends JPanel {
         // 4. Password Field
         formContainer.add(createLabel("Password"));
         formContainer.add(Box.createVerticalStrut(8));
-        
+
         JPasswordField passField = createStyledPasswordField();
         JPanel passPanel = wrapInRoundedPanel(passField);
-        
+
         // 🔥 SỬ DỤNG HÀM TẠO ICON MẮT CHUẨN
         JToggleButton eyeBtn = createEyeButton(passField);
         passPanel.add(eyeBtn, BorderLayout.EAST);
-        
+
         formContainer.add(passPanel);
         formContainer.add(Box.createVerticalStrut(10));
 
@@ -134,16 +134,18 @@ public class LoginScreen extends JPanel {
         forgotPass.setCursor(new Cursor(Cursor.HAND_CURSOR));
         forgotPass.setAlignmentX(Component.LEFT_ALIGNMENT);
         forgotPass.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) { mainScreen.showPanel("forgotPassword"); }
+            public void mouseClicked(MouseEvent e) {
+                mainScreen.showPanel("forgotPassword");
+            }
         });
-        
+
         JPanel forgotPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         forgotPanel.setBackground(Color.WHITE);
         forgotPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         forgotPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         forgotPanel.add(forgotPass);
         formContainer.add(forgotPanel);
-        
+
         formContainer.add(Box.createVerticalStrut(30));
 
         // 6. Login Button
@@ -151,9 +153,9 @@ public class LoginScreen extends JPanel {
         styleButton(loginBtn, PRIMARY_COLOR, Color.WHITE);
         loginBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
         loginBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
-        
+
         loginBtn.addActionListener(e -> performLogin(userField, passField, loginBtn));
-        
+
         formContainer.add(loginBtn);
         formContainer.add(Box.createVerticalStrut(20));
 
@@ -161,19 +163,21 @@ public class LoginScreen extends JPanel {
         JPanel regPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         regPanel.setBackground(Color.WHITE);
         regPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         JLabel noAcc = new JLabel("Don't have an account? ");
         noAcc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         noAcc.setForeground(TEXT_SECONDARY);
-        
+
         JLabel regLink = new JLabel("Sign up");
         regLink.setFont(new Font("Segoe UI", Font.BOLD, 14));
         regLink.setForeground(PRIMARY_COLOR);
         regLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         regLink.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) { mainScreen.showPanel("register"); }
+            public void mouseClicked(MouseEvent e) {
+                mainScreen.showPanel("register");
+            }
         });
-        
+
         regPanel.add(noAcc);
         regPanel.add(regLink);
         formContainer.add(regPanel);
@@ -213,13 +217,13 @@ public class LoginScreen extends JPanel {
                 try {
                     JSONObject res = get();
                     int status = res.optInt("httpStatus", 0);
-                    
+
                     if (status == 200) {
                         String token = res.getString("token");
                         String refreshToken = res.getString("refreshToken");
                         User user = new User(token, refreshToken);
                         UserSession.setUser(user);
-                        
+
                         // Fetch profile, passing the button reference
                         fetchUserProfile(token, loginBtn); // 🔥 TRUYỀN loginBtn
                     } else {
@@ -243,14 +247,15 @@ public class LoginScreen extends JPanel {
             protected JSONObject doInBackground() {
                 return UserServices.getMyProfile(token);
             }
+
             @Override
             protected void done() {
                 try {
                     JSONObject profile = get();
-                    
+
                     // Logic Profile
                     int user_id = profile.getInt("userId");
-                    String username = profile.optString("username", ""); 
+                    String username = profile.optString("username", "");
                     String role = profile.getString("role");
                     String avatar = profile.optString("avatarUrl", null);
                     String email = profile.getString("email");
@@ -260,25 +265,30 @@ public class LoginScreen extends JPanel {
                     String address = profile.getString("address");
                     String birthDay = profile.optString("birthDay", "");
 
-                    UserSession.setUserInfo(user_id, username, avatar, role, address, gender, birthDay, email, fname, lname);
+                    UserSession.setUserInfo(user_id, username, avatar, role, address, gender, birthDay, email, fname,
+                            lname);
 
                     // Chuyển màn hình
                     if (role.equals("ADMIN")) {
                         mainScreen.showPanel("dashboard");
-                        if (mainScreen.getDashboardScreen() != null) 
+                        if (mainScreen.getDashboardScreen() != null)
                             mainScreen.getDashboardScreen().onLoginSuccess();
                     } else {
                         mainScreen.showPanel("home");
+                        if (mainScreen.getHomeScreen() != null) {
+                            mainScreen.getHomeScreen().startConnection();
+                        }
                     }
-                    
-                    // 🔥 RESET NÚT SAU KHI CHUYỂN MÀN HÌNH THÀNH CÔNG (Đảm bảo trạng thái sẵn sàng cho lần đăng nhập sau)
-                    resetButton(loginBtn); 
-                    
+
+                    // 🔥 RESET NÚT SAU KHI CHUYỂN MÀN HÌNH THÀNH CÔNG (Đảm bảo trạng thái sẵn sàng
+                    // cho lần đăng nhập sau)
+                    resetButton(loginBtn);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     loginError.setText("Failed to load profile. Please log in again.");
                     // 🔥 FIX: RESET NÚT KHI TẢI PROFILE THẤT BẠI
-                    resetButton(loginBtn); 
+                    resetButton(loginBtn);
                 }
             }
         }.execute();
@@ -332,7 +342,7 @@ public class LoginScreen extends JPanel {
         };
         panel.setOpaque(false);
         panel.setBorder(new EmptyBorder(10, 15, 10, 15));
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); 
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(component, BorderLayout.CENTER);
         return panel;
@@ -342,22 +352,22 @@ public class LoginScreen extends JPanel {
     private JToggleButton createEyeButton(JPasswordField field) {
         JToggleButton eyeBtn = new JToggleButton();
         eyeBtn.setPreferredSize(new Dimension(40, 30));
-        
+
         // --- Bỏ toàn bộ viền nút ---
         eyeBtn.setBorder(null);
         eyeBtn.setBorderPainted(false);
         eyeBtn.setContentAreaFilled(false);
         eyeBtn.setFocusPainted(false);
         // ---------------------------
-        
+
         eyeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         eyeBtn.setUI(new javax.swing.plaf.basic.BasicToggleButtonUI() {
             @Override
             public void paint(Graphics g, JComponent c) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
+
                 int w = c.getWidth();
                 int h = c.getHeight();
                 int x = (w - 20) / 2; // Căn giữa icon
@@ -370,7 +380,7 @@ public class LoginScreen extends JPanel {
                     // Vẽ khung mắt (Oval)
                     g2.setStroke(new BasicStroke(1.5f)); // Viền mắt mảnh
                     g2.drawOval(x, y, 18, 12);
-                    
+
                     // Vẽ đồng tử (Hình tròn đặc)
                     g2.fillOval(x + 6, y + 3, 6, 6);
                 } else {
@@ -378,10 +388,10 @@ public class LoginScreen extends JPanel {
                     // Vẽ khung mắt
                     g2.setStroke(new BasicStroke(1.5f));
                     g2.drawOval(x, y, 18, 12);
-                    
+
                     // Vẽ đồng tử
                     g2.fillOval(x + 6, y + 3, 6, 6);
-                    
+
                     // Vẽ đường gạch chéo
                     g2.setStroke(new BasicStroke(2f)); // Gạch chéo đậm hơn chút
                     g2.drawLine(x + 4, y + 2, x + 16, y + 10);
@@ -408,10 +418,17 @@ public class LoginScreen extends JPanel {
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         btn.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { if(btn.isEnabled()) btn.setBackground(HOVER_COLOR); }
-            public void mouseExited(MouseEvent e) { if(btn.isEnabled()) btn.setBackground(bg); }
+            public void mouseEntered(MouseEvent e) {
+                if (btn.isEnabled())
+                    btn.setBackground(HOVER_COLOR);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                if (btn.isEnabled())
+                    btn.setBackground(bg);
+            }
         });
 
         btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {

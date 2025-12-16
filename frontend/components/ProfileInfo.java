@@ -4,10 +4,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 
-import org.json.JSONObject; 
+import org.json.JSONObject;
 
 import models.User;
-import services.UserServices; 
+import services.UserServices;
 import utils.UserSession;
 
 import java.awt.*;
@@ -29,7 +29,7 @@ public class ProfileInfo extends JPanel {
     private boolean editMode = false;
     private JButton editBtn;
     private JPanel actionPanel;
-    private UserServices userService; 
+    private UserServices userService;
 
     // --- COLORS ---
     private final Color TEXT_PRIMARY = new Color(30, 41, 59);
@@ -40,7 +40,7 @@ public class ProfileInfo extends JPanel {
     private final Color BTN_BLUE_HOVER = new Color(37, 99, 235);
 
     public ProfileInfo() {
-        this.userService = new UserServices(); 
+        this.userService = new UserServices();
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Color.WHITE);
@@ -105,16 +105,18 @@ public class ProfileInfo extends JPanel {
 
         int row = 0;
 
-        // 1. Username (EDITABLE - Đã bỏ style disabled text color để chuẩn bị cho việc edit)
+        // 1. Username (EDITABLE - Đã bỏ style disabled text color để chuẩn bị cho việc
+        // edit)
         gbc.gridy = row++;
-        gbc.gridx = 0; gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
         gbc.insets = new Insets(8, 0, 5, 0);
         panel.add(createLabel("Username"), gbc);
 
         gbc.gridy = row++;
         gbc.insets = new Insets(0, 0, 20, 0);
         usernameField = createStyledTextField();
-        usernameField.setEnabled(false); 
+        usernameField.setEnabled(false);
         panel.add(wrapInRoundedPanel(usernameField), gbc);
 
         // 2. Email (EDITABLE)
@@ -125,32 +127,39 @@ public class ProfileInfo extends JPanel {
         gbc.gridy = row++;
         gbc.insets = new Insets(0, 0, 20, 0);
         emailField = createStyledTextField();
-        emailField.setEnabled(false); 
+        emailField.setEnabled(false);
         panel.add(wrapInRoundedPanel(emailField), gbc);
 
         // 3. First & Last Name (EDITABLE)
         gbc.gridy = row++;
-        gbc.gridx = 0; gbc.gridwidth = 1; gbc.weightx = 0.5;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.5;
         gbc.insets = new Insets(8, 0, 5, 10);
         panel.add(createLabel("First Name"), gbc);
 
-        gbc.gridx = 1; gbc.insets = new Insets(8, 10, 5, 0);
+        gbc.gridx = 1;
+        gbc.insets = new Insets(8, 10, 5, 0);
         panel.add(createLabel("Last Name"), gbc);
 
         gbc.gridy = row++;
-        gbc.gridx = 0; gbc.insets = new Insets(0, 0, 20, 10);
+        gbc.gridx = 0;
+        gbc.insets = new Insets(0, 0, 20, 10);
         firstNameField = createStyledTextField();
         firstNameField.setEnabled(false);
         panel.add(wrapInRoundedPanel(firstNameField), gbc);
 
-        gbc.gridx = 1; gbc.insets = new Insets(0, 10, 20, 0);
+        gbc.gridx = 1;
+        gbc.insets = new Insets(0, 10, 20, 0);
         lastNameField = createStyledTextField();
         lastNameField.setEnabled(false);
         panel.add(wrapInRoundedPanel(lastNameField), gbc);
 
         // 4. Gender (EDITABLE)
         gbc.gridy = row++;
-        gbc.gridx = 0; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
         gbc.insets = new Insets(8, 0, 5, 0);
         panel.add(createLabel("Gender"), gbc);
 
@@ -191,7 +200,8 @@ public class ProfileInfo extends JPanel {
 
         String[] days = new String[32];
         days[0] = "Day";
-        for (int i = 1; i <= 31; i++) days[i] = String.valueOf(i);
+        for (int i = 1; i <= 31; i++)
+            days[i] = String.valueOf(i);
         dayCombo = createStyledComboBox(days);
         dayCombo.setEnabled(false);
 
@@ -203,7 +213,8 @@ public class ProfileInfo extends JPanel {
         String[] years = new String[101];
         years[0] = "Year";
         int currentYear = LocalDate.now().getYear();
-        for (int i = 1; i <= 100; i++) years[i] = String.valueOf(currentYear - (i - 1));
+        for (int i = 1; i <= 100; i++)
+            years[i] = String.valueOf(currentYear - (i - 1));
         yearCombo = createStyledComboBox(years);
         yearCombo.setEnabled(false);
 
@@ -258,7 +269,8 @@ public class ProfileInfo extends JPanel {
 
         combo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setForeground(TEXT_PRIMARY);
                 if (isSelected && index != -1) {
@@ -301,6 +313,7 @@ public class ProfileInfo extends JPanel {
                     combo.repaint();
                 }
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 combo.setBackground(INPUT_BG);
@@ -346,6 +359,7 @@ public class ProfileInfo extends JPanel {
                 btn.setBackground(hoverBg);
                 btn.setForeground(hoverFg);
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 btn.setBackground(bg);
@@ -376,7 +390,8 @@ public class ProfileInfo extends JPanel {
 
     private void loadUserData() {
         User user = UserSession.getUser();
-        if (user == null) return;
+        if (user == null)
+            return;
 
         usernameField.setText(user.getUsername() != null ? user.getUsername() : "");
         emailField.setText(user.getEmail() != null ? user.getEmail() : "");
@@ -392,20 +407,21 @@ public class ProfileInfo extends JPanel {
             genderCombo.setSelectedIndex(0);
         }
 
-        String birthday = user.getBirthDay(); 
+        String birthday = user.getBirthDay();
         if (birthday != null && !birthday.isEmpty()) {
             try {
                 String[] parts = birthday.split("-");
                 if (parts.length == 3) {
                     yearCombo.setSelectedItem(parts[0]);
                     monthCombo.setSelectedIndex(Integer.parseInt(parts[1]));
-                    dayCombo.setSelectedItem(parts[2]); 
+                    dayCombo.setSelectedItem(parts[2]);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        revalidate(); repaint();
+        revalidate();
+        repaint();
     }
 
     private void toggleEditMode() {
@@ -414,7 +430,7 @@ public class ProfileInfo extends JPanel {
         // --- CHO PHÉP SỬA TẤT CẢ CÁC TRƯỜNG ---
         firstNameField.setEnabled(editMode);
         lastNameField.setEnabled(editMode);
-        emailField.setEnabled(editMode); 
+        emailField.setEnabled(editMode);
         usernameField.setEnabled(editMode); // 🔥 Đã mở khóa
         genderCombo.setEnabled(editMode);
         dayCombo.setEnabled(editMode);
@@ -426,7 +442,8 @@ public class ProfileInfo extends JPanel {
 
         actionPanel.setVisible(editMode);
         editBtn.setText(editMode ? "Cancel" : "Edit");
-        revalidate(); repaint();
+        revalidate();
+        repaint();
     }
 
     private void resetComboBoxColor(JComboBox<String>... combos) {
@@ -437,7 +454,8 @@ public class ProfileInfo extends JPanel {
 
     private void saveChanges() {
         User user = UserSession.getUser();
-        if (user == null) return;
+        if (user == null)
+            return;
 
         // 1. Validate Inputs
         String newFname = firstNameField.getText().trim();
@@ -446,7 +464,8 @@ public class ProfileInfo extends JPanel {
         String newUname = usernameField.getText().trim();
 
         if (newFname.isEmpty() || newLname.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "First Name and Last Name cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "First Name and Last Name cannot be empty", "Error",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (newEmail.isEmpty()) {
@@ -510,7 +529,7 @@ public class ProfileInfo extends JPanel {
 
         if (!"Year".equals(y) && m != 0 && !"Day".equals(d)) {
             String newBday = String.format("%s-%02d-%02d", y, m, Integer.parseInt(d));
-            String currentBday = user.getBirthDay(); 
+            String currentBday = user.getBirthDay();
             if (currentBday == null || !newBday.equals(currentBday)) {
                 updateData.put("birthday", newBday);
                 hasChanges = true;
@@ -520,7 +539,7 @@ public class ProfileInfo extends JPanel {
         // 3. Gửi Request
         if (hasChanges) {
             String token = user.getToken();
-            
+
             new SwingWorker<JSONObject, Void>() {
                 @Override
                 protected JSONObject doInBackground() throws Exception {
@@ -531,20 +550,22 @@ public class ProfileInfo extends JPanel {
                 protected void done() {
                     try {
                         JSONObject result = get();
-                        
+
                         if (result.has("error")) {
-                            JOptionPane.showMessageDialog(ProfileInfo.this, 
-                                "Update Failed:\n" + result.getString("error"), 
-                                "Error", 
-                                JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(ProfileInfo.this,
+                                    "Update Failed:\n" + result.getString("error"),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
                         } else {
-                            JOptionPane.showMessageDialog(ProfileInfo.this, "Saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(ProfileInfo.this, "Saved successfully!", "Success",
+                                    JOptionPane.INFORMATION_MESSAGE);
                             updateLocalUserSession(result);
-                            toggleEditMode(); 
+                            toggleEditMode();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        JOptionPane.showMessageDialog(ProfileInfo.this, "An error occurred.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ProfileInfo.this, "An error occurred.", "Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }.execute();
@@ -555,7 +576,7 @@ public class ProfileInfo extends JPanel {
 
     private void updateLocalUserSession(JSONObject responseJson) {
         User user = UserSession.getUser();
-        
+
         // 1. Cập nhật Tokens (Chỉ cập nhật nếu có giá trị và KHÁC rỗng)
         if (responseJson.has("token")) {
             String t = responseJson.getString("token");
@@ -573,7 +594,7 @@ public class ProfileInfo extends JPanel {
         // 2. Cập nhật Profile Info (Nằm trong object "userProfile")
         if (responseJson.has("userProfile")) {
             JSONObject profile = responseJson.getJSONObject("userProfile");
-            
+
             user.setUsername(profile.optString("username", user.getUsername()));
             user.setEmail(profile.optString("email", user.getEmail()));
             user.setFirstName(profile.optString("firstName", user.getFirstName()));
@@ -586,11 +607,13 @@ public class ProfileInfo extends JPanel {
 
     private void cancelEdit() {
         loadUserData();
-        if (editMode) toggleEditMode();
+        if (editMode)
+            toggleEditMode();
     }
 
     public void refreshData() {
         loadUserData();
-        if (editMode) toggleEditMode();
+        if (editMode)
+            toggleEditMode();
     }
 }

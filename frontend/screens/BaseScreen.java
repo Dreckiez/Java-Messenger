@@ -11,6 +11,7 @@ import java.awt.CardLayout;
 public class BaseScreen extends JFrame {
 
     private DashboardScreen dashboardScreen;
+    private HomeScreen homeScreen;
     private CardLayout layout;
     private JPanel panel;
 
@@ -26,8 +27,7 @@ public class BaseScreen extends JFrame {
 
         add(panel);
 
-        dashboardScreen = new DashboardScreen(this); 
-    
+        dashboardScreen = new DashboardScreen(this);
 
         panel.add(dashboardScreen, "dashboard");
 
@@ -52,5 +52,13 @@ public class BaseScreen extends JFrame {
 
     public DashboardScreen getDashboardScreen() {
         return dashboardScreen;
+    }
+
+    public void setHomeScreen(HomeScreen home) {
+        this.homeScreen = home;
+    }
+
+    public HomeScreen getHomeScreen() {
+        return this.homeScreen;
     }
 }
