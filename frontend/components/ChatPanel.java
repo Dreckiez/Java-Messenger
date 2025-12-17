@@ -201,55 +201,6 @@ public class ChatPanel extends JPanel {
         });
     }
 
-    public void fetchMessages(long chatId, String partnerName) {
-        this.currentChatId = chatId;
-        messagesPanel.removeAll();
-        messagesPanel.revalidate();
-        messagesPanel.repaint();
-
-        String token = UserSession.getUser().getToken();
-        String url = ApiUrl.PRIVATE_CONVERSATION + "/" + chatId + "/private-conversation-messages";
-
-        new SwingWorker<JSONArray, Void>() {
-            @Override
-            protected JSONArray doInBackground() throws Exception {
-                try {
-                    HttpClient client = HttpClient.newHttpClient();
-                    HttpRequest request = HttpRequest.newBuilder()
-                            .uri(URI.create(url))
-                            .header("Authorization", "Bearer " + token)
-                            .GET()
-                            .build();
-
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                    if (response.statusCode() == 200) {
-                        JSONObject rootResponse = new JSONObject(response.body());
-
-                        if (rootResponse.has("privateConversationMessageResponseList")) {
-                            return rootResponse.getJSONArray("privateConversationMessageResponseList");
-                        }
-                    } else {
-                        System.err.println("❌ Error fetching history. Status: " + response.statusCode());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return new JSONArray(); // Return empty if failed
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    JSONArray messages = get();
-                    loadMessages(chatId, messages, partnerName);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.execute();
-    }
-
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(Color.WHITE);

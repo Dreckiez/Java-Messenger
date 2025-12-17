@@ -102,7 +102,7 @@ public class CenterPanel extends JPanel {
             if (isGroup) {
                 fetchGroupChatDetails(conversationId, chatData, name);
             } else {
-                chatPanel.fetchMessages(conversationId, name);
+                // chatPanel.fetchMessages(conversationId, name);
                 fetchPrivateChatDetails(conversationId, chatData, name);
             }
         }

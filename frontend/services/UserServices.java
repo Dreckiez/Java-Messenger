@@ -21,6 +21,7 @@ public class UserServices {
     public static JSONObject getMyProfile(String token) {
         return ApiClient.getJSON(ApiUrl.MYPROFILE, token);
     }
+
     public JSONObject updateProfile(String token, JSONObject updateData) {
         JSONObject result = new JSONObject();
         try {
@@ -60,9 +61,10 @@ public class UserServices {
                 } catch (Exception e) {
                     errorMsg.append("Error ").append(response.statusCode());
                 }
-                
-                if (errorMsg.length() == 0) errorMsg.append("Unknown error occurred");
-                
+
+                if (errorMsg.length() == 0)
+                    errorMsg.append("Unknown error occurred");
+
                 result.put("error", errorMsg.toString());
                 return result;
             }
@@ -72,6 +74,7 @@ public class UserServices {
             return result;
         }
     }
+
     public String changePassword(String token, String oldPassword, String newPassword, String confirmPassword) {
         try {
             String url = ApiUrl.BASE + "chat/user/profile/change-password";
@@ -108,27 +111,31 @@ public class UserServices {
                     // Ignore parsing errors
                 }
                 // Fallback error message
-                return responseBody != null && !responseBody.isEmpty() ? responseBody : "Error " + response.statusCode();
+                return responseBody != null && !responseBody.isEmpty() ? responseBody
+                        : "Error " + response.statusCode();
             }
         } catch (Exception e) {
             e.printStackTrace();
             return "Connection error: " + e.getMessage();
         }
     }
+
     public JSONObject updateAvatar(String token, File file) {
         JSONObject result = new JSONObject();
         try {
             String url = ApiUrl.BASE + "chat/user/profile/update-avatar";
             String boundary = "---boundary" + UUID.randomUUID().toString();
-            
+
             // Build multipart body
             byte[] fileBytes = Files.readAllBytes(file.toPath());
             String mimeType = Files.probeContentType(file.toPath());
-            if (mimeType == null) mimeType = "application/octet-stream";
+            if (mimeType == null)
+                mimeType = "application/octet-stream";
 
             StringBuilder header = new StringBuilder();
             header.append("--").append(boundary).append("\r\n");
-            header.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"").append(file.getName()).append("\"\r\n");
+            header.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"").append(file.getName())
+                    .append("\"\r\n");
             header.append("Content-Type: ").append(mimeType).append("\r\n\r\n");
 
             byte[] headerBytes = header.toString().getBytes(StandardCharsets.UTF_8);
@@ -149,7 +156,7 @@ public class UserServices {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
+
             if (response.statusCode() == 200) {
                 return new JSONObject(response.body());
             } else {
@@ -162,6 +169,7 @@ public class UserServices {
             return result;
         }
     }
+
     public JSONObject removeAvatar(String token) {
         JSONObject result = new JSONObject();
         try {
@@ -196,9 +204,10 @@ public class UserServices {
                 } catch (Exception e) {
                     errorMsg.append("Error ").append(response.statusCode());
                 }
-                
-                if (errorMsg.length() == 0) errorMsg.append("Failed to remove avatar");
-                
+
+                if (errorMsg.length() == 0)
+                    errorMsg.append("Failed to remove avatar");
+
                 result.put("error", errorMsg.toString());
                 return result;
             }
@@ -235,15 +244,16 @@ public class UserServices {
         }
     }
 
-        public JSONObject getPrivateConversationDetails(int conversationId) {
+    public JSONObject getPrivateConversationDetails(int conversationId) {
         String token = UserSession.getUser().getToken();
-        
-        
-        
-        String url = ApiUrl.BASE + "chat/user/private-conversations/" + conversationId + "/private-conversation-messages";
-        
+
+        String url = ApiUrl.BASE + "chat/user/private-conversations/" + conversationId
+                + "/private-conversation-messages";
+
         System.out.println("DEBUG API CALL: " + url); // In ra để kiểm tra
-        return ApiClient.getJSON(url, token);
+        JSONObject res = ApiClient.getJSON(url, token);
+        System.out.println(res.toString());
+        return res;
     }
 
     public JSONObject getGroupConversationDetails(long groupId) {
