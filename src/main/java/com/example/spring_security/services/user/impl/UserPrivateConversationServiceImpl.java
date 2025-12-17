@@ -101,7 +101,6 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                                 .privateConversation(entityManager.getReference(PrivateConversation.class,
                                                 privateConversationId))
                                 .sender(entityManager.getReference(User.class, senderId))
-                                .isRead(false)
                                 .sentAt(LocalDateTime.now())
                                 .type(sendMessageRequest.getType())
                                 .content(sendMessageRequest.getContent())
