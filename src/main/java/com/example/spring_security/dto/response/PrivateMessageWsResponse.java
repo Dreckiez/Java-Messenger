@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @Getter
 public class PrivateMessageWsResponse extends BaseUserResponse {
+    private Long privateConversationId;
+
     private Long privateConversationMessageId;
 
     private String content;

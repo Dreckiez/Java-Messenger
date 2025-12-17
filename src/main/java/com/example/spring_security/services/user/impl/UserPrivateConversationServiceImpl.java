@@ -1,6 +1,5 @@
 package com.example.spring_security.services.user.impl;
 
-
 import com.example.spring_security.dto.request.SendMessageRequest;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
@@ -24,285 +23,257 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserPrivateConversationServiceImpl implements UserPrivateConversationService {
 
-    private final WebSocketPrivateMessageService webSocketMessageService;
+        private final WebSocketPrivateMessageService webSocketMessageService;
 
-    private final ReadPrivateConversationMessageRepository readPrivateConversationMessageRepository;
+        private final PrivateConversationRepository privateConversationRepository;
 
-    private final PrivateConversationRepository privateConversationRepository;
+        private final EntityManager entityManager;
 
-    private final EntityManager entityManager;
+        private final DeletePrivateConversationRepository deletePrivateConversationRepository;
 
-    private final DeletePrivateConversationRepository deletePrivateConversationRepository;
+        private final PrivateConversationMessageRepository privateConversationMessageRepository;
 
-    private final PrivateConversationMessageRepository privateConversationMessageRepository;
+        private final DeletePrivateConversationMessageRepository deletePrivateConversationMessageRepository;
 
-    private final DeletePrivateConversationMessageRepository deletePrivateConversationMessageRepository;
+        private final UserRepository userRepository;
 
-    private final UserRepository userRepository;
+        public Map<String, String> create(Long userId1, Long userId2) {
 
+                PrivateConversation privateConversation = PrivateConversation.builder()
+                                .user1(entityManager.getReference(User.class, userId1))
+                                .user2(entityManager.getReference(User.class, userId2))
+                                .createdAt(LocalDateTime.now())
+                                .previewMessage(null)
+                                .build();
 
-    public void saveRead(Long userId, Long privateConversationId, Long privateConversationMessageId) {
+                privateConversationRepository.save(privateConversation);
 
-        ReadPrivateConversationMessageId readPrivateConversationMessageId = ReadPrivateConversationMessageId.builder()
-                .userId(userId)
-                .privateConversationId(privateConversationId)
-                .build();
+                Map<String, String> msg = new HashMap<>();
 
-        ReadPrivateConversationMessage readPrivateConversationMessage =
-                readPrivateConversationMessageRepository.findById(readPrivateConversationMessageId).orElse(null);
+                msg.put("message", "Created private conversation successfully");
 
-        if (readPrivateConversationMessage == null) {
-            System.out.println("here");
-            readPrivateConversationMessage = ReadPrivateConversationMessage.builder()
-                    .id(readPrivateConversationMessageId)
-                    .privateConversationMessage(entityManager.getReference(PrivateConversationMessage.class, privateConversationMessageId))
-                    .user(entityManager.getReference(User.class, userId))
-                    .readAt(LocalDateTime.now()).build();
-        }
-        else {
-
-            if (readPrivateConversationMessage.getPrivateConversationMessage().getPrivateConversationMessageId() == privateConversationMessageId)
-                return;
-
-            readPrivateConversationMessage.setReadAt(LocalDateTime.now());
-            readPrivateConversationMessage.setPrivateConversationMessage(entityManager.getReference
-                    (PrivateConversationMessage.class, privateConversationMessageId));
+                return msg;
         }
 
-        readPrivateConversationMessageRepository.save(readPrivateConversationMessage);
-    }
+        public Map<String, String> removeConversation(Long removerId, Long privateConversationId) {
 
-    public Map<String, String> create(Long userId1, Long userId2) {
+                PrivateConversation privateConversation = privateConversationRepository.findById(privateConversationId)
+                                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,
+                                                "This conversation no longer exists."));
 
-        PrivateConversation privateConversation = PrivateConversation.builder()
-                .user1(entityManager.getReference(User.class, userId1))
-                .user2(entityManager.getReference(User.class, userId2))
-                .createdAt(LocalDateTime.now())
-                .previewMessage(null)
-                .build();
+                DeletePrivateConversationId id = DeletePrivateConversationId.builder()
+                                .userId(removerId)
+                                .privateConversationId(privateConversationId)
+                                .build();
 
-        privateConversationRepository.save(privateConversation);
+                DeletePrivateConversation deletePrivateConversation = deletePrivateConversationRepository.findById(id)
+                                .orElse(null);
 
-        Map<String, String> msg = new HashMap<>();
+                if (deletePrivateConversation == null)
+                        deletePrivateConversation = DeletePrivateConversation.builder()
+                                        .id(id)
+                                        .deletedAt(LocalDateTime.now())
+                                        .build();
+                else
+                        deletePrivateConversation.setDeletedAt(LocalDateTime.now());
 
-        msg.put("message", "Created private conversation successfully");
+                deletePrivateConversationRepository.save(deletePrivateConversation);
 
+                privateConversation.setPreviewMessage(null);
 
-        return msg;
-    }
+                privateConversationRepository.save(privateConversation);
 
-    public Map<String, String> removeConversation(Long removerId, Long privateConversationId) {
-
-        PrivateConversation privateConversation = privateConversationRepository.findById(privateConversationId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "This conversation no longer exists."));
-
-
-        DeletePrivateConversationId id = DeletePrivateConversationId.builder()
-                .userId(removerId)
-                .privateConversationId(privateConversationId)
-                .build();
-
-        DeletePrivateConversation deletePrivateConversation = deletePrivateConversationRepository.findById(id).orElse(null);
-
-
-         if (deletePrivateConversation == null) deletePrivateConversation = DeletePrivateConversation.builder()
-                                                                            .id(id)
-                                                                            .deletedAt(LocalDateTime.now())
-                                                                            .build();
-         else deletePrivateConversation.setDeletedAt(LocalDateTime.now());
-
-         deletePrivateConversationRepository.save(deletePrivateConversation);
-
-         privateConversation.setPreviewMessage(null);
-
-         privateConversationRepository.save(privateConversation);
-
-         Map<String, String> msg = new HashMap<>();
-         msg.put("message", "Removed successfully!");
-         return msg;
-    }
-
-    public SendMessageResponse sendMessage
-            (Long senderId,
-             Long privateConversationId,
-             SendMessageRequest sendMessageRequest) {
-
-        PrivateConversation privateConversation = privateConversationRepository
-                .findById(privateConversationId).orElseThrow(
-                        () -> new CustomException(HttpStatus.NOT_FOUND, "Illegal behavior. There is no conversation.")
-                );
-
-
-
-        PrivateConversationMessage privateConversationMessage
-                = PrivateConversationMessage.builder()
-                .privateConversation(entityManager.getReference(PrivateConversation.class, privateConversationId))
-                .sender(entityManager.getReference(User.class, senderId))
-                .isRead(false)
-                .sentAt(LocalDateTime.now())
-                .type(sendMessageRequest.getType())
-                .content(sendMessageRequest.getContent())
-                .build();
-
-        privateConversationMessageRepository.save(privateConversationMessage);
-
-        privateConversation.setPreviewMessage(privateConversationMessage);
-
-        privateConversationRepository.save(privateConversation);
-
-
-        //  building for sender's info
-
-        User sender = userRepository.findById(senderId).orElseThrow(
-                () -> new CustomException(HttpStatus.NOT_FOUND, "Sender not found")
-        );
-
-        PrivateMessageWsResponse privateMessageWsResponse = PrivateMessageWsResponse.builder()
-                .userId(senderId)
-                .username(sender.getUsername())
-                .firstName(sender.getFirstName())
-                .lastName(sender.getLastName())
-                .avatarUrl(sender.getAvatarUrl())
-                .privateConversationMessageId(privateConversationMessage.getPrivateConversationMessageId())
-                .content(privateConversationMessage.getContent())
-                .sentAt(privateConversationMessage.getSentAt())
-                .updatedAt(privateConversationMessage.getUpdatedAt())
-                .type(privateConversationMessage.getType())
-                .realTimeAction(RealTimeAction.SEND)
-                .build();
-
-        // push for receiver
-
-        User receiver = !privateConversation.getUser1().getUserId().equals(senderId) ? privateConversation.getUser1() : privateConversation.getUser2();
-
-        webSocketMessageService.sendMessageToUser(receiver.getUsername(), privateMessageWsResponse);
-
-        return SendMessageResponse.builder()
-                .messageId(privateConversationMessage.getPrivateConversationMessageId())
-                .content(privateConversationMessage.getContent())
-                .sentAt(privateConversationMessage.getSentAt())
-                .updatedAt(privateConversationMessage.getUpdatedAt())
-                .type(privateConversationMessage.getType())
-                .build();
-    }
-
-    public Map<String, String> removeMessage(Long userId, Long privateConversationId, Long privateConversationMessageId, boolean isAll) {
-
-        PrivateConversation privateConversation = privateConversationRepository.findById(privateConversationId)
-                .orElseThrow(
-                        () -> new CustomException(HttpStatus.NOT_FOUND, "This conversation no longer exists.")
-                );
-
-        PrivateConversationMessage privateConversationMessage = privateConversationMessageRepository
-                .findById(privateConversationMessageId).orElseThrow(
-                        () -> new CustomException(HttpStatus.NOT_FOUND, "This message is no longer exists.")
-                );
-
-        if (privateConversationMessage.getPrivateConversation().getPrivateConversationId() != privateConversationId) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "Mismatch conversation and message.");
-        }
-        else if (userId != privateConversation.getUser1().getUserId() && userId != privateConversation.getUser2().getUserId()) {
-            throw new CustomException(HttpStatus.FORBIDDEN,
-                    "Illegal behavior. This user is not allowed to perform any actions to this conversation.");
-        }
-        else if (privateConversationMessage.getSender().getUserId() != userId && isAll) {
-            throw new CustomException(HttpStatus.CONFLICT, "Illegal behavior. This user is not allowed to remove both sides.");
+                Map<String, String> msg = new HashMap<>();
+                msg.put("message", "Removed successfully!");
+                return msg;
         }
 
+        public SendMessageResponse sendMessage(Long senderId,
+                        Long privateConversationId,
+                        SendMessageRequest sendMessageRequest) {
 
+                PrivateConversation privateConversation = privateConversationRepository
+                                .findById(privateConversationId).orElseThrow(
+                                                () -> new CustomException(HttpStatus.NOT_FOUND,
+                                                                "Illegal behavior. There is no conversation."));
 
-        DeletePrivateConversationMessageId deletePrivateConversationMessageId
-                = DeletePrivateConversationMessageId.builder()
-                .userId(userId)
-                .privateConversationMessageId(privateConversationMessageId)
-                .build();
+                PrivateConversationMessage privateConversationMessage = PrivateConversationMessage.builder()
+                                .privateConversation(entityManager.getReference(PrivateConversation.class,
+                                                privateConversationId))
+                                .sender(entityManager.getReference(User.class, senderId))
+                                .isRead(false)
+                                .sentAt(LocalDateTime.now())
+                                .type(sendMessageRequest.getType())
+                                .content(sendMessageRequest.getContent())
+                                .build();
 
-        DeletePrivateConversationMessage deletePrivateConversationMessage = deletePrivateConversationMessageRepository
-                .findById(deletePrivateConversationMessageId).orElse(null);
+                privateConversationMessageRepository.save(privateConversationMessage);
 
-        if (deletePrivateConversationMessage != null)
-            throw new CustomException(HttpStatus.CONFLICT, "Illegal behavior. This message is already removed.");
+                privateConversation.setPreviewMessage(privateConversationMessage);
 
-         deletePrivateConversationMessage = DeletePrivateConversationMessage.builder()
-                .id(deletePrivateConversationMessageId)
-                .deletedAt(LocalDateTime.now())
-                .isAll(isAll)
-                .user(userRepository.findById(userId).orElseThrow(
-                        () -> new CustomException(HttpStatus.NOT_FOUND, "User no longer exists.")
-                ))
-                .build();
+                privateConversationRepository.save(privateConversation);
 
-        deletePrivateConversationMessageRepository.save(deletePrivateConversationMessage);
+                // building for sender's info
 
-        if (isAll) {
+                User sender = userRepository.findById(senderId).orElseThrow(
+                                () -> new CustomException(HttpStatus.NOT_FOUND, "Sender not found"));
 
-            User partner = !privateConversation.getUser1().getUserId().equals(userId) ? privateConversation.getUser1() : privateConversation.getUser2();
+                PrivateMessageWsResponse privateMessageWsResponse = PrivateMessageWsResponse.builder()
+                                .userId(senderId)
+                                .username(sender.getUsername())
+                                .firstName(sender.getFirstName())
+                                .lastName(sender.getLastName())
+                                .avatarUrl(sender.getAvatarUrl())
+                                .privateConversationMessageId(
+                                                privateConversationMessage.getPrivateConversationMessageId())
+                                .privateConversationId(privateConversationId)
+                                .content(privateConversationMessage.getContent())
+                                .sentAt(privateConversationMessage.getSentAt())
+                                .updatedAt(privateConversationMessage.getUpdatedAt())
+                                .type(privateConversationMessage.getType())
+                                .realTimeAction(RealTimeAction.SEND)
+                                .build();
 
-            User remover = userRepository.findById(userId).orElseThrow(
-                    () -> new CustomException(HttpStatus.NOT_FOUND, "Remover not found.")
-            );
+                // push for receiver
 
-            DeletePrivateMessageWsResponse deletePrivateMessageWsResponse = DeletePrivateMessageWsResponse.builder()
-                    .userId(remover.getUserId())
-                    .privateConversationMessageId(privateConversationMessage.getPrivateConversationMessageId())
-                    .privateConversationId(privateConversation.getPrivateConversationId())
-                    .realTimeAction(RealTimeAction.DELETE)
-                    .build();
+                User receiver = !privateConversation.getUser1().getUserId().equals(senderId)
+                                ? privateConversation.getUser1()
+                                : privateConversation.getUser2();
 
-            webSocketMessageService.sendDeleteMessage(partner.getUsername(), deletePrivateMessageWsResponse);
+                webSocketMessageService.sendMessageToUser(receiver.getUsername(), privateMessageWsResponse);
+
+                return SendMessageResponse.builder()
+                                .messageId(privateConversationMessage.getPrivateConversationMessageId())
+                                .content(privateConversationMessage.getContent())
+                                .sentAt(privateConversationMessage.getSentAt())
+                                .updatedAt(privateConversationMessage.getUpdatedAt())
+                                .type(privateConversationMessage.getType())
+                                .build();
+        }
+
+        public Map<String, String> removeMessage(Long userId, Long privateConversationId,
+                        Long privateConversationMessageId, boolean isAll) {
+
+                PrivateConversation privateConversation = privateConversationRepository.findById(privateConversationId)
+                                .orElseThrow(
+                                                () -> new CustomException(HttpStatus.NOT_FOUND,
+                                                                "This conversation no longer exists."));
+
+                PrivateConversationMessage privateConversationMessage = privateConversationMessageRepository
+                                .findById(privateConversationMessageId).orElseThrow(
+                                                () -> new CustomException(HttpStatus.NOT_FOUND,
+                                                                "This message is no longer exists."));
+
+                if (privateConversationMessage.getPrivateConversation()
+                                .getPrivateConversationId() != privateConversationId) {
+                        throw new CustomException(HttpStatus.BAD_REQUEST, "Mismatch conversation and message.");
+                } else if (userId != privateConversation.getUser1().getUserId()
+                                && userId != privateConversation.getUser2().getUserId()) {
+                        throw new CustomException(HttpStatus.FORBIDDEN,
+                                        "Illegal behavior. This user is not allowed to perform any actions to this conversation.");
+                } else if (privateConversationMessage.getSender().getUserId() != userId && isAll) {
+                        throw new CustomException(HttpStatus.CONFLICT,
+                                        "Illegal behavior. This user is not allowed to remove both sides.");
+                }
+
+                DeletePrivateConversationMessageId deletePrivateConversationMessageId = DeletePrivateConversationMessageId
+                                .builder()
+                                .userId(userId)
+                                .privateConversationMessageId(privateConversationMessageId)
+                                .build();
+
+                DeletePrivateConversationMessage deletePrivateConversationMessage = deletePrivateConversationMessageRepository
+                                .findById(deletePrivateConversationMessageId).orElse(null);
+
+                if (deletePrivateConversationMessage != null)
+                        throw new CustomException(HttpStatus.CONFLICT,
+                                        "Illegal behavior. This message is already removed.");
+
+                deletePrivateConversationMessage = DeletePrivateConversationMessage.builder()
+                                .id(deletePrivateConversationMessageId)
+                                .deletedAt(LocalDateTime.now())
+                                .isAll(isAll)
+                                .user(userRepository.findById(userId).orElseThrow(
+                                                () -> new CustomException(HttpStatus.NOT_FOUND,
+                                                                "User no longer exists.")))
+                                .build();
+
+                deletePrivateConversationMessageRepository.save(deletePrivateConversationMessage);
+
+                if (isAll) {
+
+                        User partner = !privateConversation.getUser1().getUserId().equals(userId)
+                                        ? privateConversation.getUser1()
+                                        : privateConversation.getUser2();
+
+                        User remover = userRepository.findById(userId).orElseThrow(
+                                        () -> new CustomException(HttpStatus.NOT_FOUND, "Remover not found."));
+
+                        DeletePrivateMessageWsResponse deletePrivateMessageWsResponse = DeletePrivateMessageWsResponse
+                                        .builder()
+                                        .userId(remover.getUserId())
+                                        .privateConversationMessageId(
+                                                        privateConversationMessage.getPrivateConversationMessageId())
+                                        .privateConversationId(privateConversation.getPrivateConversationId())
+                                        .realTimeAction(RealTimeAction.DELETE)
+                                        .build();
+
+                        webSocketMessageService.sendDeleteMessage(partner.getUsername(),
+                                        deletePrivateMessageWsResponse);
+
+                }
+
+                Map<String, String> msg = new HashMap<>();
+
+                msg.put("message", "Removed successfully.");
+
+                return msg;
 
         }
 
-        Map<String, String> msg = new HashMap<>();
+        public ListPrivateConversationMessageResponse getMessages(Long userId, Long privateConversationId,
+                        Long cursorId) {
+                PrivateConversation privateConversation = privateConversationRepository
+                                .findById(privateConversationId).orElseThrow(
+                                                () -> new CustomException(HttpStatus.NOT_FOUND,
+                                                                "Illegal behaivor. This conversation no longer exists."));
 
-        msg.put("message", "Removed successfully.");
+                LocalDateTime deletedAt = deletePrivateConversationRepository.findLastest(userId, privateConversationId)
+                                .orElse(null);
 
-        return msg;
+                List<PrivateConversationMessageResponse> privateConversationMessageResponseList = privateConversationMessageRepository
+                                .findMessages(userId, privateConversationId, cursorId)
+                                .stream().filter(
+                                                p -> (deletedAt == null || p.getSentAt().isAfter(deletedAt)))
+                                .collect(Collectors.toList());
 
-    }
+                User user = userId == privateConversation.getUser1().getUserId()
+                                ? privateConversation.getUser2()
+                                : privateConversation.getUser1();
 
-    public ListPrivateConversationMessageResponse getMessages(Long userId, Long privateConversationId, Long cursorId) {
-        PrivateConversation privateConversation = privateConversationRepository
-                .findById(privateConversationId).orElseThrow(
-                        () -> new CustomException(HttpStatus.NOT_FOUND, "Illegal behaivor. This conversation no longer exists.")
-                );
+                ListPrivateConversationMessageResponse listPrivateConversationMessageResponse = ListPrivateConversationMessageResponse
+                                .builder()
+                                .privateConversationMessageResponseList(privateConversationMessageResponseList)
+                                .userId(user.getUserId())
+                                .username(user.getUsername())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .avatarUrl(user.getAvatarUrl())
+                                .isOnline(user.getIsOnline())
+                                .privateConversationId(privateConversationId)
+                                .build();
 
+                return listPrivateConversationMessageResponse;
+        }
 
-        LocalDateTime deletedAt = deletePrivateConversationRepository.findLastest(userId, privateConversationId).orElse(null);
+        public Map<String, Long> getIdConv(Long userId, Long friendId) {
 
-        List<PrivateConversationMessageResponse> privateConversationMessageResponseList =
-                privateConversationMessageRepository.findMessages(userId, privateConversationId, cursorId)
-                        .stream().filter(
-                                p -> (deletedAt == null || p.getSentAt().isAfter(deletedAt))
-                        ).collect(Collectors.toList());
+                PrivateConversation privateConversation = privateConversationRepository
+                                .findByUser1UserIdAndUser2UserId(userId, friendId)
+                                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,
+                                                "There is no conversation."));
 
-        if (!privateConversationMessageResponseList.isEmpty()) saveRead(userId, privateConversationId, privateConversationMessageResponseList.getFirst().getPrivateConversationMessageId());
-
-        User user = userId == privateConversation.getUser1().getUserId()
-                ? privateConversation.getUser2() : privateConversation.getUser1();
-
-        ListPrivateConversationMessageResponse listPrivateConversationMessageResponse
-                =  ListPrivateConversationMessageResponse.builder()
-                .privateConversationMessageResponseList(privateConversationMessageResponseList)
-                .userId(user.getUserId())
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .avatarUrl(user.getAvatarUrl())
-                .isOnline(user.getIsOnline())
-                .privateConversationId(privateConversationId)
-                .build();
-
-        return listPrivateConversationMessageResponse;
-    }
-
-    public Map<String, Long> getIdConv(Long userId, Long friendId) {
-
-        PrivateConversation privateConversation = privateConversationRepository
-                .findByUser1UserIdAndUser2UserId(userId, friendId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "There is no conversation."));
-
-        return Map.of("privateConversationId", privateConversation.getPrivateConversationId());
-    }
+                return Map.of("privateConversationId", privateConversation.getPrivateConversationId());
+        }
 
 }
