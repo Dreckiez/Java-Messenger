@@ -54,6 +54,10 @@ public class NavPanel extends JPanel {
         return this.friend;
     }
 
+    public ChatList getChatList() {
+        return this.chatList;
+    }
+
     public NavBar getNavBar() {
         return navBar;
     }

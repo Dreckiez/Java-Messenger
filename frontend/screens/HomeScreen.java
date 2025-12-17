@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import components.*;
+import services.MessageSocketListener;
 import services.NotificationSocketListener;
 import utils.SocketManager;
 import utils.UserSession;
@@ -32,6 +33,8 @@ public class HomeScreen extends JPanel {
                 leftPanel.getNavBar(),
                 leftPanel,
                 leftPanel.getFriendRequests());
+
+        MessageSocketListener.init(centerPanel, leftPanel);
 
         // --- KẾT NỐI FRIEND PANEL -> NAV PANEL ---
         FriendPanel friendPanel = leftPanel.getFriendPanel();

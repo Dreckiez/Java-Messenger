@@ -4,7 +4,9 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 
+import models.MessageWsResponse;
 import models.NotificationWsResponse;
+import services.MessageSocketListener;
 import services.NotificationSocketListener;
 
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -16,6 +18,7 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
+import org.json.JSONObject;
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
 
 public class SocketManager {
@@ -48,7 +51,7 @@ public class SocketManager {
                         System.out.println("DEBUG: WebSocket Connected! Session ID: " + s.getSessionId());
                         session = s;
                         subscribeNotifications();
-                        // subscribeChat();
+                        subscribeChat();
                     }
 
                     @Override
@@ -83,9 +86,32 @@ public class SocketManager {
 
     }
 
-    // private static void subscribeChat() {
-    // session.subscribe("/user/client/chat",
-    // new GenericFrameHandler<>(ChatMessage.class,
-    // ChatSocketListener::onMessage));
-    // }
+    private static void subscribeChat() {
+        String destination = "/user/client/messages";
+        session.subscribe(destination, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return java.util.Map.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                try {
+                    // 1. Convert payload to JSONObject
+                    JSONObject json = new JSONObject((java.util.Map) payload);
+
+                    // 2. Parse into our Model
+                    MessageWsResponse msg = MessageWsResponse.fromJson(json);
+
+                    // 3. Pass to Listener
+                    MessageSocketListener.onMessage(msg);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        System.out.println("DEBUG: Subscribed to " + destination);
+    }
 }

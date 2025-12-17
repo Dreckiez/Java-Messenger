@@ -16,8 +16,6 @@ public class PrivateConversationMessageResponse {
     private LocalDateTime sentAt;
     private LocalDateTime updatedAt;
     private MessageType type;
-    private Boolean isRead;
-    private LocalDateTime readAt;
 
     public PrivateConversationMessageResponse(
             Long privateConversationMessageId,
@@ -25,10 +23,7 @@ public class PrivateConversationMessageResponse {
             String content,
             java.sql.Timestamp sentAt,
             java.sql.Timestamp updatedAt,
-            Short type,
-            Boolean isRead,
-            java.sql.Timestamp readAt
-    ) {
+            Short type) {
         this.senderId = senderId;
         this.privateConversationMessageId = privateConversationMessageId;
         this.content = content;
@@ -36,7 +31,5 @@ public class PrivateConversationMessageResponse {
         this.updatedAt = updatedAt != null ? updatedAt.toLocalDateTime() : null;
         MessageType.Converter converter = new MessageType.Converter();
         this.type = converter.fromShort(type);
-        this.isRead = isRead;
-        this.readAt = readAt != null ? readAt.toLocalDateTime() : null;
     }
 }
