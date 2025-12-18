@@ -16,6 +16,7 @@ public interface GroupConversationMessageRepository
 
   @Query(value = """
       SELECT
+        gcm.group_conversation_id AS groupConversationId,
         gcm.sender_id AS senderId,
         TRIM(CONCAT(u.first_name, ' ', u.last_name)) AS senderName,
         u.avatar_url AS senderAvatar,
