@@ -29,7 +29,7 @@ public class MessageSocketListener {
         String action = message.getRealTimeAction();
 
         if (RealTimeAction.SEND.name().equals(action)) {
-            System.out.println("DEBUG: New message from " + message.getUsername() + ": " + message.getContent());
+            System.out.println("DEBUG: New message from " + message.getName() + ": " + message.getContent());
 
             long activeChatId = centerPanel.getCurrentChatId();
             // Assuming private messages for now (check types if needed)

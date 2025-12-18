@@ -94,6 +94,7 @@ public class CenterPanel extends JPanel {
         } else {
             conversationId = chatData.optLong("privateConversationId", chatData.optLong("id", -1));
         }
+        chatPanel.setCurrentChatType(type);
         this.currentChatId = conversationId;
         this.currentChatType = type;
         if (conversationId != -1) {

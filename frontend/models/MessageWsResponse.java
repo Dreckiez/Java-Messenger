@@ -8,7 +8,7 @@ public class MessageWsResponse {
 
     // SEND fields
     private Long userId; // The sender ID
-    private String username;
+    private String name;
     private String avatarUrl;
     private String content;
     private String sentAt;
@@ -29,7 +29,9 @@ public class MessageWsResponse {
 
         // Sender Info
         msg.userId = json.optLong("userId");
-        msg.username = json.optString("username");
+        String fname = json.optString("firstName");
+        String lname = json.optString("lastName");
+        msg.name = fname + ' ' + lname;
         msg.avatarUrl = json.optString("avatarUrl");
 
         // Message Content
@@ -56,8 +58,8 @@ public class MessageWsResponse {
         return userId;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
     public String getAvatarUrl() {

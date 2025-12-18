@@ -20,6 +20,9 @@ import utils.ImageEditor;
 import utils.ImageLoader;
 
 public class ChatPanel extends JPanel {
+
+    private String currentChatType;
+
     // --- UI Components ---
     private JPanel messagesPanel;
     private JTextField inputField;
@@ -173,6 +176,8 @@ public class ChatPanel extends JPanel {
         for (int i = messages.length() - 1; i >= 0; i--) {
             JSONObject msg = messages.getJSONObject(i);
 
+            System.out.println(msg.toString());
+
             String content = msg.optString("content", "");
             int senderId = msg.optInt("senderId", -1);
             String rawTime = msg.optString("sentAt", "");
@@ -301,6 +306,10 @@ public class ChatPanel extends JPanel {
         infoBtn.repaint();
     }
 
+    public void setCurrentChatType(String type) {
+        this.currentChatType = type;
+    }
+
     private void sendMessage() {
         String msg = inputField.getText().trim();
 
@@ -329,7 +338,12 @@ public class ChatPanel extends JPanel {
                     json.put("content", content);
                     json.put("type", 0);
 
-                    String url = ApiUrl.PRIVATE_CONVERSATION + "/" + chatId + "/private-conversation-messages";
+                    String url;
+                    if ("GROUP".equalsIgnoreCase(currentChatType)) {
+                        url = ApiUrl.GROUP_CONVERSATION + "/" + chatId + "/group-conversation-messages";
+                    } else {
+                        url = ApiUrl.PRIVATE_CONVERSATION + "/" + chatId + "/private-conversation-messages";
+                    }
 
                     HttpClient client = HttpClient.newHttpClient();
                     HttpRequest request = HttpRequest.newBuilder()
@@ -366,7 +380,7 @@ public class ChatPanel extends JPanel {
 
         // 2. Determine sender
         boolean isMe = (msg.getUserId() == utils.UserSession.getUser().getId());
-        String senderName = msg.getUsername();
+        String senderName = msg.getName();
         String avatarUrl = msg.getAvatarUrl();
 
         // 3. Add to UI
