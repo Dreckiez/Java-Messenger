@@ -80,20 +80,21 @@ public class CenterPanel extends JPanel {
             type = "GROUP";
         boolean isGroup = "GROUP".equalsIgnoreCase(type);
 
-        // Update Header & Info Panel cơ bản
-        chatPanel.updateChatHeader(name, avatarUrl, isGroup);
-        if (infoPanel != null) {
-            infoPanel.updateInfo(chatData);
-        }
-
-        layout.show(this, "chat");
-
         long conversationId = -1;
         if (isGroup) {
             conversationId = chatData.optLong("groupConversationId", chatData.optLong("id", -1));
         } else {
             conversationId = chatData.optLong("privateConversationId", chatData.optLong("id", -1));
         }
+
+        // Update Header & Info Panel cơ bản
+        chatPanel.updateChatHeader(conversationId, name, avatarUrl, isGroup);
+        if (infoPanel != null) {
+            infoPanel.updateInfo(chatData);
+        }
+
+        layout.show(this, "chat");
+
         chatPanel.setCurrentChatType(type);
         this.currentChatId = conversationId;
         this.currentChatType = type;

@@ -313,6 +313,9 @@ public class ChatPanel extends JPanel {
     private void sendMessage() {
         String msg = inputField.getText().trim();
 
+        System.out.println(msg);
+        System.out.println(currentChatId);
+
         // Validation
         if (msg.isEmpty() || msg.equals("Type a message and press Enter...") || this.currentChatId == -1) {
             return;
@@ -322,8 +325,6 @@ public class ChatPanel extends JPanel {
         addMessage(msg, time, "You", true, null);
 
         inputField.setText("");
-
-        System.out.println(currentChatId);
 
         long chatId = this.currentChatId;
         String token = UserSession.getUser().getToken();

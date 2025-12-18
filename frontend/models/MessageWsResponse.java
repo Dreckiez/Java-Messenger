@@ -4,7 +4,9 @@ import org.json.JSONObject;
 
 public class MessageWsResponse {
     private String realTimeAction; // "SEND" or "DELETE"
+
     private Long privateConversationMessageId;
+    private Long groupConversationMessageId;
 
     // SEND fields
     private Long userId; // The sender ID
@@ -16,6 +18,7 @@ public class MessageWsResponse {
 
     // DELETE fields
     private Long privateConversationId;
+    private Long groupConversationId;
 
     // Empty constructor
     public MessageWsResponse() {
@@ -26,6 +29,7 @@ public class MessageWsResponse {
         MessageWsResponse msg = new MessageWsResponse();
         msg.realTimeAction = json.optString("realTimeAction", "SEND");
         msg.privateConversationMessageId = json.optLong("privateConversationMessageId");
+        msg.groupConversationMessageId = json.optLong("groupConversationMessageId", -1);
 
         // Sender Info
         msg.userId = json.optLong("userId");
@@ -40,7 +44,8 @@ public class MessageWsResponse {
         msg.type = json.optString("type");
 
         // Delete info
-        msg.privateConversationId = json.optLong("privateConversationId");
+        msg.privateConversationId = json.optLong("privateConversationId", -1L);
+        msg.groupConversationId = json.optLong("groupConversationId", -1L);
 
         return msg;
     }
@@ -52,6 +57,10 @@ public class MessageWsResponse {
 
     public Long getPrivateConversationMessageId() {
         return privateConversationMessageId;
+    }
+
+    public Long getGroupConversationMessageId() {
+        return groupConversationMessageId;
     }
 
     public Long getUserId() {
@@ -80,5 +89,9 @@ public class MessageWsResponse {
 
     public Long getPrivateConversationId() {
         return privateConversationId;
+    }
+
+    public Long getGroupConversationId() {
+        return groupConversationId;
     }
 }

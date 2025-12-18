@@ -67,15 +67,17 @@ public class NavPanel extends JPanel {
     }
 
     public void switchToChatTab() {
-        showPanel("chatlist");
-        // reloadChatList();
+        showPanel("chatlist", true);
     }
 
     public void showPanel(String name) {
+        showPanel(name, true);
+    }
+
+    public void showPanel(String name, boolean shouldReload) { // <--- ADD BOOLEAN
         if (navBar != null)
             navBar.setActiveButton(name);
 
-        // Logic ẩn/hiện InfoPanel
         SwingUtilities.invokeLater(() -> {
             if (homeScreenRef != null)
                 homeScreenRef.toggleInfoPanel(false);
@@ -83,31 +85,33 @@ public class NavPanel extends JPanel {
                 centerRef.resetInfoToggle();
         });
 
-        // Trigger reload khi chuyển tab
-        switch (name) {
-            case "chatlist":
-                if (chatList != null)
-                    chatList.loadConversations();
-                break;
-            case "request": {
-                navBar.hideRequestDot();
-                if (request != null)
-                    request.fetchRequests();
-                break;
+        // Only reload if the flag is true
+        if (shouldReload) {
+            switch (name) {
+                case "chatlist":
+                    if (chatList != null)
+                        chatList.loadConversations();
+                    break;
+                case "request":
+                    navBar.hideRequestDot();
+                    if (request != null)
+                        request.fetchRequests();
+                    break;
+                case "searchfriend":
+                    if (search != null)
+                        search.resetSearch();
+                    break;
+                case "onlinefriend":
+                    if (friend != null)
+                        friend.fetchRequests();
+                    break;
+                case "blockedusers":
+                    if (blockedUsers != null)
+                        blockedUsers.fetchBlockedUsers();
+                    break;
             }
-            case "searchfriend":
-                if (search != null)
-                    search.resetSearch();
-                break;
-            case "onlinefriend":
-                if (friend != null)
-                    friend.fetchRequests();
-                break;
-            case "blockedusers":
-                if (blockedUsers != null)
-                    blockedUsers.fetchBlockedUsers();
-                break;
         }
+
         centerLayout.show(centerPanel, name);
     }
 
@@ -118,7 +122,7 @@ public class NavPanel extends JPanel {
 
     public void switchToChatAndOpen(int conversationId, String conversationType) {
         // 1. Chuyển sang tab ChatList
-        showPanel("chatlist");
+        showPanel("chatlist", false);
 
         // 2. Gọi hàm tải/chọn chat trong ChatList
         if (chatList != null) {

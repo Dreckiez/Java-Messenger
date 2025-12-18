@@ -16,6 +16,7 @@ public class GroupConversationMessageResponse {
     private String senderName;
     private String senderAvatar;
 
+    private Long groupConversationId;
     private Long groupConversationMessageId;
 
     private String content;
@@ -26,9 +27,10 @@ public class GroupConversationMessageResponse {
 
     private MessageType type;
 
-    GroupConversationMessageResponse(Long senderId, String senderName, String senderAvatar,
+    GroupConversationMessageResponse(Long groupConversationId, Long senderId, String senderName, String senderAvatar,
             Long groupConversationMessageId, String content,
             java.sql.Timestamp sentAt, java.sql.Timestamp updatedAt, Short type) {
+        this.groupConversationId = groupConversationId;
         this.senderId = senderId;
         this.senderName = senderName;
         this.senderAvatar = senderAvatar;
