@@ -26,8 +26,6 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
 
     private final WebSocketPrivateMessageService webSocketMessageService;
 
-    private final ReadPrivateConversationMessageRepository readPrivateConversationMessageRepository;
-
     private final PrivateConversationRepository privateConversationRepository;
 
     private final EntityManager entityManager;
@@ -39,38 +37,6 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
     private final DeletePrivateConversationMessageRepository deletePrivateConversationMessageRepository;
 
     private final UserRepository userRepository;
-
-
-    public void saveRead(Long userId, Long privateConversationId, Long privateConversationMessageId) {
-
-        ReadPrivateConversationMessageId readPrivateConversationMessageId = ReadPrivateConversationMessageId.builder()
-                .userId(userId)
-                .privateConversationId(privateConversationId)
-                .build();
-
-        ReadPrivateConversationMessage readPrivateConversationMessage =
-                readPrivateConversationMessageRepository.findById(readPrivateConversationMessageId).orElse(null);
-
-        if (readPrivateConversationMessage == null) {
-            System.out.println("here");
-            readPrivateConversationMessage = ReadPrivateConversationMessage.builder()
-                    .id(readPrivateConversationMessageId)
-                    .privateConversationMessage(entityManager.getReference(PrivateConversationMessage.class, privateConversationMessageId))
-                    .user(entityManager.getReference(User.class, userId))
-                    .readAt(LocalDateTime.now()).build();
-        }
-        else {
-
-            if (readPrivateConversationMessage.getPrivateConversationMessage().getPrivateConversationMessageId() == privateConversationMessageId)
-                return;
-
-            readPrivateConversationMessage.setReadAt(LocalDateTime.now());
-            readPrivateConversationMessage.setPrivateConversationMessage(entityManager.getReference
-                    (PrivateConversationMessage.class, privateConversationMessageId));
-        }
-
-        readPrivateConversationMessageRepository.save(readPrivateConversationMessage);
-    }
 
     public Map<String, String> create(Long userId1, Long userId2) {
 
@@ -275,8 +241,6 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                         .stream().filter(
                                 p -> (deletedAt == null || p.getSentAt().isAfter(deletedAt))
                         ).collect(Collectors.toList());
-
-        if (!privateConversationMessageResponseList.isEmpty()) saveRead(userId, privateConversationId, privateConversationMessageResponseList.getFirst().getPrivateConversationMessageId());
 
         User user = userId == privateConversation.getUser1().getUserId()
                 ? privateConversation.getUser2() : privateConversation.getUser1();

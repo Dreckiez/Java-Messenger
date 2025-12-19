@@ -5,15 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d381c703-bc43-4fc8-9d99-48eae8e8d284" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../INSERT.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../INSERT.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SCRIPT.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../SCRIPT.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/StatsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/StatsRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/PrivateConversationMessageResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/dto/response/PrivateConversationMessageResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/ReadGroupConversationMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/ReadGroupConversationMessageId.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/ReadPrivateConversationMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/entities/ReadPrivateConversationMessageId.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationMessageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/PrivateConversationMessageRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/ReadGroupConversationMessageRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/repository/ReadPrivateConversationMessageRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/WebSocketConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/config/WebSocketConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/PrivateConversationMessageResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/dto/response/PrivateConversationMessageResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/PrivateConversationMessageRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/repository/PrivateConversationMessageRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/spring_security/services/user/impl/UserPrivateConversationServiceImpl.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/components/CenterPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/CenterPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/ChatPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/ChatPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/InfoPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/InfoPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/NavBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/NavBar.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/components/UserManage.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/components/UserManage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/screens/HomeScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/screens/HomeScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/services/UserAdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/services/UserAdminService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
