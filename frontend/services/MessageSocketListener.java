@@ -61,8 +61,11 @@ public class MessageSocketListener {
 
             String time = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
+            String conversationType = isGroup ? "GROUP" : "PRIVATE";
+
             chatList.updateConversationOnMessage(
                     messageChatId,
+                    conversationType,
                     message.getContent(),
                     time);
 

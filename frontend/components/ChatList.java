@@ -107,15 +107,20 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
 
     // --- SOCKET EVENT HANDLERS ---
 
-    public void updateConversationOnMessage(long conversationId, String message, String time) {
+    public void updateConversationOnMessage(long conversationId, String type, String message, String time) {
         SwingUtilities.invokeLater(() -> {
             ChatItem foundItem = null;
 
             for (Component comp : chatListPanel.getComponents()) {
                 if (comp instanceof ChatItem) {
                     ChatItem item = (ChatItem) comp;
-                    long itemId = getChatId(item.getChatData());
-                    if (itemId == conversationId) {
+                    JSONObject data = item.getChatData();
+
+                    long itemId = getChatId(data);
+
+                    String itemType = data.optString("conversationType", "PRIVATE");
+
+                    if (itemId == conversationId && itemType.equalsIgnoreCase(type)) {
                         foundItem = item;
                         break;
                     }
@@ -320,6 +325,13 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
     }
 
     private ChatItem addChat(JSONObject chatData) {
+        if (!chatData.has("conversationType")) {
+            if (chatData.has("groupConversationId") && chatData.optLong("groupConversationId") > 0) {
+                chatData.put("conversationType", "GROUP");
+            } else {
+                chatData.put("conversationType", "PRIVATE");
+            }
+        }
         String name = chatData.optString("name", "Unknown");
         String message = chatData.optString("previewContent", "");
         if (message.equals("null"))
