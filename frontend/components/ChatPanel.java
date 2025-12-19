@@ -258,9 +258,16 @@ public class ChatPanel extends JPanel {
             public void paint(Graphics g, JComponent c) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 if (isInfoActive) {
                     g2.setColor(ACTIVE_INFO_BG);
-                    g2.fillOval(0, 0, c.getWidth(), c.getHeight());
+
+                    // 🔥 FIX: Calculate a centered square for a perfect circle
+                    int size = Math.min(c.getWidth(), c.getHeight());
+                    int x = (c.getWidth() - size) / 2;
+                    int y = (c.getHeight() - size) / 2;
+
+                    g2.fillOval(x, y, size, size);
                 }
                 super.paint(g2, c);
                 g2.dispose();
@@ -407,6 +414,8 @@ public class ChatPanel extends JPanel {
 
         // 3. Add to UI
         addMessage(msgId, msg.getContent(), time, senderName, isMe, avatarUrl);
+
+        scrollToBottom();
 
         // 4. Scroll to bottom
         SwingUtilities.invokeLater(() -> {

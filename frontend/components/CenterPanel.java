@@ -91,7 +91,18 @@ public class CenterPanel extends JPanel {
         chatPanel.updateChatHeader(conversationId, name, avatarUrl, isGroup);
         if (infoPanel != null) {
             infoPanel.updateInfo(chatData);
+
+            if (!infoPanel.isVisible()) {
+                infoPanel.setVisible(true);
+                // Refresh the parent (HomeScreen) layout to make it appear
+                if (infoPanel.getParent() != null) {
+                    infoPanel.getParent().revalidate();
+                    infoPanel.getParent().repaint();
+                }
+            }
         }
+
+        chatPanel.setInfoActive(true);
 
         if (isGroup && conversationId != -1) {
             utils.SocketManager.subscribeGroup(conversationId);
