@@ -303,7 +303,7 @@ public class InfoPanel extends JPanel {
             actionsSection.add(Box.createVerticalStrut(10));
             actionsSection.add(createSectionTitle("Privacy & Support"));
 
-            actionsSection.add(createActionBtn("🗑️   Delete Chat", true, e -> confirmDelete()));
+            actionsSection.add(createActionBtn("🗑️   Delete All Messages", true, e -> confirmDelete()));
             actionsSection.add(createActionBtn("🚫   Block User", true, e -> confirmBlock()));
             actionsSection.add(createActionBtn("⚠️   Report", true, e -> confirmReport()));
         }
@@ -1261,7 +1261,7 @@ public class InfoPanel extends JPanel {
         if (choice == JOptionPane.YES_OPTION) {
             String token = UserSession.getUser().getToken();
             String url = isGroup ? ApiUrl.GROUP_CONVERSATION + "/" + conversationId + "/clear-history"
-                    : ApiUrl.PRIVATE_CONVERSATION + "/" + conversationId;
+                    : ApiUrl.PRIVATE_CONVERSATION + "/" + conversationId + "/clear-history";
 
             new SwingWorker<JSONObject, Void>() {
                 @Override

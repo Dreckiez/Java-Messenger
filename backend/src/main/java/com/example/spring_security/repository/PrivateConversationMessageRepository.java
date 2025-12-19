@@ -1,46 +1,48 @@
 package com.example.spring_security.repository;
 
-import com.example.spring_security.dto.response.MessageSearchResponse;
 import com.example.spring_security.dto.response.PrivateConversationMessageResponse;
 import com.example.spring_security.entities.PrivateConversationMessage;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface PrivateConversationMessageRepository extends JpaRepository<PrivateConversationMessage, Long> {
 
-  @Query(value = """
-      SELECT
-          pcm.private_conversation_message_id AS privateConversationMessageId,
-          pcm.sender_id AS senderId,
-          pcm.content AS content,
-          pcm.sent_at AS sentAt,
-          pcm.updated_at AS updatedAt,
-          pcm.type AS type
-      FROM private_conversation_message pcm
-      LEFT JOIN delete_private_conversation dpc
-             ON dpc.private_conversation_id = pcm.private_conversation_id
-            AND dpc.user_id = :userId
-      WHERE pcm.private_conversation_id = :privateConversationId
+  @Query("""
+      SELECT new com.example.spring_security.dto.response.PrivateConversationMessageResponse(
+          pcm.privateConversation.privateConversationId,
+          pcm.sender.userId,
+          TRIM(CONCAT(pcm.sender.firstName, ' ', pcm.sender.lastName)),
+          pcm.sender.avatarUrl,
+          pcm.privateConversationMessageId,
+          pcm.content,
+          pcm.sentAt,
+          pcm.updatedAt,
+          pcm.type
+      )
+      FROM PrivateConversationMessage pcm
+      WHERE pcm.privateConversation.privateConversationId = :privateConversationId
+      AND (:cursorId IS NULL OR pcm.privateConversationMessageId < :cursorId)
 
-        AND (:cursorId IS NULL OR pcm.private_conversation_message_id < :cursorId)
-        AND NOT EXISTS (
-              SELECT 1
-              FROM delete_private_conversation_message dpcm
-              WHERE dpcm.private_conversation_message_id = pcm.private_conversation_message_id
-                AND (dpcm.is_all = TRUE OR dpcm.user_id = :userId)
-        )
+      AND pcm.sentAt > :clearTime
 
-        AND (dpc.deleted_at IS NULL OR pcm.sent_at > dpc.deleted_at)
-
-      ORDER BY pcm.private_conversation_message_id DESC
-      LIMIT 50
-      """, nativeQuery = true)
-  List<PrivateConversationMessageResponse> findMessages(
-      Long userId,
-      Long privateConversationId,
-      Long cursorId);
+      AND NOT EXISTS (
+            SELECT 1 FROM DeletePrivateConversationMessage dpcm
+            WHERE dpcm.id.privateConversationMessageId = pcm.privateConversationMessageId
+            AND (dpcm.isAll = TRUE OR dpcm.id.userId = :userId)
+      )
+      ORDER BY pcm.privateConversationMessageId DESC
+      """)
+  List<PrivateConversationMessageResponse> findMessagesAfterTimestamp(
+      @Param("userId") Long userId,
+      @Param("privateConversationId") Long privateConversationId,
+      @Param("cursorId") Long cursorId,
+      @Param("clearTime") LocalDateTime clearTime,
+      Pageable pageable);
 }
