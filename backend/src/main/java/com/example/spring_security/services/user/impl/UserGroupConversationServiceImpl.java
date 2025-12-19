@@ -165,11 +165,17 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                                                 () -> new CustomException(HttpStatus.FORBIDDEN,
                                                                 "This user is not allowed to perform this action."));
 
+                LocalDateTime clearTime = groupConversationMember.getHistoryClearedAt();
+                if (clearTime == null) {
+                        clearTime = LocalDateTime.of(1970, 1, 1, 0, 0);
+                }
+
                 List<GroupMemberResponse> groupMemberResponseList = groupConversationMemberRepository
                                 .findMembersByGroupConversationId(groupConversationId);
 
                 List<GroupConversationMessageResponse> groupConversationMessageResponseList = groupConversationMessageRepository
-                                .findMessages(userId, groupConversationId, cursorId);
+                                .findMessagesAfterTimestamp(userId, groupConversationId, cursorId, clearTime,
+                                                org.springframework.data.domain.PageRequest.of(0, 50));
 
                 ListGroupConversationMessageResponse listGroupConversationMessageResponse = ListGroupConversationMessageResponse
                                 .builder()
@@ -320,6 +326,23 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
                 return msg;
 
+        }
+
+        public Map<String, String> clearGroupChatHistory(Long userId, Long groupConversationId) {
+
+                // 1. Find the Member
+                GroupConversationMember member = groupConversationMemberRepository
+                                .findMemberInGroup(userId, groupConversationId)
+                                .orElseThrow(() -> new CustomException(HttpStatus.FORBIDDEN,
+                                                "You are not a member of this group."));
+
+                // 2. Set the "Floor" timestamp to NOW
+                // (User will only see messages sent AFTER this time)
+                member.setHistoryClearedAt(LocalDateTime.now());
+
+                groupConversationMemberRepository.save(member);
+
+                return Map.of("message", "Chat history cleared successfully.");
         }
 
         public Map<String, String> removeConversation(Long removerId, Long groupConversationId) {

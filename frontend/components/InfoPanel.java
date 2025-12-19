@@ -285,8 +285,8 @@ public class InfoPanel extends JPanel {
             actionsSection.add(Box.createVerticalStrut(10));
             actionsSection.add(createSectionTitle("Danger Zone"));
 
+            actionsSection.add(createActionBtn("🗑️   Delete All Messages", true, e -> confirmDelete()));
             actionsSection.add(createActionBtn("🚪   Leave Group", true, e -> confirmLeaveGroup()));
-            actionsSection.add(createActionBtn("🗑️   Delete Group", true, e -> confirmDelete()));
 
         } else {
             // --- PRIVATE CHAT ---
@@ -556,85 +556,6 @@ public class InfoPanel extends JPanel {
             btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
             btn.setBorder(new EmptyBorder(6, 16, 6, 16));
             return btn;
-        }
-    }
-
-    // ---------------------------------------------------------
-    // 🔥 MODERN ICONS (NO MORE BROKEN EMOJIS)
-    // ---------------------------------------------------------
-    private static class ModernIcon implements Icon {
-        private final String type;
-        private final Color color;
-        private final int size = 18;
-
-        public ModernIcon(String type, Color color) {
-            this.type = type;
-            this.color = color;
-        }
-
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.translate(x, y);
-
-            switch (type) {
-                case "EDIT": // Pencil
-                    g2.drawLine(4, 14, 14, 4);
-                    g2.drawLine(4, 14, 6, 16);
-                    g2.drawLine(14, 4, 16, 6);
-                    g2.drawLine(6, 16, 16, 6);
-                    break;
-                case "IMAGE": // Picture
-                    g2.drawRect(2, 4, 14, 10);
-                    g2.drawOval(10, 6, 2, 2);
-                    g2.drawPolyline(new int[] { 2, 6, 10, 16 }, new int[] { 12, 8, 12, 9 }, 4);
-                    break;
-                case "ADD": // Plus User
-                    g2.drawOval(4, 4, 6, 6);
-                    g2.drawArc(2, 10, 10, 8, 0, 180);
-                    g2.drawLine(14, 8, 14, 14);
-                    g2.drawLine(11, 11, 17, 11);
-                    break;
-                case "TRASH": // Bin
-                    g2.drawLine(4, 4, 14, 4);
-                    g2.drawRect(5, 4, 8, 10);
-                    g2.drawLine(7, 6, 7, 12);
-                    g2.drawLine(11, 6, 11, 12);
-                    break;
-                case "LEAVE": // Door
-                    g2.drawRect(4, 2, 10, 14);
-                    g2.drawLine(14, 2, 16, 4);
-                    g2.drawLine(14, 16, 16, 14);
-                    break;
-                case "BLOCK": // Circle Slash
-                    g2.drawOval(2, 2, 14, 14);
-                    g2.drawLine(4, 14, 14, 4);
-                    break;
-                case "REPORT": // Flag
-                    g2.drawLine(4, 2, 4, 16);
-                    g2.drawPolygon(new int[] { 4, 14, 4 }, new int[] { 2, 5, 8 }, 3);
-                    break;
-                case "AI": // Robot
-                    g2.drawRect(4, 6, 10, 8);
-                    g2.drawLine(6, 6, 6, 4);
-                    g2.drawLine(12, 6, 12, 4);
-                    g2.drawOval(3, 8, 2, 2);
-                    break;
-            }
-            g2.dispose();
-        }
-
-        @Override
-        public int getIconWidth() {
-            return size;
-        }
-
-        @Override
-        public int getIconHeight() {
-            return size;
         }
     }
 
@@ -1069,12 +990,6 @@ public class InfoPanel extends JPanel {
             changeMemberRole(findConversationIdToDelete(), userId, newRole);
     }
 
-    private void kickMember(long groupId, int userId) {
-        String token = UserSession.getUser().getToken();
-        String url = ApiUrl.GROUP_CONVERSATION + "/" + groupId + "/members/" + userId;
-        executeApiTask(() -> ApiClient.deleteJSON(url, new JSONObject(), token), "Member kicked.");
-    }
-
     private void changeMemberRole(long groupId, int userId, String newRoleString) {
         String token = UserSession.getUser().getToken();
         String url = ApiUrl.GROUP_CONVERSATION + "/" + groupId + "/members";
@@ -1129,34 +1044,6 @@ public class InfoPanel extends JPanel {
             }
         }.execute();
     }
-
-    private void executeApiTask(java.util.concurrent.Callable<JSONObject> task, String successMsg) {
-        new SwingWorker<JSONObject, Void>() {
-            @Override
-            protected JSONObject doInBackground() throws Exception {
-                return task.call();
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    JSONObject res = get();
-                    if (res != null && res.optInt("httpStatus", 500) < 300) {
-                        JOptionPane.showMessageDialog(InfoPanel.this, successMsg);
-                        if (onChatActionCompleted != null)
-                            onChatActionCompleted.run();
-                    } else {
-                        String msg = res != null ? res.optString("message", "Failed") : "Error";
-                        JOptionPane.showMessageDialog(InfoPanel.this, msg, "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(InfoPanel.this, "System Error: " + e.getMessage());
-                }
-            }
-        }.execute();
-    }
-
     // ---------------------------------------------------------
     // CÁC HÀM CŨ (RENAME, UPLOAD, DELETE...)
     // ---------------------------------------------------------
@@ -1366,20 +1253,20 @@ public class InfoPanel extends JPanel {
 
         String typeName = isGroup ? "group" : "private";
         int choice = JOptionPane.showConfirmDialog(this,
-                "Delete " + typeName + " conversation? This cannot be undone.",
-                "Confirm Delete",
+                "Delete " + typeName + " messages? This cannot be undone.",
+                "Clear History",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
         if (choice == JOptionPane.YES_OPTION) {
             String token = UserSession.getUser().getToken();
-            String url = isGroup ? ApiUrl.GROUP_CONVERSATION + "/" + conversationId
+            String url = isGroup ? ApiUrl.GROUP_CONVERSATION + "/" + conversationId + "/clear-history"
                     : ApiUrl.PRIVATE_CONVERSATION + "/" + conversationId;
 
             new SwingWorker<JSONObject, Void>() {
                 @Override
                 protected JSONObject doInBackground() throws Exception {
-                    return ApiClient.deleteJSON(url, new JSONObject(), token);
+                    return ApiClient.postJSON(url, new JSONObject(), token);
                 }
 
                 @Override
@@ -1388,7 +1275,7 @@ public class InfoPanel extends JPanel {
                         JSONObject response = get();
                         if (response != null && response.optInt("httpStatus", 500) < 300) {
                             // ✅ THÀNH CÔNG
-                            JOptionPane.showMessageDialog(InfoPanel.this, "Conversation deleted.");
+                            JOptionPane.showMessageDialog(InfoPanel.this, "History cleared.");
                             if (onChatActionCompleted != null) {
                                 onChatActionCompleted.run();
                             }
