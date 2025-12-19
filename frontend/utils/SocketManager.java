@@ -14,9 +14,13 @@ import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.messaging.simp.stomp.StompSession.Subscription;
 
 import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
@@ -24,6 +28,10 @@ import org.springframework.messaging.converter.JacksonJsonMessageConverter;
 public class SocketManager {
 
     private static StompSession session;
+
+    private static Map<Long, Subscription> groupSubscriptions = new ConcurrentHashMap<>();
+
+    private static Set<Long> pendingGroupIds = ConcurrentHashMap.newKeySet();
 
     public static void connect() {
 
@@ -52,6 +60,15 @@ public class SocketManager {
                         session = s;
                         subscribeNotifications();
                         subscribeChat();
+
+                        if (!pendingGroupIds.isEmpty()) {
+                            System.out.println(
+                                    "DEBUG: Processing " + pendingGroupIds.size() + " pending group subscriptions...");
+                            for (Long groupId : pendingGroupIds) {
+                                performSubscription(groupId);
+                            }
+                            pendingGroupIds.clear();
+                        }
                     }
 
                     @Override
@@ -113,5 +130,56 @@ public class SocketManager {
         });
 
         System.out.println("DEBUG: Subscribed to " + destination);
+    }
+
+    public static void subscribeGroup(long groupId) {
+        if (session == null || !session.isConnected()) {
+            // 🔥 Session not ready? Add to queue!
+            System.out.println("⏳ Session not ready. Queuing Group " + groupId);
+            pendingGroupIds.add(groupId);
+            return;
+        }
+
+        performSubscription(groupId);
+    }
+
+    private static void performSubscription(long groupId) {
+        // Prevent duplicates
+        if (groupSubscriptions.containsKey(groupId))
+            return;
+
+        // Matches your Backend: /client/group/{id}
+        String destination = "/client/group/" + groupId;
+
+        System.out.println("DEBUG: Subscribing to " + destination);
+
+        Subscription sub = session.subscribe(destination, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return java.util.Map.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                try {
+                    JSONObject json = new JSONObject((java.util.Map) payload);
+                    MessageWsResponse msg = MessageWsResponse.fromJson(json);
+                    MessageSocketListener.onMessage(msg);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        groupSubscriptions.put(groupId, sub);
+    }
+
+    public static void unsubscribeGroup(long groupId) {
+        if (groupSubscriptions.containsKey(groupId)) {
+            groupSubscriptions.get(groupId).unsubscribe();
+            groupSubscriptions.remove(groupId);
+            System.out.println("DEBUG: Unsubscribed from Group " + groupId);
+        }
+        pendingGroupIds.remove(groupId);
     }
 }

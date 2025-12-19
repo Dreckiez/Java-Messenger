@@ -252,7 +252,6 @@ public class UserServices {
 
         System.out.println("DEBUG API CALL: " + url); // In ra để kiểm tra
         JSONObject res = ApiClient.getJSON(url, token);
-        System.out.println(res.toString());
         return res;
     }
 

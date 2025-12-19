@@ -48,7 +48,14 @@ public class MessageSocketListener {
                 }
             }
 
-            if (isOpen) {
+            int myId = utils.UserSession.getUser().getId(); // Assuming this returns int or long
+            Long senderId = message.getUserId();
+
+            // Compare primitive long values to avoid Integer vs Long object mismatch
+            boolean isMe = (senderId != null && senderId.longValue() == myId);
+
+            // Only add to ChatPanel if it's NOT me (to avoid double bubble)
+            if (isOpen && !isMe) {
                 centerPanel.getChatPanel().addSocketMessage(message);
             }
 

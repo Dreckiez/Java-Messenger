@@ -291,6 +291,11 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
                         if (itemToSelect == null && i == 0) {
                             itemToSelect = item;
                         }
+
+                        String type = chat.optString("conversationType", "PRIVATE");
+                        if ("GROUP".equalsIgnoreCase(type)) {
+                            utils.SocketManager.subscribeGroup(currentId);
+                        }
                     }
 
                     if (itemToSelect != null) {
@@ -313,126 +318,6 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
             }
         }.execute();
     }
-
-    // public void loadConversations() {
-    // if (UserSession.getUser() == null)
-    // return;
-    // SwingUtilities.invokeLater(() -> {
-    // chatListPanel.removeAll();
-    // chatListPanel.revalidate();
-    // chatListPanel.repaint();
-    // });
-    // String token = UserSession.getUser().getToken();
-    // new SwingWorker<JSONArray, Void>() {
-    // JSONArray conversations = null;
-
-    // @Override
-    // protected JSONArray doInBackground() throws Exception {
-    // return userService.getConversations(token);
-    // }
-
-    // @Override
-    // protected void done() {
-    // try {
-    // conversations = get();
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // System.out.println(conversations.toString());
-    // SwingUtilities.invokeLater(() -> {
-    // if (conversations == null || conversations.length() == 0) {
-    // showEmptyState();
-    // } else {
-    // ChatItem firstItem = null;
-    // chatListPanel.removeAll();
-    // for (int i = 0; i < conversations.length(); i++) {
-    // JSONObject chat = conversations.getJSONObject(i);
-    // ChatItem item = addChat(chat);
-    // if (i == 0)
-    // firstItem = item;
-    // }
-    // if (firstItem != null) {
-    // selectChat(firstItem);
-    // if (onChatSelected != null)
-    // onChatSelected.accept(firstItem.getChatData());
-    // }
-    // }
-    // chatListPanel.revalidate();
-    // chatListPanel.repaint();
-    // });
-    // }
-    // }.execute();
-    // }
-
-    // private void loadConversations_V2() {
-    // if (UserSession.getUser() == null)
-    // return;
-    // SwingUtilities.invokeLater(() -> {
-    // chatListPanel.removeAll();
-    // chatListPanel.revalidate();
-    // chatListPanel.repaint();
-    // });
-    // String token = UserSession.getUser().getToken();
-    // new SwingWorker<JSONArray, Void>() {
-    // JSONArray conversations = null;
-
-    // @Override
-    // protected JSONArray doInBackground() throws Exception {
-    // return userService.getConversations(token);
-    // }
-
-    // @Override
-    // protected void done() {
-    // try {
-    // conversations = get();
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // SwingUtilities.invokeLater(() -> {
-    // if (conversations == null || conversations.length() == 0) {
-    // showEmptyState();
-    // pendingOpenId = -1;
-    // pendingOpenType = null;
-    // if (onChatSelected != null)
-    // onChatSelected.accept(new JSONObject());
-    // } else {
-    // ChatItem itemToSelect = null;
-    // chatListPanel.removeAll();
-    // for (int i = 0; i < conversations.length(); i++) {
-    // JSONObject chat = conversations.getJSONObject(i);
-    // ChatItem item = addChat(chat);
-
-    // long currentId = getChatId(chat);
-    // String currentType = chat.optString("conversationType", "PRIVATE");
-    // if (pendingOpenId != -1 && currentId == pendingOpenId) {
-    // if (pendingOpenType != null && pendingOpenType.equalsIgnoreCase(currentType))
-    // {
-    // itemToSelect = item;
-    // }
-    // }
-    // if (i == 0 && itemToSelect == null && pendingOpenId == -1) {
-    // itemToSelect = item;
-    // }
-    // }
-    // if (itemToSelect != null) {
-    // selectChat(itemToSelect);
-    // if (onChatSelected != null)
-    // onChatSelected.accept(itemToSelect.getChatData());
-    // Rectangle bounds = itemToSelect.getBounds();
-    // chatListPanel.scrollRectToVisible(bounds);
-    // } else if (pendingOpenId != -1) {
-    // if (onChatSelected != null)
-    // onChatSelected.accept(new JSONObject());
-    // }
-    // pendingOpenId = -1;
-    // pendingOpenType = null;
-    // }
-    // chatListPanel.revalidate();
-    // chatListPanel.repaint();
-    // });
-    // }
-    // }.execute();
-    // }
 
     private ChatItem addChat(JSONObject chatData) {
         String name = chatData.optString("name", "Unknown");

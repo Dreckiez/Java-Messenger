@@ -215,8 +215,13 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
                 groupConversationRepository.save(groupConversation);
 
+                User sender = userRepository.findById(userId)
+                                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User not found"));
+
                 GroupMessageWsResponse groupMessageWsResponse = GroupMessageWsResponse.builder()
                                 .senderId(userId)
+                                .senderName(sender.getFirstName() + " " + sender.getLastName())
+                                .avatarUrl(sender.getAvatarUrl())
                                 .groupConversationId(groupConversationId)
                                 .groupConversationMessageId(groupConversationMessage.getGroupConversationMessageId())
                                 .content(sendMessageRequest.getContent())

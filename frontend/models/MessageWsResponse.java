@@ -32,16 +32,23 @@ public class MessageWsResponse {
         msg.groupConversationMessageId = json.optLong("groupConversationMessageId", -1);
 
         // Sender Info
-        msg.userId = json.optLong("userId");
-        String fname = json.optString("firstName");
-        String lname = json.optString("lastName");
-        msg.name = fname + ' ' + lname;
+
         msg.avatarUrl = json.optString("avatarUrl");
 
         // Message Content
         msg.content = json.optString("content");
         msg.sentAt = json.optString("sentAt");
         msg.type = json.optString("type");
+
+        if (json.has("groupConversationMessageId")) {
+            msg.name = json.getString("senderName");
+            msg.userId = json.optLong("senderId");
+        } else {
+            String fname = json.optString("firstName");
+            String lname = json.optString("lastName");
+            msg.name = fname + ' ' + lname;
+            msg.userId = json.optLong("userId");
+        }
 
         // Delete info
         msg.privateConversationId = json.optLong("privateConversationId", -1L);

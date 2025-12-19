@@ -176,8 +176,6 @@ public class ChatPanel extends JPanel {
         for (int i = messages.length() - 1; i >= 0; i--) {
             JSONObject msg = messages.getJSONObject(i);
 
-            System.out.println(msg.toString());
-
             String content = msg.optString("content", "");
             int senderId = msg.optInt("senderId", -1);
             String rawTime = msg.optString("sentAt", "");
@@ -312,9 +310,6 @@ public class ChatPanel extends JPanel {
 
     private void sendMessage() {
         String msg = inputField.getText().trim();
-
-        System.out.println(msg);
-        System.out.println(currentChatId);
 
         // Validation
         if (msg.isEmpty() || msg.equals("Type a message and press Enter...") || this.currentChatId == -1) {

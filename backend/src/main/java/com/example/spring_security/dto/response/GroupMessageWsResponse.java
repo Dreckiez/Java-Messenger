@@ -18,7 +18,7 @@ public class GroupMessageWsResponse {
 
     private Long senderId;
 
-    private String name;
+    private String senderName;
     private String avatarUrl;
 
     private String content;

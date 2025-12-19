@@ -93,6 +93,10 @@ public class CenterPanel extends JPanel {
             infoPanel.updateInfo(chatData);
         }
 
+        if (isGroup && conversationId != -1) {
+            utils.SocketManager.subscribeGroup(conversationId);
+        }
+
         layout.show(this, "chat");
 
         chatPanel.setCurrentChatType(type);
