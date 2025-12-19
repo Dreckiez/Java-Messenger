@@ -20,9 +20,7 @@ public interface PrivateConversationMessageRepository extends JpaRepository<Priv
             pcm.content AS content,
             pcm.sent_at AS sentAt,
             pcm.updated_at AS updatedAt,
-            pcm.type AS type,
-            pcm.is_read AS isRead,
-            pcm.read_at AS readAt
+            pcm.type AS type
         FROM private_conversation_message pcm
         LEFT JOIN delete_private_conversation dpc
                ON dpc.private_conversation_id = pcm.private_conversation_id

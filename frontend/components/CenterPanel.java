@@ -228,6 +228,7 @@ public class CenterPanel extends JPanel {
                         // --- 3. TẢI TIN NHẮN ---
                         if (response.has("privateConversationMessageResponseList")) {
                             JSONArray messages = response.getJSONArray("privateConversationMessageResponseList");
+                            System.out.println("MSG: " + messages);
                             // Quan trọng: Truyền tên đối tác mới nhất vào loadMessages
                             chatPanel.loadMessages(messages, newPartnerName); 
                         }
