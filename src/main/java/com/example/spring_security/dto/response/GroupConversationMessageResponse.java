@@ -1,6 +1,5 @@
 package com.example.spring_security.dto.response;
 
-
 import com.example.spring_security.entities.Enum.MessageType;
 import lombok.*;
 
@@ -14,6 +13,10 @@ public class GroupConversationMessageResponse {
 
     private Long senderId;
 
+    private String senderName;
+    private String senderAvatar;
+
+    private Long groupConversationId;
     private Long groupConversationMessageId;
 
     private String content;
@@ -24,10 +27,13 @@ public class GroupConversationMessageResponse {
 
     private MessageType type;
 
-
-    GroupConversationMessageResponse(Long senderId, Long groupConversationMessageId, String content,
-                                     java.sql.Timestamp sentAt, java.sql.Timestamp updatedAt, Short type) {
+    GroupConversationMessageResponse(Long groupConversationId, Long senderId, String senderName, String senderAvatar,
+            Long groupConversationMessageId, String content,
+            java.sql.Timestamp sentAt, java.sql.Timestamp updatedAt, Short type) {
+        this.groupConversationId = groupConversationId;
         this.senderId = senderId;
+        this.senderName = senderName;
+        this.senderAvatar = senderAvatar;
         this.groupConversationMessageId = groupConversationMessageId;
         this.content = content;
         this.sentAt = sentAt != null ? sentAt.toLocalDateTime() : null;

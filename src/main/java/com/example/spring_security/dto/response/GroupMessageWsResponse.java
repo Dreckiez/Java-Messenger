@@ -1,6 +1,5 @@
 package com.example.spring_security.dto.response;
 
-
 import com.example.spring_security.entities.Enum.MessageType;
 import com.example.spring_security.entities.Enum.RealTimeAction;
 import lombok.Builder;
@@ -18,6 +17,9 @@ public class GroupMessageWsResponse {
     private Long groupConversationId;
 
     private Long senderId;
+
+    private String senderName;
+    private String avatarUrl;
 
     private String content;
 

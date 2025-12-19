@@ -16,14 +16,14 @@ public class PrivateConversationMessageResponse {
     private LocalDateTime sentAt;
     private LocalDateTime updatedAt;
     private MessageType type;
+
     public PrivateConversationMessageResponse(
             Long privateConversationMessageId,
             Long senderId,
             String content,
             java.sql.Timestamp sentAt,
             java.sql.Timestamp updatedAt,
-            Short type
-    ) {
+            Short type) {
         this.senderId = senderId;
         this.privateConversationMessageId = privateConversationMessageId;
         this.content = content;
