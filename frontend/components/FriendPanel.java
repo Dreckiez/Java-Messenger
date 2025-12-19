@@ -22,15 +22,15 @@ public class FriendPanel extends JPanel {
     private JTextField searchField;
     private JPanel listPanel;
     private JPanel centerContainer;
-    
-    private List<Friend> allFriends; 
-    private List<FriendItem> displayedItems; 
+
+    private List<Friend> allFriends;
+    private List<FriendItem> displayedItems;
     private FriendItem selectedItem;
-    
+
     private SwingWorker<List<Friend>, Void> worker;
-    
+
     // --- CALLBACKS ---
-    private Runnable onNavigateToChat; 
+    private Runnable onNavigateToChat;
     private Consumer<FriendItem.ChatTarget> onOpenChat; // Callback mở chat bằng ID
 
     // --- MÀU SẮC ---
@@ -38,7 +38,7 @@ public class FriendPanel extends JPanel {
     private final Color ITEM_BG = Color.WHITE;
     private final Color HOVER_BG = new Color(241, 245, 249);
     private final Color SELECTED_BG = new Color(219, 234, 254);
-    
+
     private final Color TEXT_PRIMARY = new Color(30, 41, 59);
     private final Color TEXT_HINT = new Color(148, 163, 184);
 
@@ -51,7 +51,7 @@ public class FriendPanel extends JPanel {
 
         add(createHeader(), BorderLayout.NORTH);
         add(createBody(), BorderLayout.CENTER);
-        
+
         showEmptyState("Loading friends...");
     }
 
@@ -59,10 +59,10 @@ public class FriendPanel extends JPanel {
     public void setOnNavigateToChat(Runnable onNavigateToChat) {
         this.onNavigateToChat = onNavigateToChat;
     }
-    
+
     // Setter quan trọng để nhận Callback từ HomeScreen
-    public void setOnOpenChat(Consumer<FriendItem.ChatTarget> onOpenChat) { 
-        this.onOpenChat = onOpenChat; 
+    public void setOnOpenChat(Consumer<FriendItem.ChatTarget> onOpenChat) {
+        this.onOpenChat = onOpenChat;
     }
 
     private JPanel createHeader() {
@@ -72,7 +72,7 @@ public class FriendPanel extends JPanel {
         header.setBorder(new EmptyBorder(20, 15, 10, 15));
 
         JLabel titleLabel = new JLabel("My Friends");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22)); 
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         titleLabel.setForeground(TEXT_PRIMARY);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -82,16 +82,16 @@ public class FriendPanel extends JPanel {
         // Search Bar
         RoundedPanel searchContainer = new RoundedPanel(20, new Color(243, 244, 246));
         searchContainer.setLayout(new BorderLayout());
-        searchContainer.setBorder(new EmptyBorder(8, 15, 8, 15)); 
-        searchContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
+        searchContainer.setBorder(new EmptyBorder(8, 15, 8, 15));
+        searchContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         searchContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         searchField = new JTextField();
         searchField.setBorder(null);
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        searchField.setBackground(new Color(243, 244, 246)); 
+        searchField.setBackground(new Color(243, 244, 246));
         searchField.setOpaque(false);
-        
+
         setupPlaceholder(searchField, "Search friends...");
 
         searchField.addKeyListener(new KeyAdapter() {
@@ -99,7 +99,7 @@ public class FriendPanel extends JPanel {
             public void keyReleased(KeyEvent e) {
                 String text = searchField.getText().trim();
                 if (text.isEmpty() || text.equals("Search friends...")) {
-                    displayFriends(allFriends); 
+                    displayFriends(allFriends);
                 } else {
                     filterFriends(text);
                 }
@@ -116,18 +116,18 @@ public class FriendPanel extends JPanel {
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setBackground(BG_COLOR);
-        
+
         centerContainer = new JPanel(new BorderLayout());
         centerContainer.setBackground(BG_COLOR);
-        centerContainer.setBorder(new EmptyBorder(0, 20, 0, 20)); 
-        
+        centerContainer.setBorder(new EmptyBorder(0, 20, 0, 20));
+
         centerContainer.add(listPanel, BorderLayout.NORTH);
 
         JScrollPane scroll = new JScrollPane(centerContainer);
         scroll.setBorder(null);
         scroll.getViewport().setBackground(BG_COLOR);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        
+
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
@@ -135,8 +135,17 @@ public class FriendPanel extends JPanel {
                 this.thumbColor = new Color(203, 213, 225);
                 this.trackColor = BG_COLOR;
             }
-            @Override protected JButton createDecreaseButton(int orientation) { return createZeroButton(); }
-            @Override protected JButton createIncreaseButton(int orientation) { return createZeroButton(); }
+
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return createZeroButton();
+            }
+
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return createZeroButton();
+            }
+
             private JButton createZeroButton() {
                 JButton b = new JButton();
                 b.setPreferredSize(new Dimension(0, 0));
@@ -156,14 +165,14 @@ public class FriendPanel extends JPanel {
         listPanel.revalidate();
         listPanel.repaint();
     }
-    
+
     private void showEmptyState(String msg) {
         clearList();
         JLabel label = new JLabel(msg);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         label.setForeground(TEXT_HINT);
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         listPanel.add(Box.createVerticalStrut(50));
         listPanel.add(label);
         listPanel.revalidate();
@@ -180,12 +189,12 @@ public class FriendPanel extends JPanel {
 
         for (Friend friend : friends) {
             FriendItem item = new FriendItem(friend);
-            
+
             // 1. Truyền callback Create Group
             if (this.onNavigateToChat != null) {
                 item.setOnNavigateToChat(this.onNavigateToChat);
             }
-            
+
             // 🔥 2. TRUYỀN CALLBACK OPEN CHAT (QUAN TRỌNG)
             if (this.onOpenChat != null) {
                 item.setOnOpenChat(this.onOpenChat);
@@ -199,10 +208,10 @@ public class FriendPanel extends JPanel {
                     listPanel.remove(item);
                     displayedItems.remove(item);
                     allFriends.remove(friend); // Xóa khỏi cache
-                    
+
                     listPanel.revalidate();
                     listPanel.repaint();
-                    
+
                     if (displayedItems.isEmpty()) {
                         showEmptyState("No friends found.");
                     }
@@ -213,7 +222,7 @@ public class FriendPanel extends JPanel {
 
             listPanel.add(item);
             listPanel.add(Box.createVerticalStrut(15));
-            
+
             displayedItems.add(item);
         }
 
@@ -224,7 +233,7 @@ public class FriendPanel extends JPanel {
     private void filterFriends(String query) {
         List<Friend> filtered = new ArrayList<>();
         String lowerQuery = query.toLowerCase();
-        
+
         for (Friend f : allFriends) {
             if (f.getName().toLowerCase().contains(lowerQuery)) {
                 filtered.add(f);
@@ -256,11 +265,11 @@ public class FriendPanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (selectedItem != null && selectedItem != item) {
                     selectedItem.setBackground(ITEM_BG);
-                    selectedItem.deselect(); 
+                    selectedItem.deselect();
                 }
                 selectedItem = item;
                 selectedItem.setBackground(SELECTED_BG);
-                selectedItem.select(); 
+                selectedItem.select();
             }
         });
     }
@@ -268,8 +277,9 @@ public class FriendPanel extends JPanel {
     // --- LOGIC API ---
 
     public void fetchRequests() {
-        if (worker != null && !worker.isDone()) worker.cancel(true);
-        
+        if (worker != null && !worker.isDone())
+            worker.cancel(true);
+
         showEmptyState("Loading...");
 
         worker = new SwingWorker<List<Friend>, Void>() {
@@ -277,15 +287,16 @@ public class FriendPanel extends JPanel {
             protected List<Friend> doInBackground() throws Exception {
                 List<Friend> list = new ArrayList<>();
                 JSONObject json = ApiClient.getJSON(ApiUrl.FRIENDLIST, UserSession.getUser().getToken());
-                
-                JSONArray arr = json.optJSONArray("listOfFriend"); 
-                if (arr == null) arr = new JSONArray(); 
+
+                JSONArray arr = json.optJSONArray("listOfFriend");
+                if (arr == null)
+                    arr = new JSONArray();
 
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
                     String name = o.optString("username", "Unknown");
                     String avatar = o.optString("avatarUrl", "");
-                    int userId = o.getInt("userId");
+                    Long userId = o.optLong("userId", -1L);
                     Boolean isonline = o.optBoolean("isOnline", false);
 
                     list.add(new Friend(name, avatar, userId, isonline));
@@ -313,7 +324,7 @@ public class FriendPanel extends JPanel {
         searchField.setText("Search friends...");
         searchField.setForeground(TEXT_HINT);
         selectedItem = null;
-        fetchRequests(); 
+        fetchRequests();
     }
 
     // --- HELPER CLASSES ---
@@ -328,6 +339,7 @@ public class FriendPanel extends JPanel {
                     field.setForeground(TEXT_PRIMARY);
                 }
             }
+
             public void focusLost(FocusEvent e) {
                 if (field.getText().isEmpty()) {
                     field.setText(text);
@@ -340,11 +352,13 @@ public class FriendPanel extends JPanel {
     class RoundedPanel extends JPanel {
         private int radius;
         private Color bgColor;
+
         public RoundedPanel(int radius, Color bgColor) {
             this.radius = radius;
             this.bgColor = bgColor;
             setOpaque(false);
         }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
@@ -352,7 +366,7 @@ public class FriendPanel extends JPanel {
             g2.setColor(bgColor);
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
             g2.setColor(new Color(226, 232, 240));
-            g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, radius, radius);
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
             super.paintComponent(g);
         }
     }

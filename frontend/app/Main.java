@@ -19,6 +19,8 @@ public class Main {
             ForgotPass resetPass = new ForgotPass(screen);
             DashboardScreen dashboard = new DashboardScreen(screen);
 
+            screen.setHomeScreen(home);
+
             screen.addPanel(login, "login");
             screen.addPanel(register, "register");
             screen.addPanel(home, "home");

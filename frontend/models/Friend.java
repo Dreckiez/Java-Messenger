@@ -1,12 +1,12 @@
 package models;
 
 public class Friend {
-    private int userId;
+    private Long userId;
     private String name;
     private String avatarUrl;
     private Boolean isOnline;
 
-    public Friend(String name, String avatarUrl, int userId, Boolean online) {
+    public Friend(String name, String avatarUrl, Long userId, Boolean online) {
         this.name = name;
         this.avatarUrl = avatarUrl;
         this.userId = userId;
@@ -33,11 +33,11 @@ public class Friend {
         return isOnline;
     }
 
-    public int getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 }

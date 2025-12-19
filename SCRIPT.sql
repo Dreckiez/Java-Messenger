@@ -151,13 +151,6 @@ ALTER TABLE private_conversation
   ON DELETE SET NULL
   DEFERRABLE INITIALLY DEFERRED;
 
-CREATE TABLE read_private_conversation_message (
-    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    private_conversation_message_id BIGINT NOT NULL REFERENCES private_conversation_message(private_conversation_message_id) ON DELETE CASCADE,
-    read_at TIMESTAMP,
-    PRIMARY KEY (user_id, private_conversation_message_id)
-);
-
 CREATE TABLE delete_private_conversation_message (
     user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     private_conversation_message_id BIGINT NOT NULL REFERENCES private_conversation_message(private_conversation_message_id) ON DELETE CASCADE,
@@ -219,14 +212,6 @@ CREATE TABLE delete_group_conversation_message (
     deleted_at TIMESTAMP NOT NULL,
     is_all BOOLEAN,
     PRIMARY KEY (member_id, group_conversation_message_id)
-);
-
-CREATE TABLE read_group_conversation_message (
-    group_conversation_message_id BIGINT NOT NULL REFERENCES group_conversation_message(group_conversation_message_id) ON DELETE CASCADE,
-    group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
-    member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    read_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (group_conversation_message_id, member_id)
 );
 
 CREATE TABLE encryption_group (
