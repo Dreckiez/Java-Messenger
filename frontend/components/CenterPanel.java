@@ -91,7 +91,18 @@ public class CenterPanel extends JPanel {
         chatPanel.updateChatHeader(conversationId, name, avatarUrl, isGroup);
         if (infoPanel != null) {
             infoPanel.updateInfo(chatData);
+
+            if (!infoPanel.isVisible()) {
+                infoPanel.setVisible(true);
+                // Refresh the parent (HomeScreen) layout to make it appear
+                if (infoPanel.getParent() != null) {
+                    infoPanel.getParent().revalidate();
+                    infoPanel.getParent().repaint();
+                }
+            }
         }
+
+        chatPanel.setInfoActive(true);
 
         if (isGroup && conversationId != -1) {
             utils.SocketManager.subscribeGroup(conversationId);
@@ -110,6 +121,15 @@ public class CenterPanel extends JPanel {
             } else {
                 // chatPanel.fetchMessages(conversationId, name);
                 fetchPrivateChatDetails(conversationId, chatData, name);
+            }
+        }
+    }
+
+    public void reloadCurrentChat() {
+        if (currentChatId != -1) {
+            if ("GROUP".equalsIgnoreCase(currentChatType)) {
+                // Pass empty/null for initial data since we want to fetch FRESH data
+                fetchGroupChatDetails(currentChatId, new JSONObject(), "");
             }
         }
     }
