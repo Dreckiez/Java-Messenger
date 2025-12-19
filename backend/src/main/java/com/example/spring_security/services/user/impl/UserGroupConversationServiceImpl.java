@@ -4,6 +4,7 @@ import com.example.spring_security.dto.request.*;
 import com.example.spring_security.dto.response.*;
 import com.example.spring_security.entities.*;
 import com.example.spring_security.entities.Enum.GroupRole;
+import com.example.spring_security.entities.Enum.MessageType;
 import com.example.spring_security.entities.Enum.RealTimeAction;
 import com.example.spring_security.exception.CustomException;
 import com.example.spring_security.repository.*;
@@ -12,7 +13,10 @@ import com.example.spring_security.services.user.UserGroupConversationService;
 import com.example.spring_security.websocket.WebSocketGroupMessageService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +42,9 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
         private final EntityManager entityManager;
 
         private final FriendRepository friendRepository;
+
+        @Autowired
+        private SimpMessagingTemplate messagingTemplate;
 
         private final DeleteGroupConversationRepository deleteGroupConversationRepository;
 
@@ -364,6 +371,16 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
                 groupConversationRepository.save(groupConversation);
 
+                GroupMessageWsResponse groupMessageWsResponse = GroupMessageWsResponse.builder()
+                                .groupConversationId(groupConversationId)
+                                .senderId(userId)
+                                .content(renameGroupRequest.getGroupName()) // <--- Payload is the new name
+                                .type(MessageType.SYSTEM) // Mark as system message
+                                .realTimeAction(RealTimeAction.UPDATE) // <--- Action type
+                                .build();
+
+                webSocketGroupMessageService.sendGroupMessage(groupConversationId, groupMessageWsResponse);
+
                 Map<String, String> msg = new HashMap<>();
 
                 msg.put("groupName", groupConversation.getGroupName());
@@ -392,6 +409,17 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                                                 groupConversation.getGroupConversationId().toString());
                                 groupConversation.setAvatarUrl(avatarUrl);
                                 groupConversationRepository.save(groupConversation);
+
+                                GroupMessageWsResponse groupMessageWsResponse = GroupMessageWsResponse.builder()
+                                                .groupConversationId(groupConversationId)
+                                                .senderId(userId)
+                                                .content(avatarUrl) // <--- Payload is the new URL
+                                                .type(MessageType.SYSTEM)
+                                                .realTimeAction(RealTimeAction.UPDATE)
+                                                .build();
+
+                                webSocketGroupMessageService.sendGroupMessage(groupConversationId,
+                                                groupMessageWsResponse);
 
                                 Map<String, String> msg = new HashMap<>();
 
@@ -448,7 +476,7 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                         throw new CustomException(HttpStatus.CONFLICT, "There is any members already in the group.");
 
                 for (int i = 0; i < modifyGroupMemberRequest.getMemberIds().size(); i++) {
-
+                        Long newMemberId = modifyGroupMemberRequest.getMemberIds().get(i);
                         User user = userRepository.findById(modifyGroupMemberRequest.getMemberIds().get(i))
                                         .orElseThrow(
                                                         () -> new CustomException(HttpStatus.NOT_FOUND,
@@ -476,7 +504,30 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
                         groupConversationMemberRepository.save(groupConversationMember);
 
+                        GroupMessageWsResponse welcomeMsg = GroupMessageWsResponse.builder()
+                                        .groupConversationId(groupConversationId)
+                                        .senderId(userId) // Admin ID
+                                        .content("You have been added to the group.")
+                                        .type(MessageType.SYSTEM)
+                                        .realTimeAction(RealTimeAction.ADD_MEMBER)
+                                        .build();
+
+                        // Sends to: /user/{newMemberId}/client/messages
+                        messagingTemplate.convertAndSendToUser(
+                                        user.getUsername(),
+                                        "/client/messages",
+                                        welcomeMsg);
                 }
+
+                GroupMessageWsResponse systemMsg = GroupMessageWsResponse.builder()
+                                .groupConversationId(groupConversationId)
+                                .senderId(userId)
+                                .content("New members added.")
+                                .type(MessageType.SYSTEM)
+                                .realTimeAction(RealTimeAction.UPDATE) // Reuse UPDATE to trigger refresh
+                                .build();
+
+                webSocketGroupMessageService.sendGroupMessage(groupConversationId, systemMsg);
 
                 return Map.of("message", "Added successfully.");
         }
@@ -509,6 +560,7 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                         throw new CustomException(HttpStatus.FORBIDDEN, "You are not allowed to perform this action.");
 
                 for (int i = 0; i < modifyGroupMemberRequest.getMemberIds().size(); i++) {
+                        Long memberToRemoveId = modifyGroupMemberRequest.getMemberIds().get(i);
 
                         GroupConversationMemberId id = GroupConversationMemberId.builder()
                                         .memberId(modifyGroupMemberRequest.getMemberIds().get(i))
@@ -516,6 +568,16 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                                         .build();
 
                         groupConversationMemberRepository.deleteById(id);
+
+                        GroupMessageWsResponse kickMsg = GroupMessageWsResponse.builder()
+                                        .groupConversationId(groupConversationId)
+                                        .senderId(userId) // Admin who kicked
+                                        .content(String.valueOf(memberToRemoveId)) // <--- Payload is the Kicked User ID
+                                        .type(MessageType.SYSTEM)
+                                        .realTimeAction(RealTimeAction.KICK_MEMBER)
+                                        .build();
+
+                        webSocketGroupMessageService.sendGroupMessage(groupConversationId, kickMsg);
 
                 }
 
@@ -554,6 +616,16 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
                 groupConversationMemberRepository.save(groupConversationMember);
 
+                GroupMessageWsResponse roleMsg = GroupMessageWsResponse.builder()
+                                .groupConversationId(groupConversationId)
+                                .senderId(userId) // Admin who changed it
+                                .content("Role updated for user " + modifyRoleRequest.getMemberId())
+                                .type(MessageType.SYSTEM)
+                                .realTimeAction(RealTimeAction.ROLE_CHANGE) // Ensure Enum has this!
+                                .build();
+
+                webSocketGroupMessageService.sendGroupMessage(groupConversationId, roleMsg);
+
                 Map<String, String> msg = new HashMap<>();
 
                 msg.put("message", "Modified role successfully");
@@ -579,6 +651,16 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                                 .memberId(userId)
                                 .groupConversationId(groupConversationId)
                                 .build());
+
+                GroupMessageWsResponse leaveMsg = GroupMessageWsResponse.builder()
+                                .groupConversationId(groupConversationId)
+                                .senderId(userId)
+                                .content("A member has left the group.")
+                                .type(MessageType.SYSTEM)
+                                .realTimeAction(RealTimeAction.UPDATE)
+                                .build();
+
+                webSocketGroupMessageService.sendGroupMessage(groupConversationId, leaveMsg);
 
                 List<GroupMemberResponse> groupMemberResponseList = groupConversationMemberRepository
                                 .findMembersByGroupConversationId(groupConversationId);

@@ -125,6 +125,15 @@ public class CenterPanel extends JPanel {
         }
     }
 
+    public void reloadCurrentChat() {
+        if (currentChatId != -1) {
+            if ("GROUP".equalsIgnoreCase(currentChatType)) {
+                // Pass empty/null for initial data since we want to fetch FRESH data
+                fetchGroupChatDetails(currentChatId, new JSONObject(), "");
+            }
+        }
+    }
+
     // 🔥🔥 FETCH GROUP CHAT (ĐÃ SỬA LỖI JSON NULL) 🔥🔥
     private void fetchGroupChatDetails(long id, JSONObject initialData, String groupName) {
         new SwingWorker<JSONObject, Void>() {

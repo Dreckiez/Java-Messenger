@@ -285,6 +285,14 @@ public class ChatPanel extends JPanel {
         return headerPanel;
     }
 
+    public String getCurrentPartnerAvatarUrl() {
+        return this.currentPartnerAvatarUrl;
+    }
+
+    public JLabel getNameLabel() {
+        return this.nameLabel;
+    }
+
     private JPanel createInputPanel() {
         JPanel inputContainer = new JPanel(new BorderLayout());
         inputContainer.setBackground(BG_COLOR);

@@ -3,5 +3,8 @@ package models;
 public enum RealTimeAction {
     SEND,
     DELETE,
-    UPDATE // You might need this later
+    UPDATE,
+    ADD_MEMBER,
+    KICK_MEMBER,
+    ROLE_CHANGE
 }
