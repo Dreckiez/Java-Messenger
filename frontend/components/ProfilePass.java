@@ -5,6 +5,13 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import org.json.JSONObject;
+import utils.UserSession; // Đảm bảo bạn đã có class này để lấy Token
 
 public class ProfilePass extends JPanel {
     private JPasswordField currentPasswordField;
@@ -16,13 +23,13 @@ public class ProfilePass extends JPanel {
     private JPanel fieldsPanel;
     private JPanel actionPanel;
     
+    // --- API CONFIG ---
+    private static final String API_URL = "http://localhost:8080/api/chat/user/profile/change-password";
+
     // --- COLORS ---
     private final Color TEXT_PRIMARY = new Color(30, 41, 59);
     private final Color TEXT_SECONDARY = new Color(100, 116, 139);
-    
-    // 🔥 UPDATED: Darker gray for input background (matches ProfileInfo)
     private final Color INPUT_BG = new Color(226, 232, 240); 
-    
     private final Color BTN_BLUE = new Color(59, 130, 246);
     private final Color BTN_BLUE_HOVER = new Color(37, 99, 235);
 
@@ -31,8 +38,8 @@ public class ProfilePass extends JPanel {
         setBackground(Color.WHITE);
         setAlignmentX(Component.LEFT_ALIGNMENT);
         setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(241, 245, 249)), // Softer bottom border
-                new EmptyBorder(30, 40, 30, 40))); // Generous padding
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(241, 245, 249)),
+                new EmptyBorder(30, 40, 30, 40)));
 
         // --- HEADER ---
         JPanel headerPanel = new JPanel(new BorderLayout());
@@ -55,7 +62,7 @@ public class ProfilePass extends JPanel {
 
         // --- PASSWORD FIELDS ---
         fieldsPanel = createFieldsPanel();
-        fieldsPanel.setVisible(false); // Hidden by default
+        fieldsPanel.setVisible(false);
         add(fieldsPanel);
 
         // --- ACTIONS ---
@@ -120,7 +127,6 @@ public class ProfilePass extends JPanel {
     }
 
     // --- HELPER UI METHODS ---
-
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -129,62 +135,52 @@ public class ProfilePass extends JPanel {
         return label;
     }
 
-    // Password Field without border, transparent background
     private JPasswordField createStyledPasswordField() {
         JPasswordField field = new JPasswordField();
         field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         field.setForeground(TEXT_PRIMARY);
-        field.setBackground(INPUT_BG); // Matches the new darker gray
+        field.setBackground(INPUT_BG);
         field.setBorder(null);
         return field;
     }
 
-    // Wrap Component in Rounded Panel
     private JPanel wrapInRoundedPanel(JComponent component) {
         JPanel panel = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(INPUT_BG); // Uses the new darker gray
+                g2.setColor(INPUT_BG);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
                 super.paintComponent(g2);
                 g2.dispose();
             }
         };
         panel.setOpaque(false);
-        panel.setBorder(new EmptyBorder(10, 15, 10, 15)); // Inner padding
+        panel.setBorder(new EmptyBorder(10, 15, 10, 15));
         panel.add(component, BorderLayout.CENTER);
         return panel;
     }
 
     // --- BUTTONS ---
-
     private JButton createEditButton() {
         JButton btn = new JButton("Edit");
-        // Bình thường: Nền Trắng, Chữ Xanh
-        // Hover: Nền Xanh (BTN_BLUE), Chữ Trắng (Color.WHITE) -> 🔥 FIX LỖI Ở ĐÂY
         styleButton(btn, Color.WHITE, BTN_BLUE, BTN_BLUE, Color.WHITE, true);
         return btn;
     }
 
     private JButton createPrimaryButton(String text) {
         JButton btn = new JButton(text);
-        // Bình thường: Nền Xanh, Chữ Trắng
-        // Hover: Nền Xanh đậm, Chữ vẫn Trắng
         styleButton(btn, BTN_BLUE, Color.WHITE, BTN_BLUE_HOVER, Color.WHITE, false);
         return btn;
     }
 
     private JButton createSecondaryButton(String text) {
         JButton btn = new JButton(text);
-        // Bình thường: Nền Xám nhạt, Chữ Xám
-        // Hover: Nền Xám đậm hơn chút, Chữ vẫn Xám
         styleButton(btn, new Color(241, 245, 249), TEXT_SECONDARY, new Color(226, 232, 240), TEXT_SECONDARY, false);
         return btn;
     }
 
-    // 🔥 CẬP NHẬT: Thêm tham số hoverFg để đổi màu chữ khi di chuột
     private void styleButton(JButton btn, Color bg, Color fg, Color hoverBg, Color hoverFg, boolean hasBorder) {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btn.setForeground(fg);
@@ -193,23 +189,22 @@ public class ProfilePass extends JPanel {
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(hasBorder ? 80 : 140, 40));
+        btn.setPreferredSize(new Dimension(hasBorder ? 80 : 160, 40)); // Tăng chiều rộng nút change pass
 
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 btn.setBackground(hoverBg);
-                btn.setForeground(hoverFg); // 🔥 Đổi màu chữ khi hover
+                btn.setForeground(hoverFg);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 btn.setBackground(bg);
-                btn.setForeground(fg); // 🔥 Trả về màu chữ gốc
+                btn.setForeground(fg);
             }
         });
 
-        // Custom Paint cho bo tròn (Giữ nguyên)
         btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
             @Override
             public void paint(Graphics g, JComponent c) {
@@ -219,19 +214,17 @@ public class ProfilePass extends JPanel {
                 g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 12, 12);
                 
                 if (hasBorder) {
-                    // Khi có border (nút Edit), vẽ viền bằng màu chữ hiện tại
-                    g2.setColor(btn.getForeground()); 
+                    g2.setColor(btn.getForeground());
                     g2.setStroke(new BasicStroke(1));
-                    g2.drawRoundRect(0, 0, c.getWidth()-1, c.getHeight()-1, 12, 12);
+                    g2.drawRoundRect(0, 0, c.getWidth() - 1, c.getHeight() - 1, 12, 12);
                 }
-                
                 super.paint(g2, c);
                 g2.dispose();
             }
         });
     }
 
-    // --- LOGIC (Unchanged) ---
+    // --- LOGIC GỌI API ---
 
     private void toggleEditMode() {
         editMode = !editMode;
@@ -240,11 +233,10 @@ public class ProfilePass extends JPanel {
         editBtn.setText(editMode ? "Cancel" : "Edit");
 
         if (!editMode) {
-            currentPasswordField.setText("");
-            newPasswordField.setText("");
-            confirmPasswordField.setText("");
+            clearFields();
         }
-        revalidate(); repaint();
+        revalidate();
+        repaint();
     }
 
     private void saveChanges() {
@@ -252,35 +244,100 @@ public class ProfilePass extends JPanel {
         String newPass = new String(newPasswordField.getPassword());
         String confirmPass = new String(confirmPasswordField.getPassword());
 
+        // 1. Validate
         if (currentPass.isEmpty()) {
-            showError("Please enter your current password"); return;
+            showError("Please enter your current password.");
+            return;
         }
         if (newPass.isEmpty()) {
-            showError("Please enter a new password"); return;
-        }
-        if (!newPass.equals(confirmPass)) {
-            showError("New passwords do not match"); return;
+            showError("Please enter a new password.");
+            return;
         }
         if (newPass.length() < 6) {
-            showError("Password must be at least 6 characters"); return;
+            showError("Password must be at least 6 characters.");
+            return;
+        }
+        if (!newPass.equals(confirmPass)) {
+            showError("New passwords do not match.");
+            return;
+        }
+        if (currentPass.equals(newPass)) {
+            showError("New password cannot be the same as old password.");
+            return;
         }
 
-        JOptionPane.showMessageDialog(this, "Password changed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        currentPasswordField.setText("");
-        newPasswordField.setText("");
-        confirmPasswordField.setText("");
-        toggleEditMode();
+        // 2. Call API via SwingWorker
+        actionPanel.setEnabled(false); // Disable buttons
+        
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                JSONObject payload = new JSONObject();
+                payload.put("oldPassword", currentPass);
+                payload.put("newPassword", newPass);
+                payload.put("confirmPassword", confirmPass);
+
+                // Lấy token từ Session
+                String token = UserSession.getUser() != null ? UserSession.getUser().getToken() : "";
+
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(API_URL))
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + token)
+                        .POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200) {
+                    return "SUCCESS";
+                } else {
+                    // Cố gắng đọc lỗi từ body nếu có
+                    try {
+                        JSONObject errJson = new JSONObject(response.body());
+                        return errJson.optString("message", "Change password failed.");
+                    } catch (Exception e) {
+                        return "Error: " + response.statusCode();
+                    }
+                }
+            }
+
+            @Override
+            protected void done() {
+                actionPanel.setEnabled(true);
+                try {
+                    String result = get();
+                    if ("SUCCESS".equals(result)) {
+                        JOptionPane.showMessageDialog(ProfilePass.this, 
+                            "Password changed successfully! Please login with your new password.", 
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                        clearFields();
+                        toggleEditMode(); // Đóng form
+                    } else {
+                        showError(result);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showError("Connection error: " + e.getMessage());
+                }
+            }
+        }.execute();
     }
 
     private void cancelEdit() {
-        currentPasswordField.setText("");
-        newPasswordField.setText("");
-        confirmPasswordField.setText("");
+        clearFields();
         toggleEditMode();
     }
     
+    private void clearFields() {
+        currentPasswordField.setText("");
+        newPasswordField.setText("");
+        confirmPasswordField.setText("");
+    }
+
     private void showError(String msg) {
-        JOptionPane.showMessageDialog(this, msg, "Validation Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public void refreshData() {
