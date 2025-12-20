@@ -1,4 +1,5 @@
 package com.example.spring_security.controller.user;
+
 import com.example.spring_security.dto.request.SendMessageRequest;
 import com.example.spring_security.dto.response.ListPrivateConversationMessageResponse;
 import com.example.spring_security.dto.response.MessageSearchResponse;
@@ -22,14 +23,14 @@ public class UserPrivateConversationController {
     private final UserPrivateConversationService userPrivateConversationService;
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> removeConversation(@AuthenticationPrincipal User user, @PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> removeConversation(@AuthenticationPrincipal User user,
+            @PathVariable Long id) {
         return ResponseEntity.ok(
                 userPrivateConversationService.removeConversation(user.getUserId(), id));
     }
 
     @PostMapping("/{id}/private-conversation-messages")
-    public ResponseEntity<SendMessageResponse> sendMessage
-            (@AuthenticationPrincipal User sender,
+    public ResponseEntity<SendMessageResponse> sendMessage(@AuthenticationPrincipal User sender,
             @PathVariable("id") Long privateConversationId,
             @Valid @RequestBody SendMessageRequest sendMessageRequest) {
 
@@ -37,28 +38,36 @@ public class UserPrivateConversationController {
                 .sendMessage(sender.getUserId(), privateConversationId, sendMessageRequest));
     }
 
-
     @DeleteMapping("{privateConversationId}/private-conversation-messages/{privateConversationMessageId}")
-    public ResponseEntity<Map<String, String>> removeMessage
-            (@AuthenticationPrincipal User remover,
-             @PathVariable("privateConversationId") Long privateConversationId,
-             @PathVariable("privateConversationMessageId") Long privateConversationMessageId,
+    public ResponseEntity<Map<String, String>> removeMessage(@AuthenticationPrincipal User remover,
+            @PathVariable("privateConversationId") Long privateConversationId,
+            @PathVariable("privateConversationMessageId") Long privateConversationMessageId,
             @RequestParam(value = "isAll", required = true) boolean isAll) {
 
-        return ResponseEntity.ok(userPrivateConversationService.removeMessage(remover.getUserId(), privateConversationId, privateConversationMessageId, isAll));
+        return ResponseEntity.ok(userPrivateConversationService.removeMessage(remover.getUserId(),
+                privateConversationId, privateConversationMessageId, isAll));
+    }
+
+    @PostMapping("/{id}/clear-history")
+    public ResponseEntity<Map<String, String>> clearHistory(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") Long privateConversationId) {
+
+        return ResponseEntity.ok(
+                userPrivateConversationService.clearPrivateChatHistory(user.getUserId(), privateConversationId));
     }
 
     @GetMapping("/{id}/private-conversation-messages")
-    public ResponseEntity<ListPrivateConversationMessageResponse> getMessages
-            (@AuthenticationPrincipal User user, @PathVariable("id") Long privateConversationId,
+    public ResponseEntity<ListPrivateConversationMessageResponse> getMessages(@AuthenticationPrincipal User user,
+            @PathVariable("id") Long privateConversationId,
             @RequestParam(value = "cursorId", required = false) Long cursorId) {
-        return ResponseEntity.ok(userPrivateConversationService.getMessages(user.getUserId(), privateConversationId, cursorId));
+        return ResponseEntity
+                .ok(userPrivateConversationService.getMessages(user.getUserId(), privateConversationId, cursorId));
     }
 
     @GetMapping("/{friendId}")
-    public ResponseEntity<Map<String, Long>> getIdConv
-            (@AuthenticationPrincipal User user,
-             @PathVariable(value = "friendId", required = true) Long friendId) {
+    public ResponseEntity<Map<String, Long>> getIdConv(@AuthenticationPrincipal User user,
+            @PathVariable(value = "friendId", required = true) Long friendId) {
         return ResponseEntity.ok(userPrivateConversationService.getIdConv(user.getUserId(), friendId));
     }
 
