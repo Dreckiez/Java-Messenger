@@ -45,4 +45,65 @@ public interface GroupConversationMessageRepository
       @Param("clearTime") LocalDateTime clearTime,
       Pageable pageable);
 
+  @Query("""
+      SELECT new com.example.spring_security.dto.response.GroupConversationMessageResponse(
+        gcm.groupConversation.groupConversationId,
+        gcm.sender.userId,
+        TRIM(CONCAT(gcm.sender.firstName, ' ', gcm.sender.lastName)),
+        gcm.sender.avatarUrl,
+        gcm.groupConversationMessageId,
+        gcm.content,
+        gcm.sentAt,
+        gcm.updatedAt,
+        gcm.type
+      )
+      FROM GroupConversationMessage gcm
+      WHERE gcm.groupConversation.groupConversationId = :groupId
+      AND gcm.groupConversationMessageId <= :messageId
+      AND gcm.sentAt > :clearTime
+      AND NOT EXISTS (
+            SELECT 1 FROM DeleteGroupConversationMessage dgcm
+            WHERE dgcm.id.groupConversationMessageId = gcm.groupConversationMessageId
+            AND (dgcm.isAll = TRUE OR dgcm.id.memberId = :userId)
+      )
+      ORDER BY gcm.groupConversationMessageId DESC
+      """)
+  List<GroupConversationMessageResponse> findMessagesBeforeInclusive(
+      @Param("userId") Long userId,
+      @Param("groupId") Long groupId,
+      @Param("messageId") Long messageId,
+      @Param("clearTime") LocalDateTime clearTime,
+      Pageable pageable);
+
+  // 2. Fetch Newer Messages (Scrolling Down context)
+  @Query("""
+      SELECT new com.example.spring_security.dto.response.GroupConversationMessageResponse(
+        gcm.groupConversation.groupConversationId,
+        gcm.sender.userId,
+        TRIM(CONCAT(gcm.sender.firstName, ' ', gcm.sender.lastName)),
+        gcm.sender.avatarUrl,
+        gcm.groupConversationMessageId,
+        gcm.content,
+        gcm.sentAt,
+        gcm.updatedAt,
+        gcm.type
+      )
+      FROM GroupConversationMessage gcm
+      WHERE gcm.groupConversation.groupConversationId = :groupId
+      AND gcm.groupConversationMessageId > :messageId
+      AND gcm.sentAt > :clearTime
+      AND NOT EXISTS (
+            SELECT 1 FROM DeleteGroupConversationMessage dgcm
+            WHERE dgcm.id.groupConversationMessageId = gcm.groupConversationMessageId
+            AND (dgcm.isAll = TRUE OR dgcm.id.memberId = :userId)
+      )
+      ORDER BY gcm.groupConversationMessageId ASC
+      """)
+  List<GroupConversationMessageResponse> findMessagesAfter(
+      @Param("userId") Long userId,
+      @Param("groupId") Long groupId,
+      @Param("messageId") Long messageId,
+      @Param("clearTime") LocalDateTime clearTime,
+      Pageable pageable);
+
 }
