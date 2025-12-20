@@ -75,22 +75,21 @@ public class HomeScreen extends JPanel {
         resetToDefaultState();
     }
 
-    // 🔥 3. HÀM RESET TRẠNG THÁI VỀ MẶC ĐỊNH (TAB CHAT)
     private void resetToDefaultState() {
-        // A. Chuyển CenterPanel về màn hình Chat (hoặc Welcome)
+        // A. SỬA LỖI TẠI ĐÂY:
+        // Thay vì showChat(), hãy gọi reset() để hiển thị màn hình Welcome
         if (centerPanel != null) {
-            centerPanel.showChat();
+            centerPanel.reset(); // Hàm này sẽ gọi chatPanel.clearChat() và showWelcome()
         }
 
         // B. Chuyển NavPanel (Left Panel) về Tab danh sách chat
-        // Hàm này sẽ tự động highlight nút Chat trên NavBar nếu bạn đã code logic đó
-        // trong NavPanel
         if (leftPanel != null) {
             leftPanel.switchToChatTab();
         }
 
-        // C. Bật Info Panel mặc định (nếu muốn)
-        toggleInfoPanel(true);
+        // C. SỬA LỖI TẠI ĐÂY:
+        // Mặc định nên ẩn InfoPanel đi khi mới vào, chỉ hiện khi user chọn chat
+        toggleInfoPanel(false);
     }
 
     public void startConnection() {
