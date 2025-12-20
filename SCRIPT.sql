@@ -175,6 +175,7 @@ CREATE TABLE group_conversation_member (
     appointed_at TIMESTAMP,
     history_cleared_at TIMESTAMP,
     group_role SMALLINT,
+    history_cleared_at TIMESTAMP,
     PRIMARY KEY (group_conversation_id, member_id)
 );
 
