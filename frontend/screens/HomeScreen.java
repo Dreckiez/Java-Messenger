@@ -26,6 +26,7 @@ public class HomeScreen extends JPanel {
         // Khởi tạo các thành phần
         centerPanel = new CenterPanel(); // Đã khai báo ở trên
         infoPanel = new InfoPanel();
+        infoPanel.setCenterPanel(centerPanel);
         infoPanel.setVisible(false);
         leftPanel = new NavPanel(this, centerPanel);
 

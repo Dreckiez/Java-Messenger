@@ -15,6 +15,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -153,7 +154,8 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
 
         }
 
-        public ListGroupConversationMessageResponse getMessages(Long userId, Long groupConversationId, Long cursorId) {
+        public ListGroupConversationMessageResponse getMessages(Long userId, Long groupConversationId, Long cursorId,
+                        Long jumpToMessageId) {
 
                 GroupConversation groupConversation = groupConversationRepository.findById(groupConversationId)
                                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,
@@ -173,9 +175,26 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                 List<GroupMemberResponse> groupMemberResponseList = groupConversationMemberRepository
                                 .findMembersByGroupConversationId(groupConversationId);
 
-                List<GroupConversationMessageResponse> groupConversationMessageResponseList = groupConversationMessageRepository
-                                .findMessagesAfterTimestamp(userId, groupConversationId, cursorId, clearTime,
-                                                org.springframework.data.domain.PageRequest.of(0, 50));
+                List<GroupConversationMessageResponse> groupConversationMessageResponseList;
+
+                if (jumpToMessageId != null) {
+                        List<GroupConversationMessageResponse> older = groupConversationMessageRepository
+                                        .findMessagesBeforeInclusive(userId, groupConversationId, jumpToMessageId,
+                                                        clearTime, PageRequest.of(0, 25));
+
+                        // 2. Get Newer (25 messages) - Revert list to make them ascending
+                        List<GroupConversationMessageResponse> newer = groupConversationMessageRepository
+                                        .findMessagesAfter(userId, groupConversationId, jumpToMessageId, clearTime,
+                                                        PageRequest.of(0, 25));
+
+                        java.util.Collections.reverse(newer);
+                        groupConversationMessageResponseList = new java.util.ArrayList<>(newer);
+                        groupConversationMessageResponseList.addAll(older);
+                } else {
+                        groupConversationMessageResponseList = groupConversationMessageRepository
+                                        .findMessagesAfterTimestamp(userId, groupConversationId, cursorId, clearTime,
+                                                        org.springframework.data.domain.PageRequest.of(0, 50));
+                }
 
                 ListGroupConversationMessageResponse listGroupConversationMessageResponse = ListGroupConversationMessageResponse
                                 .builder()

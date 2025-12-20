@@ -289,6 +289,150 @@ public class ChatPanel extends JPanel {
         return this.currentPartnerAvatarUrl;
     }
 
+    public void jumpToMessage(long messageId) {
+        if (this.currentChatId == -1)
+            return;
+
+        this.isLoadingHistory = true;
+        messagesPanel.removeAll(); // Clear current messages
+        messagesPanel.repaint();
+
+        // Show a loading indicator (optional)
+        // messagesPanel.add(new JLabel("Loading context..."));
+
+        long chatId = this.currentChatId;
+        String token = UserSession.getUser().getToken();
+        boolean isGroup = "GROUP".equalsIgnoreCase(currentChatType);
+
+        new SwingWorker<JSONObject, Void>() {
+            @Override
+            protected JSONObject doInBackground() throws Exception {
+                // Build URL with jumpToMessageId
+                String url;
+                if (isGroup) {
+                    url = ApiUrl.GROUP_CONVERSATION + "/" + chatId
+                            + "/group-conversation-messages?jumpToMessageId=" + messageId;
+                } else {
+                    url = ApiUrl.PRIVATE_CONVERSATION + "/" + chatId
+                            + "/private-conversation-messages?jumpToMessageId=" + messageId;
+                }
+
+                // Use existing ApiClient
+                return utils.ApiClient.getJSON(url, token);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    JSONObject response = get();
+                    if (response != null) {
+                        JSONArray messages = null;
+
+                        // Parse list based on type
+                        if (isGroup && response.has("groupConversationMessageResponseList")) {
+                            messages = response.getJSONArray("groupConversationMessageResponseList");
+                        } else if (!isGroup && response.has("privateConversationMessageResponseList")) {
+                            messages = response.getJSONArray("privateConversationMessageResponseList");
+                        }
+
+                        if (messages != null) {
+                            // 1. Render the messages (Reuse your existing loadMessages logic somewhat)
+                            // We use 'loadMessages' style logic but we don't want to scroll to bottom
+                            // automatically
+                            renderJumpContext(messages);
+
+                            // 2. Scroll to the specific message ID
+                            scrollToMessage(messageId);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(ChatPanel.this, "Failed to load message context.");
+                } finally {
+                    isLoadingHistory = false;
+                }
+            }
+        }.execute();
+    }
+
+    private void renderJumpContext(JSONArray messages) {
+        messagesPanel.removeAll();
+        int myId = UserSession.getUser().getId();
+
+        // Based on your previous code 'loadMessages', you loop backwards (i--),
+        // implying the API returns Newest First.
+        for (int i = messages.length() - 1; i >= 0; i--) {
+            JSONObject msg = messages.getJSONObject(i);
+
+            String content = msg.optString("content", "");
+            int senderId = msg.optInt("senderId", -1);
+            String rawTime = msg.optString("sentAt", "");
+            String senderDisplayName = msg.optString("senderName", "Unknown");
+            String senderAvatarUrl = msg.optString("senderAvatar", null);
+
+            long msgId = msg.optLong("groupConversationMessageId", -1);
+            if (msgId == -1)
+                msgId = msg.optLong("privateConversationMessageId", -1);
+
+            boolean isMe = (senderId == myId);
+            String displayTime = formatTime(rawTime);
+
+            if (!isMe && (senderAvatarUrl == null || "null".equals(senderAvatarUrl))) {
+                senderAvatarUrl = this.currentPartnerAvatarUrl;
+            }
+
+            addMessage(msgId, content, displayTime, senderDisplayName, isMe, senderAvatarUrl);
+        }
+
+        messagesPanel.revalidate();
+        messagesPanel.repaint();
+    }
+
+    private void scrollToMessage(long targetId) {
+        SwingUtilities.invokeLater(() -> {
+            boolean found = false;
+
+            for (Component comp : messagesPanel.getComponents()) {
+                if (comp instanceof JPanel) {
+                    Object idObj = ((JPanel) comp).getClientProperty("msgId");
+
+                    if (idObj != null && (long) idObj == targetId) {
+
+                        Rectangle bounds = comp.getBounds();
+                        bounds.y = Math.max(0, bounds.y - 50);
+                        bounds.height += 100;
+                        messagesPanel.scrollRectToVisible(bounds);
+
+                        flashMessage((JPanel) comp);
+
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found) {
+                System.out.println("Message " + targetId + " not found in current view.");
+            }
+        });
+    }
+
+    private void flashMessage(JPanel wrapper) {
+        Color original = wrapper.getBackground();
+        Color highlight = new Color(28, 180, 255); // Light Yellow
+
+        wrapper.setOpaque(true);
+        wrapper.setBackground(highlight);
+
+        Timer timer = new Timer(2000, e -> {
+            wrapper.setBackground(original);
+            wrapper.setOpaque(false);
+            wrapper.repaint();
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
     public JLabel getNameLabel() {
         return this.nameLabel;
     }

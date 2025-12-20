@@ -45,6 +45,8 @@ public class InfoPanel extends JPanel {
     private boolean isGroup;
     private JSONObject currentChatData;
 
+    private CenterPanel centerPanel;
+
     private Runnable onChatActionCompleted;
     // --- COLORS PALETTE ---
     private final Color TEXT_PRIMARY = new Color(15, 23, 42); // Slate-900
@@ -351,7 +353,19 @@ public class InfoPanel extends JPanel {
 
             // 3. Gọi Dialog với ID vừa lấy được
             new MessageSearchDialog(parentFrame, id, isGroup, msgJson -> {
-                System.out.println("Selected Message: " + msgJson);
+                long msgId = msgJson.optLong("groupConversationMessageId", -1);
+                if (msgId == -1)
+                    msgId = msgJson.optLong("privateConversationMessageId", -1);
+                if (msgId == -1)
+                    msgId = msgJson.optLong("messageId", -1); // Fallback
+
+                if (msgId != -1) {
+                    if (this.centerPanel != null) {
+                        this.centerPanel.jumpToMessage(msgId);
+                    } else {
+                        System.err.println("Could not find CenterPanel to perform jump.");
+                    }
+                }
             }).setVisible(true);
         });
 
@@ -557,6 +571,10 @@ public class InfoPanel extends JPanel {
             btn.setBorder(new EmptyBorder(6, 16, 6, 16));
             return btn;
         }
+    }
+
+    public void setCenterPanel(CenterPanel centerPanel) {
+        this.centerPanel = centerPanel;
     }
 
     // ---------------------------------------------------------
