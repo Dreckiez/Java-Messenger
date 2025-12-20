@@ -25,11 +25,16 @@ import utils.UserSession;
 import utils.ChatSessionManager;
 
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 public class InfoPanel extends JPanel {
@@ -282,7 +287,7 @@ public class InfoPanel extends JPanel {
             actionsSection.add(Box.createVerticalStrut(10));
             actionsSection.add(createSectionTitle("Assistant"));
             actionsSection.add(createActionBtn("🤖   Ask AI Group Bot", false, e -> {
-                JOptionPane.showMessageDialog(this, "AI for Group is coming soon!");
+                showAIAssistantDialog();
             }));
             actionsSection.add(Box.createVerticalStrut(10));
             actionsSection.add(createSectionTitle("Danger Zone"));
@@ -300,6 +305,7 @@ public class InfoPanel extends JPanel {
             // B. Các hành động
             actionsSection.add(createSectionTitle("Actions"));
             actionsSection.add(createActionBtn("🤖   Ask AI Assistant", false, e -> {
+                showAIAssistantDialog();
             }));
 
             actionsSection.add(Box.createVerticalStrut(10));
@@ -314,9 +320,282 @@ public class InfoPanel extends JPanel {
         contentPanel.repaint();
     }
 
-    // =========================================================================
-    // 🔥 HELPER: TẠO NÚT TÌM KIẾM GIẢ LẬP INPUT
-    // =========================================================================
+    private void showAIAssistantDialog() {
+        // 1. Setup Dialog
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "AI Assistant", true);
+        dialog.setSize(500, 450);
+        dialog.setLayout(new BorderLayout());
+        dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setBackground(Color.WHITE);
+
+        // 2. Create Tabs
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tabbedPane.setBackground(Color.WHITE);
+        tabbedPane.setFocusable(false);
+
+        tabbedPane.addTab("Refine Text", createRefinePanel(dialog));
+        tabbedPane.addTab("Suggest Reply", createSuggestPanel(dialog));
+
+        dialog.add(tabbedPane, BorderLayout.CENTER);
+        dialog.setVisible(true);
+    }
+
+    private JPanel createRefinePanel(JDialog dialog) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+
+        // Input Text
+        JLabel lblInput = new JLabel("Your Draft:");
+        lblInput.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblInput.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JTextArea txtInput = new JTextArea(4, 20);
+        txtInput.setLineWrap(true);
+        txtInput.setWrapStyleWord(true);
+        txtInput.setBorder(BorderFactory.createLineBorder(LINE_COLOR));
+        JScrollPane scrollInput = new JScrollPane(txtInput);
+        scrollInput.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Tone Selection
+        JLabel lblTone = new JLabel("Tone:");
+        lblTone.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblTone.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        String[] tones = { "Professional", "Friendly", "Casual", "Formal", "Persuasive", "Witty" };
+        JComboBox<String> cmbTone = new JComboBox<>(tones);
+        cmbTone.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbTone.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cmbTone.setBackground(Color.WHITE);
+
+        // Button
+        JButton btnRefine = new JButton("✨ Refine Text");
+        btnRefine.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnRefine.setBackground(new Color(37, 99, 235)); // Blue-600
+        btnRefine.setForeground(Color.WHITE);
+        btnRefine.setFocusPainted(false);
+        btnRefine.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnRefine.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Output Area
+        JLabel lblOutput = new JLabel("AI Result:");
+        lblOutput.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblOutput.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JTextArea txtOutput = new JTextArea(4, 20);
+        txtOutput.setLineWrap(true);
+        txtOutput.setWrapStyleWord(true);
+        txtOutput.setEditable(false);
+        txtOutput.setBackground(new Color(248, 250, 252));
+        txtOutput.setBorder(BorderFactory.createLineBorder(LINE_COLOR));
+        JScrollPane scrollOutput = new JScrollPane(txtOutput);
+        scrollOutput.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Copy Button
+        JButton btnCopy = new JButton("Copy Result");
+        btnCopy.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnCopy.setBackground(Color.WHITE);
+        btnCopy.addActionListener(e -> {
+            String text = txtOutput.getText();
+            if (!text.isEmpty()) {
+                StringSelection selection = new StringSelection(text);
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+                JOptionPane.showMessageDialog(dialog, "Copied to clipboard!");
+            }
+        });
+
+        // Action Logic
+        btnRefine.addActionListener(e -> {
+            String originalText = txtInput.getText().trim();
+            String tone = (String) cmbTone.getSelectedItem();
+            if (originalText.isEmpty())
+                return;
+
+            btnRefine.setEnabled(false);
+            btnRefine.setText("Processing...");
+            txtOutput.setText("Thinking...");
+
+            new SwingWorker<String, Void>() {
+                @Override
+                protected String doInBackground() throws Exception {
+                    String token = UserSession.getUser().getToken();
+                    // Hardcoded path based on your controller
+                    String url = ApiUrl.AI_REFINE;
+
+                    JSONObject body = new JSONObject();
+                    body.put("text", originalText);
+                    body.put("tone", tone);
+
+                    HttpClient client = HttpClient.newHttpClient();
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .uri(URI.create(url))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body.toString(), StandardCharsets.UTF_8))
+                            .build();
+
+                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() == 200) {
+                        return response.body(); // The controller returns raw string
+                    } else {
+                        return "Error: " + response.statusCode();
+                    }
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        String result = get();
+                        txtOutput.setText(result);
+                    } catch (Exception ex) {
+                        txtOutput.setText("Failed to connect.");
+                        ex.printStackTrace();
+                    } finally {
+                        btnRefine.setEnabled(true);
+                        btnRefine.setText("✨ Refine Text");
+                    }
+                }
+            }.execute();
+        });
+
+        // Add to Panel
+        panel.add(lblInput);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(scrollInput);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(lblTone);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(cmbTone);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(btnRefine);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(lblOutput);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(scrollOutput);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(btnCopy);
+
+        return panel;
+    }
+
+    private JPanel createSuggestPanel(JDialog dialog) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+
+        JLabel lblInput = new JLabel("Incoming Message / Context:");
+        lblInput.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblInput.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JTextArea txtInput = new JTextArea(3, 20);
+        txtInput.setLineWrap(true);
+        txtInput.setWrapStyleWord(true);
+        txtInput.setBorder(BorderFactory.createLineBorder(LINE_COLOR));
+        JScrollPane scrollInput = new JScrollPane(txtInput);
+        scrollInput.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnSuggest = new JButton("💡 Get Suggestions");
+        btnSuggest.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSuggest.setBackground(new Color(16, 185, 129)); // Green-500
+        btnSuggest.setForeground(Color.WHITE);
+        btnSuggest.setFocusPainted(false);
+        btnSuggest.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnSuggest.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        JPanel resultContainer = new JPanel();
+        resultContainer.setLayout(new BoxLayout(resultContainer, BoxLayout.Y_AXIS));
+        resultContainer.setBackground(Color.WHITE);
+        JScrollPane scrollResult = new JScrollPane(resultContainer);
+        scrollResult.setBorder(BorderFactory.createTitledBorder("Suggestions"));
+        scrollResult.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        btnSuggest.addActionListener(e -> {
+            String msg = txtInput.getText().trim();
+            if (msg.isEmpty())
+                return;
+
+            btnSuggest.setEnabled(false);
+            btnSuggest.setText("Thinking...");
+            resultContainer.removeAll();
+            resultContainer.repaint();
+
+            new SwingWorker<JSONArray, Void>() {
+                @Override
+                protected JSONArray doInBackground() throws Exception {
+                    String token = UserSession.getUser().getToken();
+                    String url = ApiUrl.AI_SUGGEST;
+
+                    JSONObject body = new JSONObject();
+                    body.put("message", msg);
+
+                    HttpClient client = HttpClient.newHttpClient();
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .uri(URI.create(url))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body.toString(), StandardCharsets.UTF_8))
+                            .build();
+
+                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() == 200) {
+                        return new JSONArray(response.body()); // Controller returns List<String> -> JSON Array
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        JSONArray suggestions = get();
+                        if (suggestions != null && suggestions.length() > 0) {
+                            for (int i = 0; i < suggestions.length(); i++) {
+                                String s = suggestions.getString(i);
+
+                                JButton itemBtn = new JButton(s);
+                                itemBtn.setHorizontalAlignment(SwingConstants.LEFT);
+                                itemBtn.setBackground(new Color(241, 245, 249));
+                                itemBtn.setBorder(new EmptyBorder(10, 10, 10, 10));
+                                itemBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                                itemBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+                                itemBtn.addActionListener(ev -> {
+                                    StringSelection selection = new StringSelection(s);
+                                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+                                    JOptionPane.showMessageDialog(dialog, "Copied suggestion!");
+                                });
+
+                                resultContainer.add(itemBtn);
+                                resultContainer.add(Box.createVerticalStrut(5));
+                            }
+                        } else {
+                            resultContainer.add(new JLabel("No suggestions found."));
+                        }
+                    } catch (Exception ex) {
+                        resultContainer.add(new JLabel("Error connecting to AI."));
+                        ex.printStackTrace();
+                    } finally {
+                        btnSuggest.setEnabled(true);
+                        btnSuggest.setText("💡 Get Suggestions");
+                        resultContainer.revalidate();
+                        resultContainer.repaint();
+                    }
+                }
+            }.execute();
+        });
+
+        panel.add(lblInput);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(scrollInput);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(btnSuggest);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(scrollResult);
+
+        return panel;
+    }
+
     private JPanel createSearchBar() {
         JButton searchBtn = new JButton("🔍   Search in conversation...");
 
