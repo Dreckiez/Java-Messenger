@@ -134,6 +134,12 @@ public class CenterPanel extends JPanel {
         }
     }
 
+    public void jumpToMessage(long messageId) {
+        if (chatPanel != null) {
+            chatPanel.jumpToMessage(messageId);
+        }
+    }
+
     // 🔥🔥 FETCH GROUP CHAT (ĐÃ SỬA LỖI JSON NULL) 🔥🔥
     private void fetchGroupChatDetails(long id, JSONObject initialData, String groupName) {
         new SwingWorker<JSONObject, Void>() {

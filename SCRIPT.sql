@@ -173,6 +173,7 @@ CREATE TABLE group_conversation_member (
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     joined_at TIMESTAMP NOT NULL,
     appointed_at TIMESTAMP,
+    history_cleared_at TIMESTAMP,
     group_role SMALLINT,
     history_cleared_at TIMESTAMP,
     PRIMARY KEY (group_conversation_id, member_id)

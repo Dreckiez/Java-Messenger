@@ -1,5 +1,7 @@
 package utils;
 
+import org.glassfish.grizzly.compression.lzma.impl.Base;
+
 public class ApiUrl {
     public static final String BASE = "http://localhost:8080/api/";
     public static final String LOGIN = BASE + "chat/auth/signin";
@@ -20,4 +22,6 @@ public class ApiUrl {
     public static final String REPORT_USER = BASE + "chat/user/report";
     public static final String PRIVATE_CONVERSATION = BASE + "chat/user/private-conversations";
     public static final String GROUP_CONVERSATION = BASE + "chat/user/group-conversations";
+    public static final String AI_REFINE = BASE + "chat/user/assistant/refine";
+    public static final String AI_SUGGEST = BASE + "chat/user/assistant/suggest";
 }
