@@ -20,50 +20,53 @@ public class ChatAssistantService {
     }
 
     public String refineText(String rawText, String tone) {
-        String systemInstruction = "Bạn là một công cụ chuẩn hóa văn bản backend (Text Normalizer). " +
-                "Nhiệm vụ: Chuyển đổi văn bản người dùng nhập thành văn bản chuẩn: đúng chính tả, ngữ pháp và giọng văn '" + tone + "'. " +
-                "QUY TẮC OUTPUT (BẮT BUỘC): " +
-                "- CHỈ trả về duy nhất chuỗi văn bản kết quả. " +
-                "- KHÔNG bao gồm bất kỳ lời chào, giải thích, hay dẫn dắt nào. " +
-                "- KHÔNG định dạng Markdown. " +
-                "- Nếu input đã đúng, hãy trả về y nguyên.";
-        String userPrompt = String.format("Hãy viết lại đoạn văn sau sao cho giọng văn '%s': \"%s\"", tone, rawText);
+        String systemInstruction = "You are a professional text refinement engine. " +
+                "Your task is to rewrite the user's text to improve grammar, spelling, and match the requested tone: '"
+                + tone + "'. " +
+                "\n\nCRITICAL RULES:" +
+                "\n1. DETECT the language of the user input and output the result IN THE SAME LANGUAGE." +
+                "\n2. Do NOT translate the text (unless the user explicitly asks to in the text)." +
+                "\n3. Return ONLY the refined text string. No markdown, no quotes, no conversational filler." +
+                "\n4. If the input is already perfect, return it unchanged.";
+
+        String userPrompt = String.format("Refine this text: \"%s\"", rawText);
 
         return callOpenAi(systemInstruction, userPrompt);
     }
 
     public List<String> suggestReplies(String incomingMessage) {
-        // 1. Prompt ép format dùng dấu gạch đứng (|) để ngăn cách
-        String systemInstruction =
-                "Bạn là API gợi ý phản hồi nhanh (Smart Reply). " +
-                        "Nhiệm vụ: Dựa vào tin nhắn đầu vào, hãy sinh ra 3 câu trả lời ngắn gọn, lịch sự và phù hợp ngữ cảnh. " +
-                        "QUY TẮC OUTPUT BẮT BUỘC: " +
-                        "- Trả về đúng 3 câu gợi ý. " +
-                        "- Các câu ngăn cách nhau bởi dấu gạch đứng '|'. " +
-                        "- KHÔNG đánh số (1, 2, 3), KHÔNG xuống dòng, KHÔNG có lời dẫn. " +
-                        "- Ví dụ output chuẩn: Cảm ơn bạn|Tôi sẽ xem xét|Để tôi kiểm tra lại";
+        // 1. Prompt "Quốc tế hóa"
+        String systemInstruction = "You are a Smart Reply API assistant. " +
+                "Task: Analyze the incoming message and generate 3 short, polite, and contextually appropriate replies. "
+                +
+                "\n\nOUTPUT RULES:" +
+                "\n- DETECT the language of the incoming message and generate replies IN THE SAME LANGUAGE." +
+                "\n- Generate exactly 3 replies." +
+                "\n- Separate replies with a vertical bar '|'." +
+                "\n- NO numbering, NO newlines, NO introductory text." +
+                "\n- Example Output: Thank you|I will check|Sounds good";
 
-        String userPrompt = "Tin nhắn nhận được: \"" + incomingMessage + "\"";
+        // Prompt người dùng đơn giản để tránh nhiễu ngôn ngữ
+        String userPrompt = "Incoming message: \"" + incomingMessage + "\"";
 
-        // 2. Gọi AI (nhớ để temperature khoảng 0.5 - 0.7 để có chút sáng tạo)
+        // 2. Gọi AI (Temperature 0.6 - 0.7 là đẹp cho task này)
         String rawResponse = callOpenAi(systemInstruction, userPrompt);
 
-        // rawResponse lúc này sẽ là: "Gợi ý A|Gợi ý B|Gợi ý C"
-
-        // 3. Xử lý chuỗi (Split) để tạo thành List
+        // 3. Xử lý chuỗi (Giữ nguyên logic cũ của bạn)
         if (rawResponse != null && !rawResponse.isEmpty()) {
-            // Cắt chuỗi dựa trên dấu |
             String[] suggestions = rawResponse.split("\\|");
-
-            // Trim() từng phần tử để xóa khoảng trắng thừa
             List<String> result = new ArrayList<>();
             for (String s : suggestions) {
-                result.add(s.trim());
+                // Xử lý thêm: Đôi khi AI lỡ thêm dấu ngoặc kép hoặc khoảng trắng thừa
+                String clean = s.trim().replaceAll("^\"|\"$", "");
+                if (!clean.isEmpty()) {
+                    result.add(clean);
+                }
             }
             return result;
         }
 
-        return new ArrayList<>(); // Trả về list rỗng nếu lỗi
+        return new ArrayList<>();
     }
 
     private String callOpenAi(String systemContent, String userContent) {
