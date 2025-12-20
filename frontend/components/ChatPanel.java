@@ -38,6 +38,10 @@ public class ChatPanel extends JPanel {
     // 🔥🔥 BIẾN TOKEN QUYỀN LỰC NHẤT
     private long lastHeaderRequestToken = 0;
 
+    // Pagination logic
+    private boolean isLoadingHistory = false;
+    private boolean hasMoreMessages = true;
+
     // Lưu URL avatar đối tác
     private String currentPartnerAvatarUrl = null;
     private long currentChatId = -1;
@@ -65,6 +69,14 @@ public class ChatPanel extends JPanel {
         scrollPane.setBorder(null);
         scrollPane.getViewport().setBackground(BG_COLOR);
         styleScrollBar(scrollPane);
+
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(e -> {
+            if (!e.getValueIsAdjusting() && e.getValue() == 0) {
+                if (!isLoadingHistory && hasMoreMessages && currentChatId != -1) {
+                    loadMoreHistory();
+                }
+            }
+        });
 
         JPanel inputContainer = createInputPanel();
 
@@ -169,9 +181,13 @@ public class ChatPanel extends JPanel {
         if (this.currentChatId != chatId)
             return;
 
+        this.isLoadingHistory = true;
+
         this.currentChatId = chatId;
         messagesPanel.removeAll();
         int myId = UserSession.getUser().getId();
+
+        this.hasMoreMessages = true;
 
         for (int i = messages.length() - 1; i >= 0; i--) {
             JSONObject msg = messages.getJSONObject(i);
@@ -182,6 +198,10 @@ public class ChatPanel extends JPanel {
             String senderAvatarUrl = msg.optString("senderAvatar", null);
             String senderDisplayName = msg.optString("senderName", partnerName);
 
+            long msgId = msg.optLong("groupConversationMessageId", -1);
+            if (msgId == -1)
+                msgId = msg.optLong("privateConversationMessageId", -1);
+
             boolean isMe = (senderId == myId);
             String displayTime = formatTime(rawTime);
 
@@ -189,18 +209,18 @@ public class ChatPanel extends JPanel {
                 senderAvatarUrl = this.currentPartnerAvatarUrl;
             }
 
-            addMessage(content, displayTime, (isMe ? "You" : senderDisplayName), isMe, senderAvatarUrl);
+            addMessage(msgId, content, displayTime, (isMe ? "You" : senderDisplayName), isMe, senderAvatarUrl);
         }
 
         messagesPanel.revalidate();
         messagesPanel.repaint();
 
         SwingUtilities.invokeLater(() -> {
-            JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
-            if (scrollPane != null) {
-                JScrollBar vertical = scrollPane.getVerticalScrollBar();
-                vertical.setValue(vertical.getMaximum());
-            }
+            scrollToBottom();
+
+            SwingUtilities.invokeLater(() -> {
+                this.isLoadingHistory = false;
+            });
         });
     }
 
@@ -238,9 +258,16 @@ public class ChatPanel extends JPanel {
             public void paint(Graphics g, JComponent c) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 if (isInfoActive) {
                     g2.setColor(ACTIVE_INFO_BG);
-                    g2.fillOval(0, 0, c.getWidth(), c.getHeight());
+
+                    // 🔥 FIX: Calculate a centered square for a perfect circle
+                    int size = Math.min(c.getWidth(), c.getHeight());
+                    int x = (c.getWidth() - size) / 2;
+                    int y = (c.getHeight() - size) / 2;
+
+                    g2.fillOval(x, y, size, size);
                 }
                 super.paint(g2, c);
                 g2.dispose();
@@ -256,6 +283,14 @@ public class ChatPanel extends JPanel {
         headerPanel.add(userInfoPanel, BorderLayout.WEST);
         headerPanel.add(infoBtn, BorderLayout.EAST);
         return headerPanel;
+    }
+
+    public String getCurrentPartnerAvatarUrl() {
+        return this.currentPartnerAvatarUrl;
+    }
+
+    public JLabel getNameLabel() {
+        return this.nameLabel;
     }
 
     private JPanel createInputPanel() {
@@ -317,7 +352,9 @@ public class ChatPanel extends JPanel {
         }
 
         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-        addMessage(msg, time, "You", true, null);
+        addMessage(0, msg, time, "You", true, null);
+
+        scrollToBottom();
 
         inputField.setText("");
 
@@ -379,8 +416,14 @@ public class ChatPanel extends JPanel {
         String senderName = msg.getName();
         String avatarUrl = msg.getAvatarUrl();
 
+        long msgId = (msg.getGroupConversationMessageId() != null && msg.getGroupConversationMessageId() > 0)
+                ? msg.getGroupConversationMessageId()
+                : msg.getPrivateConversationMessageId();
+
         // 3. Add to UI
-        addMessage(msg.getContent(), time, senderName, isMe, avatarUrl);
+        addMessage(msgId, msg.getContent(), time, senderName, isMe, avatarUrl);
+
+        scrollToBottom();
 
         // 4. Scroll to bottom
         SwingUtilities.invokeLater(() -> {
@@ -392,7 +435,8 @@ public class ChatPanel extends JPanel {
         });
     }
 
-    private void addMessage(String message, String time, String senderName, boolean isMe, String avatarUrl) {
+    private void addMessage(long messageId, String message, String time, String senderName, boolean isMe,
+            String avatarUrl) {
         JPanel wrapper = new JPanel(new BorderLayout()) {
             @Override
             public Dimension getMaximumSize() {
@@ -401,6 +445,8 @@ public class ChatPanel extends JPanel {
             }
         };
         wrapper.setOpaque(false);
+
+        wrapper.putClientProperty("msgId", messageId);
 
         JPanel contentBox = new JPanel();
         contentBox.setLayout(new BoxLayout(contentBox, BoxLayout.Y_AXIS));
@@ -533,11 +579,14 @@ public class ChatPanel extends JPanel {
     }
 
     private void styleScrollBar(JScrollPane scrollPane) {
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(6, 0));
+
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
             protected void configureScrollBarColors() {
                 this.thumbColor = new Color(200, 200, 200);
-                this.trackColor = BG_COLOR;
+                this.trackColor = new Color(250, 250, 250);
             }
 
             @Override
@@ -554,6 +603,218 @@ public class ChatPanel extends JPanel {
                 JButton jbutton = new JButton();
                 jbutton.setPreferredSize(new Dimension(0, 0));
                 return jbutton;
+            }
+
+            @Override
+            protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+                if (thumbBounds.isEmpty() || !scrollbar.isEnabled()) {
+                    return;
+                }
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(thumbColor);
+                g2.fillRoundRect(thumbBounds.x, thumbBounds.y, thumbBounds.width, thumbBounds.height, 6, 6);
+                g2.dispose();
+            }
+        });
+    }
+
+    private void loadMoreHistory() {
+        if (messagesPanel.getComponentCount() == 0)
+            return;
+
+        isLoadingHistory = true;
+
+        // 1. Get the ID of the top-most message (Cursor)
+        Component topMsg = messagesPanel.getComponent(0);
+        Object idObj = ((JComponent) topMsg).getClientProperty("msgId");
+
+        if (idObj == null) {
+            isLoadingHistory = false;
+            return;
+        }
+
+        long cursorId = (long) idObj;
+        long chatId = this.currentChatId;
+        String token = UserSession.getUser().getToken();
+        boolean isGroup = "GROUP".equalsIgnoreCase(currentChatType);
+
+        System.out.println("DEBUG: Loading history before ID: " + cursorId);
+
+        new SwingWorker<JSONArray, Void>() {
+            @Override
+            protected JSONArray doInBackground() throws Exception {
+                // Build URL with cursor
+                String url;
+                if (isGroup) {
+                    url = ApiUrl.GROUP_CONVERSATION + "/" + chatId + "/group-conversation-messages?cursorId="
+                            + cursorId;
+                } else {
+                    url = ApiUrl.PRIVATE_CONVERSATION + "/" + chatId + "/private-conversation-messages?cursorId="
+                            + cursorId;
+                }
+
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .header("Authorization", "Bearer " + token)
+                        .GET()
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200) {
+                    JSONObject json = new JSONObject(response.body());
+                    if (isGroup && json.has("groupConversationMessageResponseList")) {
+                        return json.getJSONArray("groupConversationMessageResponseList");
+                    } else if (!isGroup && json.has("privateConversationMessageResponseList")) {
+                        return json.getJSONArray("privateConversationMessageResponseList");
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    JSONArray messages = get();
+                    if (messages != null && messages.length() > 0) {
+                        prependMessages(messages);
+                    } else {
+                        hasMoreMessages = false;
+                        System.out.println("DEBUG: No more history.");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    isLoadingHistory = false;
+                }
+            }
+        }.execute();
+    }
+
+    private void prependMessages(JSONArray messages) {
+        JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
+        JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+
+        int oldViewHeight = scrollPane.getViewport().getViewSize().height;
+        int myId = UserSession.getUser().getId();
+
+        for (int i = 0; i < messages.length(); i++) {
+            JSONObject msg = messages.getJSONObject(i);
+
+            String content = msg.optString("content", "");
+            int senderId = msg.optInt("senderId", -1);
+            String rawTime = msg.optString("sentAt", "");
+            String senderAvatarUrl = msg.optString("senderAvatar", null);
+            String senderDisplayName = msg.optString("senderName", "Unknown");
+
+            long msgId = msg.optLong("groupConversationMessageId", -1);
+            if (msgId == -1)
+                msgId = msg.optLong("privateConversationMessageId", -1);
+
+            boolean isMe = (senderId == myId);
+            String displayTime = formatTime(rawTime);
+
+            if (!isMe && (senderAvatarUrl == null || senderAvatarUrl.isEmpty() || "null".equals(senderAvatarUrl))) {
+                senderAvatarUrl = this.currentPartnerAvatarUrl;
+            }
+
+            // --- Manual Add Logic (Similar to addMessage but at index 0) ---
+            JPanel wrapper = new JPanel(new BorderLayout()) {
+                @Override
+                public Dimension getMaximumSize() {
+                    Dimension pref = getPreferredSize();
+                    return new Dimension(Integer.MAX_VALUE, pref.height);
+                }
+            };
+            wrapper.setOpaque(false);
+            wrapper.putClientProperty("msgId", msgId); // Store ID
+
+            JPanel contentBox = new JPanel();
+            contentBox.setLayout(new BoxLayout(contentBox, BoxLayout.Y_AXIS));
+            contentBox.setOpaque(false);
+
+            if (!isMe) {
+                JLabel nameLbl = new JLabel(senderDisplayName);
+                nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+                nameLbl.setForeground(Color.GRAY);
+                nameLbl.setBorder(new EmptyBorder(0, 4, 1, 0));
+                nameLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+                contentBox.add(nameLbl);
+            }
+
+            MessageBubble bubble = new MessageBubble(content, isMe);
+            bubble.setAlignmentX(isMe ? Component.RIGHT_ALIGNMENT : Component.LEFT_ALIGNMENT);
+            contentBox.add(bubble);
+
+            JLabel timeLbl = new JLabel(displayTime);
+            timeLbl.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+            timeLbl.setForeground(TIME_COLOR);
+            timeLbl.setBorder(new EmptyBorder(1, 2, 0, 2));
+
+            if (isMe) {
+                timeLbl.setAlignmentX(Component.RIGHT_ALIGNMENT);
+                wrapper.add(contentBox, BorderLayout.EAST);
+            } else {
+                timeLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                // Avatar logic (Simplified for brevity, copy full logic if needed)
+                JPanel incomingContainer = new JPanel(new BorderLayout(8, 0));
+                incomingContainer.setOpaque(false);
+                JLabel avatarLabel = new JLabel();
+                avatarLabel.setPreferredSize(new Dimension(32, 32));
+                // Note: For history, synchronous or cached image loading is better to avoid
+                // popping
+                // Here we use placeholder, you can add async logic if desired
+                avatarLabel.setIcon(createAvatar(senderDisplayName, 32));
+
+                if (senderAvatarUrl != null && !senderAvatarUrl.isEmpty() && !"null".equals(senderAvatarUrl)) {
+                    String finalUrl = senderAvatarUrl;
+                    ImageLoader.loadImageAsync(finalUrl, img -> {
+                        if (img != null) {
+                            SwingUtilities.invokeLater(() -> {
+                                avatarLabel.setIcon(imageEditor.makeCircularImage(img, 32));
+                                avatarLabel.repaint();
+                            });
+                        }
+                    });
+                }
+
+                JPanel avatarWrapper = new JPanel(new BorderLayout());
+                avatarWrapper.setOpaque(false);
+                avatarWrapper.add(avatarLabel, BorderLayout.NORTH);
+                avatarWrapper.setBorder(new EmptyBorder(isMe ? 0 : 18, 0, 0, 0));
+
+                incomingContainer.add(avatarWrapper, BorderLayout.WEST);
+                incomingContainer.add(contentBox, BorderLayout.CENTER);
+                wrapper.add(incomingContainer, BorderLayout.WEST);
+            }
+            contentBox.add(timeLbl);
+
+            // 🔥 ADD TO TOP
+            messagesPanel.add(wrapper, 0);
+            messagesPanel.add(Box.createVerticalStrut(4), 1); // Add spacing below it
+        }
+
+        messagesPanel.revalidate();
+        scrollPane.validate();
+
+        // 3. Restore Scroll Position (The Magic Trick)
+        int newViewHeight = scrollPane.getViewport().getViewSize().height;
+        int heightDifference = newViewHeight - oldViewHeight;
+
+        SwingUtilities.invokeLater(() -> {
+            verticalBar.setValue(heightDifference);
+        });
+    }
+
+    private void scrollToBottom() {
+        SwingUtilities.invokeLater(() -> {
+            if (messagesPanel.getParent() != null && messagesPanel.getParent().getParent() instanceof JScrollPane) {
+                JScrollPane scrollPane = (JScrollPane) messagesPanel.getParent().getParent();
+                JScrollBar vertical = scrollPane.getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
             }
         });
     }

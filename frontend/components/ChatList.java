@@ -240,17 +240,18 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
             return;
 
         long targetId = -1;
+        String targetType = null;
 
         if (this.pendingOpenId != -1) {
             targetId = this.pendingOpenId;
+            targetType = this.pendingOpenType;
         } else if (activeItem != null) {
             targetId = getChatId(activeItem.getChatData());
+            targetType = activeItem.getChatData().optString("conversationType", "PRIVATE");
         }
 
         final long idToSelect = targetId; // Final variable for the inner class
-
-        SwingUtilities.invokeLater(() -> {
-        });
+        final String typeToSelect = targetType;
 
         String token = UserSession.getUser().getToken();
 
@@ -287,13 +288,19 @@ public class ChatList extends JPanel implements UserListener, ChatListener {
                         JSONObject chat = conversations.getJSONObject(i);
                         ChatItem item = addChat(chat);
                         long currentId = getChatId(chat);
+                        String currentType = chat.optString("conversationType", "PRIVATE");
 
                         if (idToSelect != -1 && currentId == idToSelect) {
-                            itemToSelect = item;
-                            foundTarget = true;
+                            String t1 = typeToSelect != null ? typeToSelect : "PRIVATE";
+                            String t2 = currentType != null ? currentType : "PRIVATE";
+
+                            if (t1.equalsIgnoreCase(t2)) {
+                                itemToSelect = item;
+                                foundTarget = true;
+                            }
                         }
 
-                        if (itemToSelect == null && i == 0) {
+                        if (itemToSelect == null && i == 0 && idToSelect == -1) {
                             itemToSelect = item;
                         }
 

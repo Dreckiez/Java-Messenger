@@ -88,6 +88,23 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                 return msg;
         }
 
+        public Map<String, String> clearPrivateChatHistory(Long userId, Long privateConversationId) {
+                PrivateConversation pc = privateConversationRepository.findById(privateConversationId)
+                                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Conversation not found"));
+
+                // Update the timestamp for the specific user
+                if (pc.getUser1().getUserId().equals(userId)) {
+                        pc.setUser1ClearedAt(LocalDateTime.now());
+                } else if (pc.getUser2().getUserId().equals(userId)) {
+                        pc.setUser2ClearedAt(LocalDateTime.now());
+                } else {
+                        throw new CustomException(HttpStatus.FORBIDDEN, "You are not part of this conversation");
+                }
+
+                privateConversationRepository.save(pc);
+                return Map.of("message", "History cleared successfully");
+        }
+
         public SendMessageResponse sendMessage(Long senderId,
                         Long privateConversationId,
                         SendMessageRequest sendMessageRequest) {
@@ -237,14 +254,24 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                                                 () -> new CustomException(HttpStatus.NOT_FOUND,
                                                                 "Illegal behaivor. This conversation no longer exists."));
 
-                LocalDateTime deletedAt = deletePrivateConversationRepository.findLastest(userId, privateConversationId)
-                                .orElse(null);
+                LocalDateTime clearTime;
+                if (privateConversation.getUser1().getUserId().equals(userId)) {
+                        clearTime = privateConversation.getUser1ClearedAt();
+                } else {
+                        clearTime = privateConversation.getUser2ClearedAt();
+                }
 
-                List<PrivateConversationMessageResponse> privateConversationMessageResponseList = privateConversationMessageRepository
-                                .findMessages(userId, privateConversationId, cursorId)
-                                .stream().filter(
-                                                p -> (deletedAt == null || p.getSentAt().isAfter(deletedAt)))
-                                .collect(Collectors.toList());
+                if (clearTime == null) {
+                        clearTime = LocalDateTime.of(1970, 1, 1, 0, 0);
+                }
+
+                List<PrivateConversationMessageResponse> messages = privateConversationMessageRepository
+                                .findMessagesAfterTimestamp(
+                                                userId,
+                                                privateConversationId,
+                                                cursorId,
+                                                clearTime,
+                                                org.springframework.data.domain.PageRequest.of(0, 50));
 
                 User user = userId == privateConversation.getUser1().getUserId()
                                 ? privateConversation.getUser2()
@@ -252,7 +279,7 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
 
                 ListPrivateConversationMessageResponse listPrivateConversationMessageResponse = ListPrivateConversationMessageResponse
                                 .builder()
-                                .privateConversationMessageResponseList(privateConversationMessageResponseList)
+                                .privateConversationMessageResponseList(messages)
                                 .userId(user.getUserId())
                                 .username(user.getUsername())
                                 .firstName(user.getFirstName())
