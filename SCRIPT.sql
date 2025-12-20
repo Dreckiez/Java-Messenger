@@ -123,15 +123,10 @@ CREATE TABLE private_conversation (
     user2_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL,
     preview_message_id BIGINT,
+    user1_cleared_at TIMESTAMP,
+    user2_cleared_at TIMESTAMP,
     CONSTRAINT chk_private_order CHECK (user1_id < user2_id),
     CONSTRAINT uq_private_pair UNIQUE (user1_id, user2_id)
-);
-
-CREATE TABLE delete_private_conversation (
-    private_conversation_id BIGINT NOT NULL REFERENCES private_conversation(private_conversation_id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    deleted_at TIMESTAMP,
-    PRIMARY KEY (private_conversation_id, user_id)
 );
 
 CREATE TABLE private_conversation_message (
@@ -173,18 +168,12 @@ CREATE TABLE group_conversation (
     is_encrypted BOOLEAN
 );
 
-CREATE TABLE delete_group_conversation (
-    group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
-    member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
-    deleted_at TIMESTAMP,
-    PRIMARY KEY (group_conversation_id, member_id)
-);
-
 CREATE TABLE group_conversation_member (
     group_conversation_id BIGINT NOT NULL REFERENCES group_conversation(group_conversation_id) ON DELETE CASCADE,
     member_id BIGINT NOT NULL REFERENCES user_info(user_id) ON DELETE CASCADE,
     joined_at TIMESTAMP NOT NULL,
     appointed_at TIMESTAMP,
+    history_cleared_at TIMESTAMP,
     group_role SMALLINT,
     PRIMARY KEY (group_conversation_id, member_id)
 );
@@ -236,7 +225,6 @@ CREATE INDEX IF NOT EXISTS idx_gcm_sender ON group_conversation_message(sender_i
 
 CREATE INDEX IF NOT EXISTS idx_friend_request_receiver ON friend_request(receiver_id); 
 CREATE INDEX IF NOT EXISTS idx_friend_request_sender ON friend_request(sender_id); 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_delete_private_conversation_user ON delete_private_conversation (user_id, private_conversation_id); 
 CREATE INDEX IF NOT EXISTS idx_delete_msg_user_deletedat ON delete_private_conversation_message (user_id, deleted_at DESC);
 
 -- ================================

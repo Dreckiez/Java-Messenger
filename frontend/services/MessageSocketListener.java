@@ -70,7 +70,37 @@ public class MessageSocketListener {
                     time);
 
         } else if (RealTimeAction.DELETE.name().equals(action)) {
-            System.out.println("DEBUG: Message deleted: " + message.getPrivateConversationMessageId());
+            System.out.println("DEBUG: Message deleted from socket");
+
+            boolean isGroup = (message.getGroupConversationId() != null && message.getGroupConversationId() > 0);
+            long messageChatId = isGroup ? message.getGroupConversationId() : message.getPrivateConversationId();
+
+            long currentOpenId = centerPanel.getCurrentChatId();
+            String currentType = centerPanel.getCurrentChatType();
+            boolean isOpen = false;
+
+            if (isGroup) {
+                if ("GROUP".equalsIgnoreCase(currentType) && currentOpenId == messageChatId) {
+                    isOpen = true;
+                }
+            } else {
+                if ("PRIVATE".equalsIgnoreCase(currentType) && currentOpenId == messageChatId) {
+                    isOpen = true;
+                }
+            }
+
+            if (isOpen) {
+                // This calls the method we updated earlier which checks for "DELETE" action
+                centerPanel.getChatPanel().addSocketMessage(message);
+            }
+
+            // Optional: You might want to update the sidebar preview text here if the last
+            // message was deleted
+            chatList.updateConversationOnMessage(
+                    messageChatId,
+                    isGroup ? "GROUP" : "PRIVATE",
+                    "Message removed", // Or just leave it, updating is tricky without fetching new last msg
+                    java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
 
         } else if ("UPDATE".equals(action)) {
             String newData = message.getContent();

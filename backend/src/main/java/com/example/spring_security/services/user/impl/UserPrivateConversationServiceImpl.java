@@ -10,6 +10,8 @@ import com.example.spring_security.services.user.UserPrivateConversationService;
 import com.example.spring_security.websocket.WebSocketPrivateMessageService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -248,7 +250,7 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
         }
 
         public ListPrivateConversationMessageResponse getMessages(Long userId, Long privateConversationId,
-                        Long cursorId) {
+                        Long cursorId, Long newerCursorId, Long jumpToMessageId) {
                 PrivateConversation privateConversation = privateConversationRepository
                                 .findById(privateConversationId).orElseThrow(
                                                 () -> new CustomException(HttpStatus.NOT_FOUND,
@@ -265,13 +267,36 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                         clearTime = LocalDateTime.of(1970, 1, 1, 0, 0);
                 }
 
-                List<PrivateConversationMessageResponse> messages = privateConversationMessageRepository
-                                .findMessagesAfterTimestamp(
-                                                userId,
-                                                privateConversationId,
-                                                cursorId,
-                                                clearTime,
-                                                org.springframework.data.domain.PageRequest.of(0, 50));
+                List<PrivateConversationMessageResponse> messages;
+
+                if (jumpToMessageId != null) {
+                        List<PrivateConversationMessageResponse> older = privateConversationMessageRepository
+                                        .findMessagesBeforeInclusive(userId, privateConversationId, jumpToMessageId,
+                                                        clearTime, PageRequest.of(0, 25));
+
+                        List<PrivateConversationMessageResponse> newer = privateConversationMessageRepository
+                                        .findMessagesAfter(userId, privateConversationId, jumpToMessageId, clearTime,
+                                                        PageRequest.of(0, 25));
+
+                        java.util.Collections.reverse(newer);
+                        messages = new java.util.ArrayList<>(newer);
+                        messages.addAll(older);
+                } else if (newerCursorId != null) {
+                        messages = privateConversationMessageRepository
+                                        .findMessagesAfter(userId, privateConversationId, newerCursorId,
+                                                        clearTime,
+                                                        PageRequest.of(0, 50));
+
+                        java.util.Collections.reverse(messages);
+                } else {
+                        messages = privateConversationMessageRepository
+                                        .findMessagesAfterTimestamp(
+                                                        userId,
+                                                        privateConversationId,
+                                                        cursorId,
+                                                        clearTime,
+                                                        org.springframework.data.domain.PageRequest.of(0, 50));
+                }
 
                 User user = userId == privateConversation.getUser1().getUserId()
                                 ? privateConversation.getUser2()
