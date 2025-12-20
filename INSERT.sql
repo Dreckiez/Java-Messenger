@@ -13,7 +13,7 @@
 -- Data for Name: user_info; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-SET client_encoding = 'UTF8';
+SET client_encoding = 'UTF-8';
 
 SET SESSION AUTHORIZATION DEFAULT;
 

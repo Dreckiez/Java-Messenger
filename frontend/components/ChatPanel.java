@@ -815,7 +815,14 @@ public class ChatPanel extends JPanel {
 
     private JPanel addMessage(long messageId, String message, String time, String senderName, boolean isMe,
             String avatarUrl) {
-        JPanel wrapper = new JPanel(new BorderLayout());
+        JPanel wrapper = new JPanel(new BorderLayout()) {
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension pref = getPreferredSize();
+                // Allow unlimited width, but restrict height to preferred height
+                return new Dimension(Integer.MAX_VALUE, pref.height);
+            }
+        };
         wrapper.setOpaque(false);
         // This property is the "Brain" of the bubble. We will update this later!
         wrapper.putClientProperty("msgId", messageId);
@@ -1477,40 +1484,61 @@ public class ChatPanel extends JPanel {
         public MessageBubble(String message, boolean isMe) {
             this.isMe = isMe;
             setLayout(new BorderLayout());
-            setOpaque(false); // Important for custom painting
+            setOpaque(false);
 
             textArea = new JTextArea(message);
-            textArea.setWrapStyleWord(true);
-            textArea.setLineWrap(true);
             textArea.setOpaque(false);
             textArea.setEditable(false);
             textArea.setFocusable(false);
-            // Slightly deeper gray for better readability
             textArea.setForeground(isMe ? Color.WHITE : new Color(50, 50, 50));
             textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+            // Remove internal margins for accurate calculation
             textArea.setMargin(new Insets(0, 0, 0, 0));
 
-            // --- Calculate Sizes (Same logic as before) ---
-            FontMetrics fm = new JLabel().getFontMetrics(textArea.getFont());
+            // --- 1. Measure Text ---
+            FontMetrics fm = textArea.getFontMetrics(textArea.getFont());
             int textWidth = fm.stringWidth(message);
-            int textHeight = fm.getHeight();
+
             int hPadding = 24;
-            int vPadding = 18; // Slightly more vertical breathing room
+            int vPadding = 18;
 
-            int bubbleWidth, bubbleHeight;
+            int bubbleWidth;
+            int bubbleHeight;
 
+            // --- 2. Smart Layout Logic ---
             if (textWidth < (MAX_WIDTH - hPadding)) {
-                bubbleWidth = textWidth + hPadding + 4;
-                bubbleHeight = textHeight + vPadding;
+                // CASE: Short Message -> FORCE SINGLE LINE
+                // Disable wrapping so "phantom wraps" (wrapping single words) are impossible
+                textArea.setLineWrap(false);
+                textArea.setWrapStyleWord(false);
+
+                // Add generous buffer (+20px) to prevent right-side clipping
+                bubbleWidth = textWidth + hPadding + 20;
+
+                // Simple height calc for single line
+                bubbleHeight = textArea.getPreferredSize().height + vPadding;
             } else {
+                // CASE: Long Message -> Standard Wrapping
+                textArea.setLineWrap(true);
+                textArea.setWrapStyleWord(true);
                 bubbleWidth = MAX_WIDTH;
-                textArea.setSize(new Dimension(bubbleWidth - hPadding, Short.MAX_VALUE));
+
+                // 🔥 CRITICAL FIX: "Paranoid Height Calculation"
+                // We calculate height based on a slightly NARROWER width (-5px).
+                // If the text barely fits on Line 1, this forces the calculator to report
+                // Height for 2 lines.
+                // When we render it at full width, we definitely have enough room.
+                int paranoidWidth = (bubbleWidth - hPadding) - 5;
+                textArea.setSize(new Dimension(paranoidWidth, Short.MAX_VALUE));
+
                 bubbleHeight = textArea.getPreferredSize().height + vPadding;
             }
 
+            // --- 3. Apply Dimensions ---
             setPreferredSize(new Dimension(bubbleWidth, bubbleHeight));
             setMaximumSize(new Dimension(bubbleWidth, bubbleHeight));
-            // Slightly more padding on edges
+
             setBorder(new EmptyBorder(9, 12, 9, 12));
             add(textArea, BorderLayout.CENTER);
         }
@@ -1523,9 +1551,6 @@ public class ChatPanel extends JPanel {
             int arc = 18;
 
             if (isMe) {
-                // --- Modern Gradient for Sent Messages ---
-                // Creates a subtle diagonal gradient from PRIMARY_COLOR to a slightly lighter
-                // shade
                 Color color1 = PRIMARY_COLOR;
                 Color color2 = new Color(
                         Math.min(255, PRIMARY_COLOR.getRed() + 30),
@@ -1535,10 +1560,8 @@ public class ChatPanel extends JPanel {
                 g2.setPaint(gp);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
             } else {
-                // Standard style for received messages
                 g2.setColor(Color.WHITE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
-                // A cleaner, subtler border color
                 g2.setColor(new Color(230, 230, 230));
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
             }
@@ -1546,4 +1569,5 @@ public class ChatPanel extends JPanel {
             super.paintComponent(g);
         }
     }
+
 }

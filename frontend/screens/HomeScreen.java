@@ -75,7 +75,6 @@ public class HomeScreen extends JPanel {
         resetToDefaultState();
     }
 
-    // 🔥 3. HÀM RESET TRẠNG THÁI VỀ MẶC ĐỊNH (TAB CHAT)
     private void resetToDefaultState() {
         // A. SỬA LỖI TẠI ĐÂY:
         // Thay vì showChat(), hãy gọi reset() để hiển thị màn hình Welcome
@@ -90,7 +89,7 @@ public class HomeScreen extends JPanel {
 
         // C. SỬA LỖI TẠI ĐÂY:
         // Mặc định nên ẩn InfoPanel đi khi mới vào, chỉ hiện khi user chọn chat
-        toggleInfoPanel(false); 
+        toggleInfoPanel(false);
     }
 
     public void startConnection() {
