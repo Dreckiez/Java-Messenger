@@ -34,9 +34,10 @@ public class UserGroupConversationController {
         public ResponseEntity<ListGroupConversationMessageResponse> getMessages(
                         @AuthenticationPrincipal User user,
                         @PathVariable("id") Long groupConversationId,
-                        @RequestParam(value = "cursorId", required = false) Long cursorId) {
+                        @RequestParam(value = "cursorId", required = false) Long cursorId,
+                        @RequestParam(value = "jumpToMessageId", required = false) Long jumpToMessageId) {
                 return ResponseEntity.ok(userGroupConversationService.getMessages(user.getUserId(), groupConversationId,
-                                cursorId));
+                                cursorId, jumpToMessageId));
         }
 
         @PostMapping("/{id}/group-conversation-messages")

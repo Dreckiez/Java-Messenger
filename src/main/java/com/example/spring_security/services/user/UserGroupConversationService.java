@@ -11,36 +11,38 @@ import java.util.Map;
 
 public interface UserGroupConversationService {
 
-    Map<String, Object> createGroup(Long userId, CreateGroupRequest createGroupRequest);
+        Map<String, Object> createGroup(Long userId, CreateGroupRequest createGroupRequest);
 
-    ListGroupConversationMessageResponse getMessages(Long userId, Long groupConversationId, Long cursorId);
+        ListGroupConversationMessageResponse getMessages(Long userId, Long groupConversationId, Long cursorId,
+                        Long jumpToMessageId);
 
-    SendMessageResponse sendMessage(Long userId, Long groupConversationId, SendMessageRequest sendMessageRequest);
+        SendMessageResponse sendMessage(Long userId, Long groupConversationId, SendMessageRequest sendMessageRequest);
 
-    Map<String, String> removeMessage(Long userId, Long groupConversationId, Long groupConversationMessageId,
-            Boolean isAll);
+        Map<String, String> removeMessage(Long userId, Long groupConversationId, Long groupConversationMessageId,
+                        Boolean isAll);
 
-    Map<String, String> clearGroupChatHistory(Long userId, Long groupConversationId);
+        Map<String, String> clearGroupChatHistory(Long userId, Long groupConversationId);
 
-    Map<String, String> removeConversation(Long removerId, Long groupConversationId);
+        Map<String, String> removeConversation(Long removerId, Long groupConversationId);
 
-    Map<String, String> renameConversation(Long userId, Long groupConversationId,
-            RenameGroupRequest renameGroupRequest);
+        Map<String, String> renameConversation(Long userId, Long groupConversationId,
+                        RenameGroupRequest renameGroupRequest);
 
-    Map<String, String> updateAvatar(Long userId, Long groupConversationId, MultipartFile avatar);
+        Map<String, String> updateAvatar(Long userId, Long groupConversationId, MultipartFile avatar);
 
-    List<UserFriendResponse> list(Long userId, Long groupConversationId, String keyword);
+        List<UserFriendResponse> list(Long userId, Long groupConversationId, String keyword);
 
-    Map<String, String> addMembers(Long userId, Long groupConversationId,
-            ModifyGroupMemberRequest modifyGroupMemberRequest);
+        Map<String, String> addMembers(Long userId, Long groupConversationId,
+                        ModifyGroupMemberRequest modifyGroupMemberRequest);
 
-    Map<String, String> removeMembers(Long userId, Long groupConversationId,
-            ModifyGroupMemberRequest modifyGroupMemberRequest);
+        Map<String, String> removeMembers(Long userId, Long groupConversationId,
+                        ModifyGroupMemberRequest modifyGroupMemberRequest);
 
-    Map<String, String> modifyRoleMembers(Long userId, Long groupConversationId, ModifyRoleRequest modifyRoleRequest);
+        Map<String, String> modifyRoleMembers(Long userId, Long groupConversationId,
+                        ModifyRoleRequest modifyRoleRequest);
 
-    Map<String, String> out(Long userId, Long groupConversationId);
+        Map<String, String> out(Long userId, Long groupConversationId);
 
-    interface WebSocketSenderService {
-    }
+        interface WebSocketSenderService {
+        }
 }
