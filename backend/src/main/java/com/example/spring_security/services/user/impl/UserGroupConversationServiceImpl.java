@@ -155,6 +155,7 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
         }
 
         public ListGroupConversationMessageResponse getMessages(Long userId, Long groupConversationId, Long cursorId,
+                        Long newerCursorId,
                         Long jumpToMessageId) {
 
                 GroupConversation groupConversation = groupConversationRepository.findById(groupConversationId)
@@ -190,6 +191,13 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                         java.util.Collections.reverse(newer);
                         groupConversationMessageResponseList = new java.util.ArrayList<>(newer);
                         groupConversationMessageResponseList.addAll(older);
+                } else if (newerCursorId != null) {
+                        groupConversationMessageResponseList = groupConversationMessageRepository
+                                        .findMessagesAfter(userId, groupConversationId, newerCursorId,
+                                                        clearTime,
+                                                        PageRequest.of(0, 50));
+
+                        java.util.Collections.reverse(groupConversationMessageResponseList);
                 } else {
                         groupConversationMessageResponseList = groupConversationMessageRepository
                                         .findMessagesAfterTimestamp(userId, groupConversationId, cursorId, clearTime,
@@ -333,7 +341,9 @@ public class UserGroupConversationServiceImpl implements UserGroupConversationSe
                                 .isAll(deleteGroupConversationMessage.getIsAll())
                                 .build();
 
-                webSocketGroupMessageService.sendDeleteGroupMessage(groupConversationId, deleteGroupMessageWsResponse);
+                if (isAll)
+                        webSocketGroupMessageService.sendDeleteGroupMessage(groupConversationId,
+                                        deleteGroupMessageWsResponse);
 
                 groupConversation.setPreviewMessage(null);
 

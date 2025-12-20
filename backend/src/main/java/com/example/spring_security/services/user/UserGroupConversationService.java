@@ -14,6 +14,7 @@ public interface UserGroupConversationService {
         Map<String, Object> createGroup(Long userId, CreateGroupRequest createGroupRequest);
 
         ListGroupConversationMessageResponse getMessages(Long userId, Long groupConversationId, Long cursorId,
+                        Long newerCursorId,
                         Long jumpToMessageId);
 
         SendMessageResponse sendMessage(Long userId, Long groupConversationId, SendMessageRequest sendMessageRequest);

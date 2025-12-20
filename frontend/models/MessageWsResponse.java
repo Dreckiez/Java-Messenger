@@ -19,6 +19,7 @@ public class MessageWsResponse {
     // DELETE fields
     private Long privateConversationId;
     private Long groupConversationId;
+    private boolean isAll;
 
     // Empty constructor
     public MessageWsResponse() {
@@ -39,14 +40,21 @@ public class MessageWsResponse {
         msg.content = json.optString("content");
         msg.sentAt = json.optString("sentAt");
         msg.type = json.optString("type");
+        msg.isAll = json.optBoolean("isAll", false);
 
-        if (json.has("groupConversationMessageId")) {
-            msg.name = json.getString("senderName");
-            msg.userId = json.optLong("senderId");
-        } else {
+        if (json.has("senderName")) {
+            msg.name = json.optString("senderName");
+        } else if (json.has("firstName")) {
             String fname = json.optString("firstName");
             String lname = json.optString("lastName");
-            msg.name = fname + ' ' + lname;
+            msg.name = (fname + " " + lname).trim();
+        } else {
+            msg.name = "System";
+        }
+
+        if (json.has("senderId")) {
+            msg.userId = json.optLong("senderId");
+        } else {
             msg.userId = json.optLong("userId");
         }
 
@@ -55,6 +63,10 @@ public class MessageWsResponse {
         msg.groupConversationId = json.optLong("groupConversationId", -1L);
 
         return msg;
+    }
+
+    public boolean isAll() {
+        return isAll;
     }
 
     // Getters

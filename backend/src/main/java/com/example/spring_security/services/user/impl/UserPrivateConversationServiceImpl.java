@@ -250,7 +250,7 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
         }
 
         public ListPrivateConversationMessageResponse getMessages(Long userId, Long privateConversationId,
-                        Long cursorId, Long jumpToMessageId) {
+                        Long cursorId, Long newerCursorId, Long jumpToMessageId) {
                 PrivateConversation privateConversation = privateConversationRepository
                                 .findById(privateConversationId).orElseThrow(
                                                 () -> new CustomException(HttpStatus.NOT_FOUND,
@@ -281,6 +281,13 @@ public class UserPrivateConversationServiceImpl implements UserPrivateConversati
                         java.util.Collections.reverse(newer);
                         messages = new java.util.ArrayList<>(newer);
                         messages.addAll(older);
+                } else if (newerCursorId != null) {
+                        messages = privateConversationMessageRepository
+                                        .findMessagesAfter(userId, privateConversationId, newerCursorId,
+                                                        clearTime,
+                                                        PageRequest.of(0, 50));
+
+                        java.util.Collections.reverse(messages);
                 } else {
                         messages = privateConversationMessageRepository
                                         .findMessagesAfterTimestamp(

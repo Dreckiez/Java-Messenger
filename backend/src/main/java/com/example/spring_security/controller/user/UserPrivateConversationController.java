@@ -62,10 +62,11 @@ public class UserPrivateConversationController {
         public ResponseEntity<ListPrivateConversationMessageResponse> getMessages(@AuthenticationPrincipal User user,
                         @PathVariable("id") Long privateConversationId,
                         @RequestParam(value = "cursorId", required = false) Long cursorId,
+                        @RequestParam(value = "newerCursorId", required = false) Long newerCursorId,
                         @RequestParam(value = "jumpToMessageId", required = false) Long jumpToMessageId) {
                 return ResponseEntity
                                 .ok(userPrivateConversationService.getMessages(user.getUserId(), privateConversationId,
-                                                cursorId, jumpToMessageId));
+                                                cursorId, newerCursorId, jumpToMessageId));
         }
 
         @GetMapping("/{friendId}")
