@@ -1,4 +1,4 @@
-# Java - Messenger Clone
+# Messenger Clone ![Java](https://forthebadge.com/images/badges/made-with-java.svg)
 
 ## Requirements
 
