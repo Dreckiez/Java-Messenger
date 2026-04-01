@@ -1,1 +1,4 @@
-"src/main/resources/application.properties" 
+target/
+*.log
+.env
+src/main/resources/application.properties
